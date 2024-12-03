@@ -1,0 +1,139 @@
+/* Base Styles (shared with SignIn) */
+body {
+  font-family: "Arial", sans-serif;
+  background-color: #f9f9f9;
+  margin: 0;
+  padding: 0;
+}
+
+.signup-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+  background-color: #ffffff;
+}
+
+.signup-box {
+  width: 400px;
+  padding: 30px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  border-radius: 10px;
+  background-color: #ffffff;
+}
+
+.signup-title {
+  text-align: center;
+  color: #333;
+  font-size: 24px;
+  font-weight: bold;
+  margin-bottom: 10px;
+}
+
+.signup-subtitle {
+  text-align: center;
+  color: #555;
+  font-size: 14px;
+  margin-bottom: 20px;
+}
+
+.form-group {
+  margin-bottom: 15px;
+}
+
+.form-label {
+  display: block;
+  font-size: 14px;
+  color: #333;
+  margin-bottom: 5px;
+}
+
+.form-input {
+  width: 100%;
+  padding: 10px;
+  font-size: 14px;
+  border: 1px solid #ddd;
+  border-radius: 5px;
+  box-sizing: border-box;
+}
+
+.form-input:focus {
+  border-color: #007bff;
+  outline: none;
+}
+
+.form-checkbox {
+  font-size: 14px;
+  color: #333;
+  display: flex;
+  align-items: center;
+}
+
+.form-checkbox input {
+  margin-right: 8px;
+}
+
+.terms-link {
+  color: #dc3545; /* Red color for terms */
+  text-decoration: underline;
+}
+
+.form-actions {
+  text-align: center;
+}
+
+.btn {
+  width: 100%;
+  padding: 10px;
+  font-size: 16px;
+  font-weight: bold;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+}
+
+.signup-btn {
+  background-color: #ffc107; /* Yellow Button */
+  color: #333;
+}
+
+.signup-btn:hover {
+  background-color: #e0a800;
+}
+
+/* Additional Links */
+.additional-links {
+  text-align: center;
+  margin-top: 20px;
+}
+
+.link {
+  text-decoration: none;
+  font-weight: bold;
+}
+
+.signin-link {
+  color: #007bff; /* Blue for sign-in link */
+}
+
+.link:hover {
+  text-decoration: underline;
+}
+.errorMessage {
+  color: Red;
+}
+.loadingMessage {
+  color: darkgreen;
+  font-weight: 600;
+}
+.input-with-icon {
+  position: relative;
+}
+
+.password-toggle-icon {
+  position: absolute;
+  right: 10px;
+  top: 50%;
+  transform: translateY(-50%);
+  cursor: pointer;
+}

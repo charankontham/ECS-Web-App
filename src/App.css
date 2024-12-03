@@ -1,0 +1,33 @@
+/* Global Styles */
+body {
+  font-family: "Open Sans", sans-serif !important;
+  background-color: #ffffff !important;
+  color: #333 !important;
+  margin: 0 !important;
+  padding: 0 !important;
+}
+
+/* Buttons */
+.btn {
+  border: none !important;
+  padding: 10px 15px !important;
+  cursor: pointer !important;
+  border-radius: 5px !important;
+}
+
+.btn-red {
+  background-color: #ff4c4c !important;
+  color: white !important;
+}
+.btn-blue {
+  background-color: #007bff !important;
+  color: white !important;
+}
+.btn-yellow {
+  background-color: #ffc107 !important ;
+  color: black !important;
+}
+.btn-black {
+  background-color: black !important;
+  color: white !important;
+}

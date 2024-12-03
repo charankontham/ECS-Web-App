@@ -1,0 +1,15 @@
+.category-bar {
+  /* margin-top: 1rem; */
+  background-color: #f8f9fa;
+  padding: 0.5rem 1rem;
+  border-bottom: 1px solid #ddd;
+}
+
+.category-bg {
+  background-color: rgba(3, 2, 2, 0.2) !important;
+}
+
+.category-bar .btn {
+  color: black;
+  font-size: 0.9rem;
+}

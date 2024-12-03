@@ -1,0 +1,59 @@
+.add-address-form .form-actions {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 20px;
+}
+
+.floating-input {
+  position: relative;
+  margin-top: 20px;
+}
+
+.floating-input .form-control {
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  padding: 10px;
+  font-size: 16px;
+  transition: border-color 0.3s ease-in-out;
+}
+
+.floating-input .form-control:focus {
+  border-color: #007bff;
+  outline: none;
+}
+
+.floating-input label {
+  position: absolute;
+  top: 50%;
+  left: 10px;
+  transform: translateY(-50%);
+  font-size: 16px;
+  color: #aaa;
+  pointer-events: none;
+  background-color: white;
+  padding: 0 5px;
+  transition: 0.3s ease-in-out;
+}
+
+.floating-input .form-control:focus + label {
+  top: 0px;
+  left: 10px;
+  font-size: 12px;
+  color: #007bff;
+}
+
+.form-control:hover,
+.form-control:focus {
+  box-shadow: none;
+}
+
+@media (max-width: 576px) {
+  .form-actions {
+    flex-direction: column;
+  }
+
+  .form-actions .btn {
+    width: 100%;
+    margin-bottom: 10px;
+  }
+}

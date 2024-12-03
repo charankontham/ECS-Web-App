@@ -1,0 +1,114 @@
+/* Custom Styles for My Orders Page */
+.order-card {
+  background: #f8f8f8;
+}
+
+.order-card img {
+  max-width: 100%;
+  position: absolute;
+  top: 0;
+  left: 0;
+  object-fit: contain;
+  object-position: center;
+  transition: transform 0.3s ease;
+}
+/* 
+.order-card a {
+  color: #007bff;
+} */
+
+.order-card a:hover {
+  text-decoration: underline;
+}
+
+.filter-section {
+  margin-bottom: 20px;
+}
+
+.pagination .page-item.active .page-link {
+  background-color: #007bff;
+  border-color: #007bff;
+}
+
+.order-card-header {
+  font-size: 12px;
+  color: #63625f;
+  display: flex;
+  justify-content: space-between;
+  /* border-bottom: 1px solid lightgray; */
+}
+
+.order-card-body {
+  /* padding-top: 20px; */
+  background-color: white;
+  border-radius: 5px;
+}
+
+.order-item-body {
+  padding-top: 20px;
+  display: flex;
+  justify-content: space-between;
+  border-bottom: 1px solid #e6e6e6;
+}
+
+.order-item-body:last-child {
+  border-bottom: none;
+}
+
+.order-item-body hr {
+  color: black;
+}
+
+.order-card-header a {
+  text-decoration: none;
+  color: #3480d1;
+}
+
+.order-card-header div span {
+  text-transform: uppercase;
+}
+
+.product-details {
+  font-size: medium;
+}
+.product-link {
+  text-decoration: none;
+  font-size: medium;
+  color: #0f7eba;
+}
+.product-link:hover {
+  text-decoration: underline;
+  color: #0a3c57;
+}
+.product-details-btns {
+  display: grid;
+  justify-content: start;
+}
+.product-details button {
+  color: black;
+  background-color: #f8f8f8;
+  border: 1px solid black !important;
+  font-weight: 400;
+  border-radius: 25px 25px 25px 25px !important;
+  margin-bottom: 10px;
+}
+.product-details button:hover {
+  color: black;
+  background-color: #f8f8f8;
+  border: 1px solid black !important;
+}
+
+.order-item-img-column {
+  padding: 10px;
+  position: relative;
+  overflow: hidden;
+  max-height: 170px;
+  max-width: 150px;
+}
+.order-card-header-links {
+  font-weight: 400;
+  text-align: right;
+}
+.errorMessage {
+  color: red;
+}
