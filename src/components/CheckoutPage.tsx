@@ -21,7 +21,10 @@ const CheckoutPage = () => {
   const [orderItems, setOrderItems] = useState<CartItem[]>([]);
   const [orderSummary, setOrderSummary] = useState<any>(null);
   const [showAddresses, setShowAddresses] = useState(false);
-  const [addressFormData, setAddressFormData] = useState<Address>({
+  const [selectedAddress, setSelectedAddress] = useState<Address>();
+  const [selectedPaymentMethod, setSelectedPaymentMethod] = useState<String>();
+  const paymentMethods = ["Credit/Debit Card", "PayPal", "Cash on Delivery"];
+  const emptyAddress: Address = {
     addressId: null,
     customerId: !!customer ? customer.customerId : null,
     name: null,
@@ -31,8 +34,8 @@ const CheckoutPage = () => {
     state: "",
     zip: "",
     country: "",
-  });
-  const [selectedAddress, setSelectedAddress] = useState<Address>();
+  };
+  const [addressFormData, setAddressFormData] = useState<Address>(emptyAddress);
   const apiBaseUrl = "http://localhost:8080";
   const navigate = useNavigate();
 
@@ -79,7 +82,7 @@ const CheckoutPage = () => {
     }
   };
 
-  const handleChange = (
+  const handleAddressFieldChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
   ) => {
     const { name, value } = e.target;
@@ -161,17 +164,7 @@ const CheckoutPage = () => {
 
   useEffect(() => {
     if (addressFormData.addressId == null) {
-      setAddressFormData({
-        addressId: null,
-        customerId: !!customer ? customer.customerId : null,
-        name: null,
-        contact: null,
-        street: "",
-        city: "",
-        state: "",
-        zip: "",
-        country: "",
-      });
+      setAddressFormData(emptyAddress);
     }
   }, [showPopup]);
 
@@ -252,7 +245,10 @@ const CheckoutPage = () => {
                     ))}
                     <button
                       className="btn btn-primary btn-sm address-btns"
-                      onClick={() => setShowPopup(true)}
+                      onClick={() => {
+                        setAddressFormData(emptyAddress);
+                        setShowPopup(true);
+                      }}
                     >
                       Add new address
                     </button>
@@ -274,47 +270,84 @@ const CheckoutPage = () => {
                 <h5>Select Payment Method</h5>
               </div>
               <div className="card-body">
-                <div className="form-check mb-3">
-                  <input
-                    className="form-check-input"
-                    type="radio"
-                    name="paymentMethod"
-                    id="creditCard"
-                    defaultChecked
-                  />
-                  <label className="form-check-label" htmlFor="creditCard">
-                    Credit/Debit Card
-                  </label>
-                </div>
-                <div className="form-check mb-3">
-                  <input
-                    className="form-check-input"
-                    type="radio"
-                    name="paymentMethod"
-                    id="paypal"
-                  />
-                  <label className="form-check-label" htmlFor="paypal">
-                    PayPal
-                  </label>
-                </div>
-                <div className="form-check mb-3">
-                  <input
-                    className="form-check-input"
-                    type="radio"
-                    name="paymentMethod"
-                    id="cod"
-                  />
-                  <label className="form-check-label" htmlFor="cod">
-                    Cash on Delivery
-                  </label>
-                </div>
+                {paymentMethods.map((method) => (
+                  <div className="form-check mb-3" key={method}>
+                    <input
+                      className="form-check-input"
+                      type="radio"
+                      name="paymentMethod"
+                      onChange={() => setSelectedPaymentMethod(method)}
+                      id={method}
+                    />
+                    <label className="form-check-label" htmlFor={method}>
+                      {method}
+                    </label>
+                  </div>
+                ))}
+
+                {paymentMethods.map((method) => (
+                  <div className="form-check mb-3" key={method}>
+                    <input
+                      className="form-check-input"
+                      type="radio"
+                      name="paymentMethod"
+                      onChange={() => setSelectedPaymentMethod(method)}
+                      id={method}
+                    />
+                    <label className="form-check-label" htmlFor={method}>
+                      {method}
+                    </label>
+                  </div>
+                ))}
+                {paymentMethods.map((method) => (
+                  <div className="form-check mb-3" key={method}>
+                    <input
+                      className="form-check-input"
+                      type="radio"
+                      name="paymentMethod"
+                      onChange={() => setSelectedPaymentMethod(method)}
+                      id={method}
+                    />
+                    <label className="form-check-label" htmlFor={method}>
+                      {method}
+                    </label>
+                  </div>
+                ))}
+                {paymentMethods.map((method) => (
+                  <div className="form-check mb-3" key={method}>
+                    <input
+                      className="form-check-input"
+                      type="radio"
+                      name="paymentMethod"
+                      onChange={() => setSelectedPaymentMethod(method)}
+                      id={method}
+                    />
+                    <label className="form-check-label" htmlFor={method}>
+                      {method}
+                    </label>
+                  </div>
+                ))}
+                {paymentMethods.map((method) => (
+                  <div className="form-check mb-3" key={method}>
+                    <input
+                      className="form-check-input"
+                      type="radio"
+                      name="paymentMethod"
+                      onChange={() => setSelectedPaymentMethod(method)}
+                      id={method}
+                    />
+                    <label className="form-check-label" htmlFor={method}>
+                      {method}
+                    </label>
+                  </div>
+                ))}
               </div>
             </div>
           </div>
 
           {/* Right Section - Order Summary */}
-          <div className="col-md-4">
-            <div className="card">
+          <div className="col-md-4 ">
+            <div className="card order-summary">
               <div className="card-header">
                 <h5>Order Summary</h5>
               </div>
@@ -376,7 +409,7 @@ const CheckoutPage = () => {
                         addressFormData.name ? "filled" : ""
                       }`}
                       value={addressFormData.name ? addressFormData.name : ""}
-                      onChange={handleChange}
+                      onChange={handleAddressFieldChange}
                       required
                     />
                     <label htmlFor="name">Full Name</label>
@@ -393,7 +426,7 @@ const CheckoutPage = () => {
                       value={
                         addressFormData.contact ? addressFormData.contact : ""
                       }
-                      onChange={handleChange}
+                      onChange={handleAddressFieldChange}
                       required
                     />
                     <label htmlFor="contact">Contact</label>
@@ -408,7 +441,7 @@ const CheckoutPage = () => {
                         addressFormData.street ? "filled" : ""
                       }`}
                       value={addressFormData.street}
-                      onChange={handleChange}
+                      onChange={handleAddressFieldChange}
                       required
                     />
                     <label htmlFor="street">Street Name</label>
@@ -423,7 +456,7 @@ const CheckoutPage = () => {
                         addressFormData.city ? "filled" : ""
                       }`}
                       value={addressFormData.city ? addressFormData.city : ""}
-                      onChange={handleChange}
+                      onChange={handleAddressFieldChange}
                       required
                     />
                     <label htmlFor="city">City</label>
@@ -438,7 +471,7 @@ const CheckoutPage = () => {
                         addressFormData.zip ? "filled" : ""
                       }`}
                       value={addressFormData.zip}
-                      onChange={handleChange}
+                      onChange={handleAddressFieldChange}
                       required
                     />
                     <label htmlFor="zip">Zip Code</label>
@@ -453,7 +486,7 @@ const CheckoutPage = () => {
                         addressFormData.state ? "filled" : ""
                       }`}
                       value={addressFormData.state}
-                      onChange={handleChange}
+                      onChange={handleAddressFieldChange}
                       required
                     />
                     <label htmlFor="state">State</label>
@@ -467,7 +500,7 @@ const CheckoutPage = () => {
                         addressFormData.country ? "filled" : ""
                       }`}
                       value={addressFormData.country}
-                      onChange={handleChange}
+                      onChange={handleAddressFieldChange}
                       required
                     >
                       <option value="" disabled>
