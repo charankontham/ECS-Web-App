@@ -13,14 +13,15 @@ const CheckoutPage = () => {
   const authToken = localStorage.getItem("authToken");
   const [customer, setCustomer] = useState<Customer>();
   const [addresses, setAddresses] = useState<Address[]>([]);
+  const [error, setError] = useState<any>(null);
   const navigate = useNavigate();
   const [showPopup, setShowPopup] = useState(false);
   const apiBaseUrl = "http://localhost:8080";
   const [formData, setFormData] = useState<Address>({
     addressId: null,
     customerId: !!customer ? customer.customerId : null,
-    name: "",
-    contact: "",
+    name: null,
+    contact: null,
     street: "",
     city: "",
     state: "",
@@ -97,25 +98,25 @@ const CheckoutPage = () => {
           })
           .then((response) => {
             if (response.status == 201) {
-              console.log("Success adding new address");
               setAddresses((prevAddresses) => [
                 ...prevAddresses,
                 response.data,
               ]);
+              console.log("Success adding new address");
             } else {
-              // setError(response.data);
+              setError(response.data);
               console.log("Error adding new address");
             }
           })
           .catch((error) => {
-            // setError(error.response.data);
+            setError(error.response.data);
             console.log("Error adding new address");
           });
       } else {
         console.log("Error adding new address");
       }
     } else {
-      // setError("Validation Failed");
+      setError("Validation Failed");
       console.log("Error adding new address");
     }
   };
@@ -289,8 +290,10 @@ const CheckoutPage = () => {
                       type="text"
                       id="street"
                       name="street"
-                      className="form-control"
-                      value={`form-control ${formData.street ? "filled" : ""}`}
+                      className={`form-control ${
+                        formData.street ? "filled" : ""
+                      }`}
+                      value={formData.street}
                       onChange={handleChange}
                       required
                     />
@@ -302,8 +305,10 @@ const CheckoutPage = () => {
                       type="text"
                       id="city"
                       name="city"
-                      className="form-control"
-                      value={`form-control ${formData.city ? "filled" : ""}`}
+                      className={`form-control ${
+                        formData.city ? "filled" : ""
+                      }`}
+                      value={formData.city ? formData.city : ""}
                       onChange={handleChange}
                       required
                     />
@@ -315,8 +320,8 @@ const CheckoutPage = () => {
                       type="text"
                       id="zip"
                       name="zip"
-                      className="form-control"
-                      value={`form-control ${formData.zip ? "filled" : ""}`}
+                      className={`form-control ${formData.zip ? "filled" : ""}`}
+                      value={formData.zip}
                       onChange={handleChange}
                       required
                     />
@@ -328,8 +333,10 @@ const CheckoutPage = () => {
                       type="text"
                       id="state"
                       name="state"
-                      className="form-control"
-                      value={`form-control ${formData.state ? "filled" : ""}`}
+                      className={`form-control ${
+                        formData.state ? "filled" : ""
+                      }`}
+                      value={formData.state}
                       onChange={handleChange}
                       required
                     />
@@ -358,15 +365,13 @@ const CheckoutPage = () => {
                     <label htmlFor="country">Country/Region</label>
                   </div>
 
+                  {error && <div className="error-msg">{error}</div>}
+
                   <div className="form-actions">
                     <button type="submit" className="btn btn-primary">
                       Save Address
                     </button>
-                    <button
-                      type="button"
-                      className="btn btn-warning"
-                      // onClick={() => setBackToSubSetting(true)}
-                    >
+                    <button type="button" className="btn btn-warning">
                       Cancel
                     </button>
                   </div>
