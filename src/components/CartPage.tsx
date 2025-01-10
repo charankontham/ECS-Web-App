@@ -220,11 +220,12 @@ const CartPage: React.FC = () => {
         "itemsForCheckout",
         JSON.stringify(getSelectedCartItems())
       );
-      console.log("true");
+      let subTotal = calculateSubtotal();
+      localStorage.setItem("subTotal", subTotal ? subTotal : "0");
+      console.log("Navigated to Checkout Page!");
       navigate("/checkout");
     } else {
       alert("Select at least one item to proceed!");
-      console.log("false");
     }
   };
 

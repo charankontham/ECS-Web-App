@@ -7,17 +7,18 @@ import axios from "axios";
 import Customer from "../interfaces/Customer";
 import { useNavigate } from "react-router-dom";
 import Address from "../interfaces/Address";
+import { CartItem } from "../interfaces/Cart";
 
 const CheckoutPage = () => {
-  const rawOrderItems = localStorage.getItem("itemsForCheckout");
+  // const rawOrderItems = localStorage.getItem("itemsForCheckout");
   const authToken = localStorage.getItem("authToken");
   const [customer, setCustomer] = useState<Customer>();
   const [addresses, setAddresses] = useState<Address[]>([]);
   const [error, setError] = useState<any>(null);
-  const navigate = useNavigate();
   const [showPopup, setShowPopup] = useState(false);
-  const apiBaseUrl = "http://localhost:8080";
-  const [formData, setFormData] = useState<Address>({
+  const [orderItems, setOrderItems] = useState<CartItem[]>([]);
+  const [orderSummary, setOrderSummary] = useState<any>(null);
+  const [addressFormData, setAddressFormData] = useState<Address>({
     addressId: null,
     customerId: !!customer ? customer.customerId : null,
     name: null,
@@ -28,11 +29,8 @@ const CheckoutPage = () => {
     zip: "",
     country: "",
   });
-
-  if (!!rawOrderItems) {
-    const orderItems = JSON.parse(rawOrderItems);
-    console.log(orderItems);
-  }
+  const apiBaseUrl = "http://localhost:8080";
+  const navigate = useNavigate();
 
   const fetchCustomerAndAddresses = async () => {
     try {
@@ -81,7 +79,7 @@ const CheckoutPage = () => {
     e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
   ) => {
     const { name, value } = e.target;
-    setFormData((prevData) => ({ ...prevData, [name]: value }));
+    setAddressFormData((prevData) => ({ ...prevData, [name]: value }));
   };
 
   const validation = (): boolean => {
@@ -91,9 +89,9 @@ const CheckoutPage = () => {
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (validation() && authToken) {
-      if (formData != null) {
+      if (addressFormData != null) {
         axios
-          .post(apiBaseUrl + "/ecs-customer/api/address", formData, {
+          .post(apiBaseUrl + "/ecs-customer/api/address", addressFormData, {
             headers: { Authorization: `Bearer ${authToken}` },
           })
           .then((response) => {
@@ -123,7 +121,29 @@ const CheckoutPage = () => {
 
   useEffect(() => {
     fetchCustomerAndAddresses();
+    const subTotalString = localStorage.getItem("subTotal");
+    const subTotal: number = subTotalString ? Number(subTotalString) : 0;
+    setOrderSummary({
+      subTotal: subTotal.toFixed(2),
+      shippingFee: (6.99).toFixed(2),
+      tax: (subTotal * 0.07).toFixed(2),
+      total: (subTotal + 6.99 + subTotal * 0.07).toFixed(2),
+    });
   }, []);
+
+  useEffect(() => {
+    setAddressFormData({
+      addressId: null,
+      customerId: !!customer ? customer.customerId : null,
+      name: null,
+      contact: null,
+      street: "",
+      city: "",
+      state: "",
+      zip: "",
+      country: "",
+    });
+  }, [showPopup]);
   return (
     <>
       <Header></Header>
@@ -219,19 +239,27 @@ const CheckoutPage = () => {
                   <tbody>
                     <tr>
                       <td>Subtotal</td>
-                      <td className="text-end">$150.00</td>
+                      <td className="text-end">
+                        $ {orderSummary ? orderSummary.subTotal : 0}
+                      </td>
                     </tr>
                     <tr>
                       <td>Shipping</td>
-                      <td className="text-end">$10.00</td>
+                      <td className="text-end">
+                        $ {orderSummary ? orderSummary.shippingFee : 0}
+                      </td>
                     </tr>
                     <tr>
                       <td>Tax</td>
-                      <td className="text-end">$15.00</td>
+                      <td className="text-end">
+                        $ {orderSummary ? orderSummary.tax : 0}
+                      </td>
                     </tr>
                     <tr className="fw-bold">
                       <td>Total</td>
-                      <td className="text-end">$175.00</td>
+                      <td className="text-end">
+                        $ {orderSummary ? orderSummary.total : 0}
+                      </td>
                     </tr>
                   </tbody>
                 </table>
@@ -253,7 +281,6 @@ const CheckoutPage = () => {
             </div>
             <div className="popup-body">
               <div className="add-address-container">
-                <h3 className="form-title">Add a new address</h3>
                 <form className="add-address-form" onSubmit={handleSubmit}>
                   <div className="form-group floating-input">
                     <input
@@ -261,9 +288,9 @@ const CheckoutPage = () => {
                       id="name"
                       name="name"
                       className={`form-control ${
-                        formData.name ? "filled" : ""
+                        addressFormData.name ? "filled" : ""
                       }`}
-                      value={formData.name ? formData.name : ""}
+                      value={addressFormData.name ? addressFormData.name : ""}
                       onChange={handleChange}
                       required
                     />
@@ -276,9 +303,11 @@ const CheckoutPage = () => {
                       id="contact"
                       name="contact"
                       className={`form-control ${
-                        formData.contact ? "filled" : ""
+                        addressFormData.contact ? "filled" : ""
                       }`}
-                      value={formData.contact ? formData.contact : ""}
+                      value={
+                        addressFormData.contact ? addressFormData.contact : ""
+                      }
                       onChange={handleChange}
                       required
                     />
@@ -291,9 +320,9 @@ const CheckoutPage = () => {
                       id="street"
                       name="street"
                       className={`form-control ${
-                        formData.street ? "filled" : ""
+                        addressFormData.street ? "filled" : ""
                       }`}
-                      value={formData.street}
+                      value={addressFormData.street}
                       onChange={handleChange}
                       required
                     />
@@ -306,9 +335,9 @@ const CheckoutPage = () => {
                       id="city"
                       name="city"
                       className={`form-control ${
-                        formData.city ? "filled" : ""
+                        addressFormData.city ? "filled" : ""
                       }`}
-                      value={formData.city ? formData.city : ""}
+                      value={addressFormData.city ? addressFormData.city : ""}
                       onChange={handleChange}
                       required
                     />
@@ -320,8 +349,10 @@ const CheckoutPage = () => {
                       type="text"
                       id="zip"
                       name="zip"
-                      className={`form-control ${formData.zip ? "filled" : ""}`}
-                      value={formData.zip}
+                      className={`form-control ${
+                        addressFormData.zip ? "filled" : ""
+                      }`}
+                      value={addressFormData.zip}
                       onChange={handleChange}
                       required
                     />
@@ -334,9 +365,9 @@ const CheckoutPage = () => {
                       id="state"
                       name="state"
                       className={`form-control ${
-                        formData.state ? "filled" : ""
+                        addressFormData.state ? "filled" : ""
                       }`}
-                      value={formData.state}
+                      value={addressFormData.state}
                       onChange={handleChange}
                       required
                     />
@@ -348,7 +379,7 @@ const CheckoutPage = () => {
                       id="country"
                       name="country"
                       className="form-control"
-                      value={formData.country}
+                      value={addressFormData.country}
                       onChange={handleChange}
                       required
                     >
@@ -371,7 +402,11 @@ const CheckoutPage = () => {
                     <button type="submit" className="btn btn-primary">
                       Save Address
                     </button>
-                    <button type="button" className="btn btn-warning">
+                    <button
+                      type="button"
+                      className="btn btn-warning"
+                      onClick={() => setShowPopup(false)}
+                    >
                       Cancel
                     </button>
                   </div>
