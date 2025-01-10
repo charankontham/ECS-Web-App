@@ -8,6 +8,8 @@ import Customer from "../interfaces/Customer";
 import { useNavigate } from "react-router-dom";
 import Address from "../interfaces/Address";
 import { CartItem } from "../interfaces/Cart";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faPencil } from "@fortawesome/free-solid-svg-icons";
 
 const CheckoutPage = () => {
   // const rawOrderItems = localStorage.getItem("itemsForCheckout");
@@ -18,6 +20,7 @@ const CheckoutPage = () => {
   const [showPopup, setShowPopup] = useState(false);
   const [orderItems, setOrderItems] = useState<CartItem[]>([]);
   const [orderSummary, setOrderSummary] = useState<any>(null);
+  const [showAddresses, setShowAddresses] = useState(false);
   const [addressFormData, setAddressFormData] = useState<Address>({
     addressId: null,
     customerId: !!customer ? customer.customerId : null,
@@ -29,6 +32,7 @@ const CheckoutPage = () => {
     zip: "",
     country: "",
   });
+  const [selectedAddress, setSelectedAddress] = useState<Address>();
   const apiBaseUrl = "http://localhost:8080";
   const navigate = useNavigate();
 
@@ -89,7 +93,7 @@ const CheckoutPage = () => {
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (validation() && authToken) {
-      if (addressFormData != null) {
+      if (addressFormData != null && addressFormData.addressId == null) {
         axios
           .post(apiBaseUrl + "/ecs-customer/api/address", addressFormData, {
             headers: { Authorization: `Bearer ${authToken}` },
@@ -110,8 +114,32 @@ const CheckoutPage = () => {
             setError(error.response.data);
             console.log("Error adding new address");
           });
+      } else if (addressFormData != null && addressFormData.addressId != null) {
+        axios
+          .put(apiBaseUrl + "/ecs-customer/api/address", addressFormData, {
+            headers: { Authorization: `Bearer ${authToken}` },
+          })
+          .then((response) => {
+            if (response.status == 200) {
+              setAddresses((prevAddresses) => {
+                return prevAddresses.map((address) =>
+                  address.addressId == response.data.addressId
+                    ? response.data
+                    : address
+                );
+              });
+              console.log("Success updated address");
+            } else {
+              setError(response.data);
+              console.log("Error updating the address");
+            }
+          })
+          .catch((error) => {
+            setError(error.response.data);
+            console.log("Error updating the address");
+          });
       } else {
-        console.log("Error adding new address");
+        console.log("Error Add/Update address, Validation Failed!");
       }
     } else {
       setError("Validation Failed");
@@ -132,18 +160,24 @@ const CheckoutPage = () => {
   }, []);
 
   useEffect(() => {
-    setAddressFormData({
-      addressId: null,
-      customerId: !!customer ? customer.customerId : null,
-      name: null,
-      contact: null,
-      street: "",
-      city: "",
-      state: "",
-      zip: "",
-      country: "",
-    });
+    if (addressFormData.addressId == null) {
+      setAddressFormData({
+        addressId: null,
+        customerId: !!customer ? customer.customerId : null,
+        name: null,
+        contact: null,
+        street: "",
+        city: "",
+        state: "",
+        zip: "",
+        country: "",
+      });
+    }
   }, [showPopup]);
+
+  useEffect(() => {
+    setSelectedAddress(addresses[0]);
+  }, [addresses]);
   return (
     <>
       <Header></Header>
@@ -155,32 +189,82 @@ const CheckoutPage = () => {
             {/* Address Section */}
             <div className="card mb-4">
               <div className="card-header">
-                <h5>Select Shipping Address</h5>
+                <h5>Choose shipping address</h5>
               </div>
               <div className="card-body">
-                {addresses.map((address: Address) => (
-                  <div className="form-check mb-3" key={address.addressId}>
-                    <input
-                      className="form-check-input"
-                      type="radio"
-                      name="address"
-                      id={address.addressId + ""}
-                    />
-                    <label
-                      className="form-check-label"
-                      htmlFor={address.addressId + ""}
+                {!showAddresses && (
+                  <div className="row">
+                    <div className="col-lg-6">
+                      {selectedAddress && (
+                        <span>
+                          <b>Delivery to {selectedAddress.name}</b>
+                          <br />
+                          {selectedAddress.street}, {selectedAddress.city},{" "}
+                          {selectedAddress.state}, {selectedAddress.zip},{" "}
+                          {selectedAddress.country}
+                        </span>
+                      )}
+                    </div>
+                    <div
+                      className="col-lg-6 change-address-link"
+                      onClick={() => setShowAddresses(true)}
                     >
-                      {address.street}, {address.city}, {address.state},{" "}
-                      {address.zip}
-                    </label>
+                      <a href="#" className="">
+                        Change
+                      </a>
+                    </div>
                   </div>
-                ))}
-                <button
-                  className="btn btn-primary btn-sm"
-                  onClick={() => setShowPopup(true)}
-                >
-                  Add New Address
-                </button>
+                )}
+                {showAddresses && (
+                  <div>
+                    {addresses.map((address: Address) => (
+                      <div className="form-check mb-3" key={address.addressId}>
+                        <input
+                          className="form-check-input"
+                          type="radio"
+                          name="address"
+                          id={address.addressId + ""}
+                          onChange={() => setSelectedAddress(address)}
+                        />
+                        <label
+                          className="form-check-label"
+                          htmlFor={address.addressId + ""}
+                        >
+                          {" "}
+                          <b>{address.name} </b>
+                          {" | "}
+                          <a
+                            href="#"
+                            onClick={() => {
+                              setAddressFormData(address);
+                              setShowPopup(true);
+                            }}
+                          >
+                            Edit
+                          </a>
+                          <br />
+                          {address.street}, {address.city}, {address.state},{" "}
+                          {address.zip}
+                          <br />
+                          Phone: {address.contact}
+                        </label>
+                      </div>
+                    ))}
+                    <button
+                      className="btn btn-primary btn-sm address-btns"
+                      onClick={() => setShowPopup(true)}
+                    >
+                      Add new address
+                    </button>
+                    <br />
+                    <button
+                      className="btn btn-warning btn-sm address-btns"
+                      onClick={() => setShowAddresses(false)}
+                    >
+                      Deliver to this address
+                    </button>
+                  </div>
+                )}
               </div>
             </div>
 
@@ -274,7 +358,8 @@ const CheckoutPage = () => {
         <div className="overlay">
           <div className="popup">
             <div className="popup-header">
-              <h5>Add New Address</h5>
+              {addressFormData.addressId == null && <h5>Add New Address</h5>}
+              {addressFormData.addressId != null && <h5>Edit Address</h5>}
               <button className="close-btn" onClick={() => setShowPopup(false)}>
                 &times;
               </button>
@@ -378,7 +463,9 @@ const CheckoutPage = () => {
                     <select
                       id="country"
                       name="country"
-                      className="form-control"
+                      className={`form-control ${
+                        addressFormData.country ? "filled" : ""
+                      }`}
                       value={addressFormData.country}
                       onChange={handleChange}
                       required
@@ -400,7 +487,9 @@ const CheckoutPage = () => {
 
                   <div className="form-actions">
                     <button type="submit" className="btn btn-primary">
-                      Save Address
+                      {addressFormData.addressId == null
+                        ? "Save Address"
+                        : "Update Address"}
                     </button>
                     <button
                       type="button"

@@ -65,6 +65,18 @@
   min-width: 100px;
 }
 
+.change-address-link {
+  text-align: right;
+}
+
+.address-btns {
+  /* display: flex;
+  justify-content: space-between; */
+  max-width: 30%;
+  border-radius: 20px !important;
+  margin-bottom: 5px;
+}
+
 @keyframes popup-show {
   from {
     transform: scale(0.9);
