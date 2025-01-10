@@ -1,0 +1,129 @@
+.product-images-container {
+  display: grid;
+  gap: 8px;
+  max-width: 450px;
+  margin: 0px 0px 5px 0px;
+  height: 565px;
+  font-family: Arial, sans-serif;
+}
+.image-list-container {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 2%;
+  position: relative;
+  scroll-behavior: smooth;
+  height: 60px;
+  width: 450px;
+}
+
+.scroll-btn {
+  background-color: #cccccc;
+  color: white;
+  border: none;
+  border-radius: 10%;
+  padding: 5px;
+  cursor: pointer !important;
+  font-weight: bold;
+  width: 12%;
+  height: 60px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  transition: background-color 0.3s;
+}
+
+.scroll-btn:hover {
+  background-color: #8c8c8c;
+}
+
+.scroll-btn:last-child {
+  position: absolute;
+  right: 0;
+}
+
+/* Left Side: Image List */
+.image-list {
+  display: flex;
+  flex-direction: row;
+  overflow-x: scroll;
+  scroll-behavior: smooth;
+  gap: 15px;
+  width: 72%;
+}
+
+.image-list::-webkit-scrollbar {
+  width: 0; /* Removes the scrollbar width */
+  height: 0;
+}
+
+.thumbnail {
+  width: 60px;
+  height: 60px;
+  object-fit: contain;
+  object-position: center;
+  border: 2px solid gray;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: border 0.3s ease;
+}
+
+.thumbnail:hover,
+.thumbnail.active {
+  border-color: #007bff;
+}
+
+/* Center: Main Image */
+.main-image-container {
+  position: relative;
+  flex: 1;
+  height: 500px;
+  width: 450px;
+}
+
+.main-image-wrapper {
+  position: relative;
+  overflow: hidden;
+}
+
+.main-image-wrapper:hover {
+  border: 2px solid grey;
+}
+
+.main-image {
+  width: 100%;
+  height: 500px;
+  top: 0;
+  bottom: 0;
+  right: 0;
+  left: 0;
+  object-position: center;
+  object-fit: contain;
+  cursor: zoom-in;
+  transition: transform 0.5s ease;
+}
+
+.zoomed {
+  transform: scale(2);
+  cursor: zoom-in;
+}
+
+/* Share Button */
+.btn-share {
+  position: absolute;
+  top: 20px;
+  right: 20px;
+  background-color: #b3b3b3;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  padding: 8px 12px;
+  cursor: pointer;
+  font-size: 14px;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+  transition: background-color 0.4s ease;
+}
+
+.btn-share:hover {
+  background-color: #808080;
+}

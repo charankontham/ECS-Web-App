@@ -35,11 +35,9 @@
   color: #63625f;
   display: flex;
   justify-content: space-between;
-  /* border-bottom: 1px solid lightgray; */
 }
 
 .order-card-body {
-  /* padding-top: 20px; */
   background-color: white;
   border-radius: 5px;
 }
@@ -74,7 +72,7 @@
 .product-link {
   text-decoration: none;
   font-size: medium;
-  color: #0f7eba;
+  color: #0d70a5;
 }
 .product-link:hover {
   text-decoration: underline;
@@ -109,6 +107,33 @@
   font-weight: 400;
   text-align: right;
 }
+.no-orders-placed {
+  text-align: center;
+  color: lightgrey;
+  font-size: larger;
+  margin-bottom: 2rem;
+}
+.search-btn {
+  color: lightslategray;
+  border-radius: 5px;
+  border: none;
+}
+.mb-4 .form-select,
+.mb-4 input {
+  font-size: revert;
+}
 .errorMessage {
   color: red;
+}
+/* .tooltip-inner {
+  background-color: #f8d7da !important; 
+  color: #842029 !important; 
+} */
+
+.tooltip-arrow {
+  border-bottom-color: #f8d7da !important; /* Arrow color */
+}
+.popup-close-btn {
+  color: black !important;
+  background-color: white !important;
 }

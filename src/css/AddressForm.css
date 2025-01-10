@@ -35,7 +35,8 @@
   transition: 0.3s ease-in-out;
 }
 
-.floating-input .form-control:focus + label {
+.floating-input .form-control:focus + label,
+.form-control.filled + label {
   top: 0px;
   left: 10px;
   font-size: 12px;

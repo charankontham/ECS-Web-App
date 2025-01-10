@@ -1,24 +1,26 @@
 import Customer from "./Customer";
-import {Product} from "./Product";
+import { Product } from "./Product";
 
-export interface Cart{
-    customer : Customer;
-    cartItems : CartItem[];
+export interface Cart {
+  customer: Customer;
+  cartItems: CartItem[];
 }
 
-export interface CartRequest{
-    customerId: number;
-    cartItems: CartItemRequest[];
+export interface CartRequest {
+  customerId: number;
+  cartItems: CartItemRequest[];
 }
 
-interface CartItem {
-    cartItemId: number | null;
-    productDetails: Product;
+export interface CartItem {
+  cartItemId: number | null;
+  productDetails: Product;
+  orderQuantity: number;
+  isChecked?: boolean;
 }
 
-interface CartItemRequest{
-    cartItemId: number | null;
-    customerId: number;
-    productId: number;
-    quantity: number;
+export interface CartItemRequest {
+  cartItemId: number | null;
+  customerId: number | null;
+  productId: number | null;
+  quantity: number;
 }

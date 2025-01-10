@@ -17,7 +17,9 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faTrash } from "@fortawesome/free-solid-svg-icons";
 import MyOrders from "./MyOrders";
 
-const AccountSettings: React.FC = () => {
+const AccountSettings: React.FC<{ activeSection?: string }> = (
+  accountSettings = { activeSection: "Login & Security" }
+) => {
   const apiBaseUrl = "http://localhost:8080/ecs-customer/api";
   const navigate = useNavigate();
   const authToken = localStorage.getItem("authToken");
@@ -27,15 +29,21 @@ const AccountSettings: React.FC = () => {
   const [addresses, setAddresses] = useState<Address[]>([]);
   const [isPopupVisible, setPopupVisible] = useState(false);
   const sections = [
-    "Login & Security",
-    "Your Addresses",
-    "Your Orders",
-    "Close your ECS-Account",
-    "Logout",
+    { name: "Login & Security", id: "login-security" },
+    { name: "My Addresses", id: "my-addresses" },
+    { name: "My Orders", id: "my-orders" },
+    { name: "Close Your ECS-Account", id: "close-account" },
+    { name: "Logout", id: "logout" },
   ];
 
   useEffect(() => {
-    fetchCustomerAndAddresses();
+    fetchCustomerAndAddresses().then(() => {
+      setActiveSection(
+        accountSettings.activeSection
+          ? accountSettings.activeSection
+          : "Login & Security"
+      );
+    });
   }, []);
 
   const setBackFunction = (setBack: boolean) => {
@@ -244,7 +252,7 @@ const AccountSettings: React.FC = () => {
       );
     }
 
-    if (activeSection === "Your Addresses") {
+    if (activeSection === "My Addresses") {
       if (activeSubSetting === "NewAddressForm") {
         return (
           <AddressForm
@@ -276,7 +284,7 @@ const AccountSettings: React.FC = () => {
       );
     }
 
-    if (activeSection === "Your Orders") {
+    if (activeSection === "My Orders") {
       return <MyOrders></MyOrders>;
     }
 
@@ -348,16 +356,15 @@ const AccountSettings: React.FC = () => {
               <ul className="list-group" id="account-main-settings">
                 {sections.map((section) => (
                   <li
-                    key={section}
+                    key={section.id}
                     className={`.btn-yellow list-group-item ${
-                      activeSection === section ? "active" : ""
+                      activeSection === section.name ? "active" : ""
                     }`}
                     onClick={() => {
-                      setActiveSection(section);
-                      setActiveSubSetting("");
+                      window.location.replace("/account/" + section.id);
                     }}
                   >
-                    {section}
+                    {section.name}
                   </li>
                 ))}
               </ul>

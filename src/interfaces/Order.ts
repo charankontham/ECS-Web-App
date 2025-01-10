@@ -17,12 +17,7 @@ export interface Order {
   paymentStatus: string;
 }
 
-// export interface OrderRequest {
-//   orderDetails: Order;
-//   orderItems: OrderItem[];
-// }
-
-interface OrderItem {
+export interface OrderItem {
   orderItemId: number | null;
   orderId: number | null;
   productId: number | null;

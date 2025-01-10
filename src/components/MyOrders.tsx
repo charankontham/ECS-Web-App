@@ -1,4 +1,10 @@
-import React, { useEffect, useState } from "react";
+import React, {
+  ReactElement,
+  ReactHTML,
+  ReactHTMLElement,
+  useEffect,
+  useState,
+} from "react";
 import "bootstrap/dist/css/bootstrap.css";
 import "../App.css";
 import "../css/AccountSettings.css";
@@ -21,60 +27,229 @@ import {
   faArrowRight,
   faArrowDown,
   faAngleDown,
+  faXmark,
 } from "@fortawesome/free-solid-svg-icons";
 import { jwtDecode } from "jwt-decode";
 import { useNavigate } from "react-router-dom";
 import Customer from "../interfaces/Customer";
-import { Order } from "../interfaces/Order";
+import { Order, OrderItem } from "../interfaces/Order";
+import Address from "../interfaces/Address";
+import { Product } from "../interfaces/Product";
+import * as bootstrap from "bootstrap";
+import ViewOrderDetails from "./viewOrderDetails";
 
 const MyOrders = () => {
-  const ordersPerPage = 2; // Maximum number of orders per page
-  const [currentPage, setCurrentPage] = useState(1);
-  const [error, setError] = useState<string | null>(null);
-  const [customer, setCustomer] = useState<Customer | null>(null);
-  const [myOrders, setMyOrders] = useState<Order[]>([]);
-  const [orderSearchBar, setOrderSearchBar] = useState("");
-  const apiBaseUrl = "http://localhost:8080/ecs-order/api";
-  const authToken = localStorage.getItem("authToken");
-  const totalPages = Math.ceil(myOrders.length / ordersPerPage);
-  const navigate = useNavigate();
-  const orderStatus = [
-    "All",
+  const ordersPerPage = 2;
+  const orderStatuses = [
+    "Orders",
+    "OrderPlaced",
     "Delivered",
     "Out-For-Delivery",
     "Shipped",
     "Cancelled",
     "Returned",
   ];
-  const currentOrders = myOrders.slice(
+  const authToken = localStorage.getItem("authToken");
+  const apiBaseUrl = "http://localhost:8080/ecs-order/api";
+  const [myOrders, setMyOrders] = useState<Order[]>([]);
+  const currentYear = new Date().getFullYear();
+  const [currentOrders, setCurrentOrders] = useState<Order[]>([]);
+  const totalPages = Math.ceil(currentOrders.length / ordersPerPage);
+  const [currentPage, setCurrentPage] = useState(1);
+  const currentPageOrders = currentOrders.slice(
     (currentPage - 1) * ordersPerPage,
     currentPage * ordersPerPage
   );
-  const currentYear = new Date().getFullYear();
+  const [error, setError] = useState<string | null>(null);
+  const [customer, setCustomer] = useState<Customer | null>(null);
+  const [enableViewOrderDetailsBlock, setEnableViewOrderDetails] =
+    useState<boolean>(false);
+  const [viewOrder, setViewOrder] = useState<Order | null>(null);
+  const [orderSearchBar, setOrderSearchBar] = useState("");
+  const [orderDateRange, setOrderDateRange] = useState<string>("3-months");
+  const [orderStatus, setOrderStatus] = useState<string>(orderStatuses[0]);
+  const navigate = useNavigate();
   const last10Years: number[] = [];
   for (let i = 0; i < 10; i++) {
     last10Years.push(currentYear - i);
   }
 
+  const applyFilters = () => {
+    const dateRangeFilteredOrders = filterOrdersByDateRange(myOrders);
+    const statusFilteredOrders = filterOrdersByOrderStatus(
+      // currentOrderStatus,
+      dateRangeFilteredOrders
+    );
+    setCurrentOrders(statusFilteredOrders);
+  };
+
   const filterOrdersByDateRange = (
-    event: React.ChangeEvent<HTMLSelectElement>
-  ) => {
-    const selectedOption = event.target.value;
-    console.log(selectedOption);
+    // dateRange: string,
+    orders: Order[]
+  ): Order[] => {
+    let startDate: Date;
+    let endDate: Date;
+    const currentDate = new Date();
+    const dateRange = orderDateRange;
+    console.log("orderDateRange : ", orderDateRange);
+    console.log("data range filkter : ", dateRange);
+    switch (dateRange.toLowerCase()) {
+      case "6-months":
+        startDate = new Date();
+        endDate = new Date();
+        startDate.setMonth(currentDate.getMonth() - 6);
+        endDate.setDate(endDate.getDay() + 1);
+        break;
+
+      case "3-months":
+        startDate = new Date();
+        endDate = new Date();
+        startDate.setMonth(currentDate.getMonth() - 3);
+        endDate.setDate(endDate.getDay() + 1);
+        break;
+
+      case "1-year":
+        startDate = new Date();
+        endDate = new Date();
+        startDate.setFullYear(currentDate.getFullYear() - 1);
+        endDate.setDate(endDate.getDay() + 1);
+        break;
+
+      default:
+        const year = parseInt(dateRange, 10);
+        if (!isNaN(year) && year > 1900 && year <= currentDate.getFullYear()) {
+          startDate = new Date(year, 0, 1);
+          endDate = new Date(year + 1, 0, 1);
+        } else {
+          throw new Error(`Invalid date range: ${dateRange}`);
+        }
+    }
+    return orders.filter(
+      (order) => order.orderDate >= startDate && order.orderDate < endDate
+    );
   };
 
-  const filterOrdersByOrderStatus = (
-    event: React.ChangeEvent<HTMLSelectElement>
-  ) => {
-    const selectedOption = event.target.value;
-    console.log(selectedOption);
+  const filterOrdersByOrderStatus = (orders: Order[]): Order[] => {
+    const currentStatus = orderStatus;
+    console.log(currentStatus);
+    if (!orderStatuses.includes(currentStatus)) {
+      console.log(
+        `Invalid status: ${currentStatus}. Valid statuses are: ${orderStatuses.join(
+          ", "
+        )}`
+      );
+      throw new Error(
+        `Invalid status: ${currentStatus}. Valid statuses are: ${orderStatuses.join(
+          ", "
+        )}`
+      );
+    }
+    if (currentStatus === "Orders") {
+      return orders;
+    }
+    return orders.filter((order) => order.shippingStatus === currentStatus);
   };
 
-  const searchInOrders = () => {
+  const searchInOrders = (event?: React.FormEvent<HTMLFormElement>) => {
+    event?.preventDefault();
     console.log("Search Value : ", orderSearchBar);
+    if (
+      orderSearchBar.trim().length === 0 ||
+      orderSearchBar.trim().length < 3
+    ) {
+      console.log("null search or invalid search characters!");
+      return;
+    }
+    const searchResults = myOrders.filter((order) => {
+      if (findInAddress(order.shippingAddress)) {
+        return true;
+      } else if (
+        findInDate(order.orderDate) ||
+        findInDate(order.deliveryDate)
+      ) {
+        return true;
+      } else if (
+        order.orderId
+          ?.toString()
+          .toLowerCase()
+          .includes(orderSearchBar.toLowerCase())
+      ) {
+        return true;
+      } else if (findInOrderItems(order.orderItems)) {
+        return true;
+      } else return false;
+    });
+
+    setCurrentOrders(searchResults);
+
+    function findInAddress(address: Address | null) {
+      if (address?.city.toLowerCase().includes(orderSearchBar.toLowerCase())) {
+        return true;
+      } else if (address?.contact?.includes(orderSearchBar)) {
+        return true;
+      } else if (
+        address?.country.toLowerCase().includes(orderSearchBar.toLowerCase())
+      ) {
+        return true;
+      } else if (
+        address?.name?.toLowerCase().includes(orderSearchBar.toLowerCase())
+      ) {
+        return true;
+      } else if (
+        address?.state.toLowerCase().includes(orderSearchBar.toLowerCase())
+      ) {
+        return true;
+      } else if (
+        address?.street.toLowerCase().includes(orderSearchBar.toLowerCase())
+      ) {
+        return true;
+      } else if (address?.zip.includes(orderSearchBar)) {
+        return true;
+      } else {
+        return false;
+      }
+    }
+
+    function findInDate(date: Date) {
+      if (
+        date
+          .toLocaleString("en-US", {
+            year: "numeric",
+            month: "long",
+            day: "numeric",
+            weekday: "long",
+          })
+          .toLowerCase()
+          .includes(orderSearchBar.toLowerCase())
+      ) {
+        return true;
+      } else {
+        return false;
+      }
+    }
+
+    function findInOrderItems(orderItems: Product[]) {
+      return (
+        orderItems.findIndex((orderItem) => {
+          if (
+            orderItem.productName
+              .toLowerCase()
+              .includes(orderSearchBar.toLowerCase())
+          ) {
+            return true;
+          } else if (
+            orderItem.brand.brandName
+              .toLowerCase()
+              .includes(orderSearchBar.toLowerCase())
+          ) {
+            return true;
+          } else return false;
+        }) !== -1
+      );
+    }
   };
 
-  const downloadFile = async (orderId: number) => {
+  const downloadFile = async (orderId: number, tooltipId: string) => {
     try {
       const response = await axios.get(
         apiBaseUrl + `/order/downloadOrderInvoice/${orderId}`,
@@ -90,12 +265,39 @@ const MyOrders = () => {
       const pdfUrl = window.URL.createObjectURL(pdfBlob);
       window.open(pdfUrl, "_blank");
       URL.revokeObjectURL(pdfUrl);
-    } catch (error: any) {
-      if (error.response.data instanceof Blob) {
-        const errorMessage = await error.response.data.text();
+    } catch (err: any) {
+      var errorMessage;
+      if (err.response.data instanceof Blob) {
+        errorMessage = await err.response.data.text();
         setError(errorMessage);
       } else {
-        setError(error.response.data);
+        setError(err.response.data);
+      }
+      const tooltipTriggerEl = document.getElementById(tooltipId);
+      if (tooltipTriggerEl) {
+        const existingTooltip = bootstrap.Tooltip.getInstance(tooltipTriggerEl);
+        if (existingTooltip) {
+          existingTooltip.dispose();
+        }
+        const tooltipInstance = new bootstrap.Tooltip(tooltipTriggerEl, {
+          html: true,
+          title: `<div style="display":"flex"; "flexDirection": "column"; "alignItems": "flex-start";>
+      <p>${errorMessage}</p>
+      <a href="#" class="popup-close-btn btn" id="close-tooltip-${orderId}">close</a>
+    </div>`,
+          placement: "bottom",
+          trigger: "manual",
+        });
+
+        tooltipInstance.show();
+        setTimeout(() => {
+          const closeButton = document.getElementById(
+            `close-tooltip-${orderId}`
+          );
+          closeButton?.addEventListener("click", () => {
+            tooltipInstance.hide();
+          });
+        }, 0);
       }
     }
   };
@@ -145,7 +347,6 @@ const MyOrders = () => {
               },
             }
           );
-          console.log(myOrdersResponse.data);
           myOrdersResponse.data.map((order: Order) => {
             const standardOrderDate = new Date(order.orderDate);
             const standardDeliveryDate = new Date(order.deliveryDate);
@@ -153,6 +354,7 @@ const MyOrders = () => {
             order.deliveryDate = standardDeliveryDate;
           });
           setMyOrders(myOrdersResponse.data);
+          defaultCurrentOrders(myOrdersResponse.data);
         } else {
           console.log("Session Expired!");
           localStorage.setItem("authToken", "");
@@ -167,169 +369,225 @@ const MyOrders = () => {
     }
   };
 
+  const defaultCurrentOrders = (orders: Order[]) => {
+    let startDate: Date = new Date();
+    startDate.setMonth(startDate.getMonth() - 3);
+    console.log("printing myorders: ", orders);
+    const filteredOrders = orders.filter((order) => {
+      return order.orderDate >= startDate;
+    });
+    setCurrentOrders(filteredOrders);
+  };
+
+  const viewOrderDetails = (order: Order) => {
+    console.log("order details: ", order);
+    setViewOrder(order);
+    setEnableViewOrderDetails(true);
+  };
+
   useEffect(() => {
     fetchCustomerAndOrders();
   }, []);
 
+  useEffect(() => {
+    applyFilters();
+  }, [orderDateRange, orderStatus]);
+
+  const setBackToViewOrders = () => {
+    setEnableViewOrderDetails(false);
+  };
+
   return (
-    <Container>
-      <h2 className="my-4">My Orders</h2>
-      {/* Filter Section */}
-      <Row className="mb-4">
-        <Col md={4}>
-          <Form.Select
-            aria-label="Date Range Filter"
-            onChange={filterOrdersByDateRange}
-            key="dateRangeFilter"
-          >
-            <option value="3-months" key="3-months">
-              Last 3 Months
-            </option>
-            <option value="6-months" key="6-months">
-              Last 6 Months
-            </option>
-            <option value="1-year" key="1-year">
-              Last 1 Year
-            </option>
-            {last10Years.length > 0 &&
-              last10Years.map((year) => (
-                <option value={year} key={year}>
-                  {year}
+    <>
+      {!enableViewOrderDetailsBlock && (
+        <Container>
+          <h2 className="my-4">My Orders</h2>
+          {/* Filter Section */}
+          <Row className="mb-4">
+            <Col md={3}>
+              <Form.Select
+                aria-label="Date Range Filter"
+                onChange={(e) => setOrderDateRange(e.target.value)}
+                key="dateRangeFilter"
+              >
+                <option value="3-months" key="3-months">
+                  Last 3 Months
                 </option>
-              ))}
-          </Form.Select>
-        </Col>
-        <Col md={4}>
-          <Form.Select
-            aria-label="Order Status Filter"
-            key="statusFilter"
-            onChange={filterOrdersByOrderStatus}
-          >
-            {orderStatus.map((status: string) => (
-              <option value={status} key={status}>
-                {status}
-              </option>
-            ))}
-          </Form.Select>
-        </Col>
-        <Col md={4}>
-          <InputGroup>
-            <Form.Control
-              placeholder="Search orders"
-              aria-label="Search orders"
-              onChange={(e) => setOrderSearchBar(e.target.value)}
-            />
-            <Button variant="outline-secondary" onClick={searchInOrders}>
-              <FontAwesomeIcon icon={faSearch} />
-            </Button>
-          </InputGroup>
-        </Col>
-      </Row>
+                <option value="6-months" key="6-months">
+                  Last 6 Months
+                </option>
+                <option value="1-year" key="1-year">
+                  Last 1 Year
+                </option>
+                {last10Years.length > 0 &&
+                  last10Years.map((year) => (
+                    <option value={year} key={"" + year}>
+                      {year}
+                    </option>
+                  ))}
+              </Form.Select>
+            </Col>
+            <Col md={3}>
+              <Form.Select
+                aria-label="Order Status Filter"
+                key="orderStatusFilter"
+                onChange={(e) => setOrderStatus(e.target.value)}
+              >
+                {orderStatuses.map((status: string) => (
+                  <option value={status} key={status}>
+                    {status}
+                  </option>
+                ))}
+              </Form.Select>
+            </Col>
+            <Col md={6}>
+              <form onSubmit={(e) => searchInOrders(e)}>
+                <InputGroup>
+                  <Form.Control
+                    placeholder="Search orders"
+                    aria-label="Search orders"
+                    onChange={(e) => setOrderSearchBar(e.target.value)}
+                  />
+                  <button className="search-btn" type="submit">
+                    <FontAwesomeIcon icon={faSearch} />
+                  </button>
+                </InputGroup>
+              </form>
+            </Col>
+          </Row>
 
-      {/* Order Cards */}
-      {currentOrders.map((order, index) => (
-        <Card className="mb-3 order-card" key={index}>
-          <Card.Body>
-            {/* Order Details */}
-            <div className="order-card-header">
-              <div>
-                <span>Order Placed</span>{" "}
-                <p>{order.orderDate.toDateString()}</p>
-              </div>
-              <div>
-                <span>Total</span>{" "}
-                <p>{convertToPriceString(order.totalOrderValue)}</p>
-              </div>
-              <div>
-                <span>Ship To</span>{" "}
-                <p>
-                  {order.shippingAddress?.name}{" "}
-                  <FontAwesomeIcon icon={faAngleDown}></FontAwesomeIcon>
-                </p>
-              </div>
-              <div>
-                <span>Order Id # {order.orderId}</span>
-              </div>
-              <div className="order-card-header-links">
-                <a
-                  href="#"
-                  onClick={() => downloadFile(order.orderId || -1)}
-                  className="p-0"
-                >
-                  <FontAwesomeIcon icon={faFileInvoice} className="me-2" />
-                  Invoice <FontAwesomeIcon icon={faAngleDown}></FontAwesomeIcon>
-                </a>
-                <br />
-                <a href="#" className="p-0">
-                  View order details
-                </a>
-              </div>
-              {/* {error && <p className="errorMessage">{error}</p>} */}
-            </div>
-            <div className="order-card-body">
-              {order.orderItems.map((orderItem, index) => (
-                <div className="order-item-body">
-                  <Col md={4} className="order-item-img-column">
-                    <img
-                      src={
-                        orderItem.productImage
-                          ? "/src/assets/images/product-images/" +
-                            orderItem.productImage
-                          : ""
+          {/* Order Cards */}
+          {currentPageOrders.map((order, index) => (
+            <Card className="mb-3 order-card" key={index}>
+              <Card.Body>
+                {/* Order Details */}
+                <div className="order-card-header">
+                  <div>
+                    <span>Order Placed</span>{" "}
+                    <p>{order.orderDate.toDateString()}</p>
+                  </div>
+                  <div>
+                    <span>Total</span>{" "}
+                    <p>{convertToPriceString(order.totalOrderValue)}</p>
+                  </div>
+                  <div>
+                    <span>Ship To</span>{" "}
+                    <p>
+                      {order.shippingAddress?.name}{" "}
+                      <FontAwesomeIcon icon={faAngleDown}></FontAwesomeIcon>
+                    </p>
+                  </div>
+                  <div>
+                    <span>Order Id # {order.orderId}</span>
+                  </div>
+                  <div className="order-card-header-links">
+                    <a
+                      href={`#`}
+                      onClick={() =>
+                        downloadFile(
+                          order.orderId || -1,
+                          `tooltip-${order.orderId}`
+                        )
                       }
-                      alt={orderItem.productName}
-                      className="img-fluid rounded"
-                    />
-                  </Col>
-                  <Col md={8} className="product-details">
-                    <h5>
-                      <a href="#" className="product-link">
-                        {orderItem.productName}
-                      </a>
-                    </h5>
-                    <div className="product-details-btns">
-                      <Button size="sm" className="btn product-support-btn">
-                        Get Product Support
-                      </Button>
-                      {/* <br /> */}
-                      <Button size="sm" className="btn product-review-btn">
-                        Write a Product Review
-                      </Button>
-                    </div>
-                  </Col>
-                  {index < order.orderItems.length - 1 && <hr />}
+                      id={`tooltip-${order.orderId}`}
+                      data-bs-toggle="tooltip"
+                      data-bs-placement="bottom"
+                      className="p-0"
+                    >
+                      <FontAwesomeIcon icon={faFileInvoice} className="me-2" />
+                      Invoice{" "}
+                      <FontAwesomeIcon icon={faAngleDown}></FontAwesomeIcon>
+                    </a>
+                    <br />
+                    <a
+                      href="#"
+                      className="p-0"
+                      onClick={() => viewOrderDetails(order)}
+                    >
+                      View order details
+                    </a>
+                  </div>
                 </div>
-              ))}
-            </div>
-          </Card.Body>
-        </Card>
-      ))}
+                <div className="order-card-body">
+                  {order.orderItems.map((orderItem, index) => (
+                    <div className="order-item-body" key={index}>
+                      <Col md={4} className="order-item-img-column">
+                        <img
+                          src={
+                            orderItem.productImage
+                              ? "/src/assets/images/product-images/" +
+                                orderItem.productImage
+                              : ""
+                          }
+                          alt={orderItem.productName}
+                          className="img-fluid rounded"
+                        />
+                      </Col>
+                      <Col md={8} className="product-details">
+                        <h5>
+                          <a href="#" className="product-link">
+                            {orderItem.productName}
+                          </a>
+                        </h5>
+                        <div className="product-details-btns">
+                          <Button size="sm" className="btn product-support-btn">
+                            Get Product Support
+                          </Button>
+                          {/* <br /> */}
+                          <Button size="sm" className="btn product-review-btn">
+                            Write a Product Review
+                          </Button>
+                        </div>
+                      </Col>
+                      {index < order.orderItems.length - 1 && <hr />}
+                    </div>
+                  ))}
+                </div>
+              </Card.Body>
+            </Card>
+          ))}
 
-      {/* Pagination */}
-      <Pagination className="justify-content-center">
-        <Pagination.Prev
-          disabled={currentPage === 1}
-          onClick={() => handlePageChange(currentPage - 1)}
-        >
-          Previous
-        </Pagination.Prev>
-        {Array.from({ length: totalPages }).map((_, index) => (
-          <Pagination.Item
-            key={index}
-            active={index + 1 === currentPage}
-            onClick={() => handlePageChange(index + 1)}
-          >
-            {index + 1}
-          </Pagination.Item>
-        ))}
-        <Pagination.Next
-          disabled={currentPage === totalPages}
-          onClick={() => handlePageChange(currentPage + 1)}
-        >
-          Next
-        </Pagination.Next>
-      </Pagination>
-    </Container>
+          {/* No Orders Message */}
+          {currentOrders.length == 0 && (
+            <h6 className="no-orders-placed">No orders placed!</h6>
+          )}
+
+          {/* Pagination */}
+          {currentOrders.length != 0 && (
+            <Pagination className="justify-content-center">
+              <Pagination.Prev
+                disabled={currentPage === 1}
+                onClick={() => handlePageChange(currentPage - 1)}
+              >
+                Previous
+              </Pagination.Prev>
+              {Array.from({ length: totalPages }).map((_, index) => (
+                <Pagination.Item
+                  key={index}
+                  active={index + 1 === currentPage}
+                  onClick={() => handlePageChange(index + 1)}
+                >
+                  {index + 1}
+                </Pagination.Item>
+              ))}
+              <Pagination.Next
+                disabled={currentPage === totalPages}
+                onClick={() => handlePageChange(currentPage + 1)}
+              >
+                Next
+              </Pagination.Next>
+            </Pagination>
+          )}
+        </Container>
+      )}
+
+      {enableViewOrderDetailsBlock && viewOrder && (
+        <ViewOrderDetails
+          order={viewOrder}
+          goBack={setBackToViewOrders}
+        ></ViewOrderDetails>
+      )}
+    </>
   );
 };
 

@@ -112,7 +112,7 @@ const AddressForm: React.FC<AddressFormProps> = ({
             type="text"
             id="name"
             name="name"
-            className="form-control"
+            className={`form-control ${formData.name ? "filled" : ""}`}
             value={formData.name ? formData.name : ""}
             onChange={handleChange}
             required
@@ -125,7 +125,7 @@ const AddressForm: React.FC<AddressFormProps> = ({
             type="tel"
             id="contact"
             name="contact"
-            className="form-control"
+            className={`form-control ${formData.contact ? "filled" : ""}`}
             value={formData.contact ? formData.contact : ""}
             onChange={handleChange}
             required
@@ -138,7 +138,7 @@ const AddressForm: React.FC<AddressFormProps> = ({
             type="text"
             id="street"
             name="street"
-            className="form-control"
+            className={`form-control ${formData.street ? "filled" : ""}`}
             value={formData.street}
             onChange={handleChange}
             required
@@ -151,7 +151,7 @@ const AddressForm: React.FC<AddressFormProps> = ({
             type="text"
             id="city"
             name="city"
-            className="form-control"
+            className={`form-control ${formData.city ? "filled" : ""}`}
             value={formData.city}
             onChange={handleChange}
             required
@@ -164,7 +164,7 @@ const AddressForm: React.FC<AddressFormProps> = ({
             type="text"
             id="zip"
             name="zip"
-            className="form-control"
+            className={`form-control ${formData.zip ? "filled" : ""}`}
             value={formData.zip}
             onChange={handleChange}
             required
@@ -177,7 +177,7 @@ const AddressForm: React.FC<AddressFormProps> = ({
             type="text"
             id="state"
             name="state"
-            className="form-control"
+            className={`form-control ${formData.state ? "filled" : ""}`}
             value={formData.state}
             onChange={handleChange}
             required

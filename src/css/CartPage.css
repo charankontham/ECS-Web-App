@@ -1,0 +1,177 @@
+/* CartPage.css */
+.cart-page {
+  margin: 0 auto;
+  padding: 20px;
+  font-family: Arial, sans-serif;
+}
+
+h1 {
+  text-align: left;
+  margin-bottom: 20px;
+  font-size: 2rem;
+  color: #333;
+}
+
+.cart-items {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.cart-item {
+  display: flex;
+  gap: 20px;
+  border: 1px solid #ddd;
+  border-radius: 10px;
+  padding: 15px;
+  background: #f9f9f9;
+}
+
+.item-image {
+  width: 150px;
+  height: 150px;
+  object-fit: cover;
+  border-radius: 8px;
+}
+
+.item-details {
+  flex: 1;
+}
+
+.item-details h2 {
+  font-size: 1.2rem;
+  margin-bottom: 10px;
+}
+
+.item-description {
+  font-size: 0.9rem;
+  color: #555;
+  margin-bottom: 10px;
+}
+
+.delivery {
+  font-size: 0.9rem;
+  margin-bottom: 10px;
+  color: #008000;
+}
+
+.gift {
+  font-size: 0.9rem;
+  color: #0073bb;
+}
+
+.item-actions {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  margin-top: 10px;
+}
+
+.quantity-controls {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.quantity-controls button {
+  background: #f0f0f0;
+  border: 1px solid #ccc;
+  padding: 5px 10px;
+  border-radius: 5px;
+  cursor: pointer;
+}
+
+.quantity-controls button:hover {
+  background: #e0e0e0;
+}
+
+.delete-button,
+.save-for-later-button {
+  background: none;
+  border: none;
+  color: #0073bb;
+  cursor: pointer;
+  text-decoration: underline;
+}
+
+.item-price {
+  text-align: right;
+  min-width: 100px;
+}
+
+.discount {
+  font-size: 0.9rem;
+  color: red;
+  margin-bottom: 5px;
+}
+
+.original-price {
+  text-decoration: line-through;
+  color: #777;
+}
+
+.final-price {
+  font-size: 1.2rem;
+  font-weight: bold;
+}
+
+.cart-summary {
+  margin-top: 20px;
+  text-align: center;
+}
+
+.cart-summary h5 {
+  font-size: 1.2rem;
+  margin-bottom: 10px;
+  padding: 10px;
+}
+
+.checkout-button {
+  background: #ff9900;
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  font-size: 1rem;
+  border-radius: 5px;
+  cursor: pointer;
+}
+
+.checkout-button:hover {
+  background: #e68a00;
+}
+
+.cart-components {
+  display: flex;
+}
+
+.checkbox-container input[type="checkbox"] {
+  /* Remove the default styling */
+  appearance: none;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+
+  /* Customize the size and appearance */
+  width: 25px; /* Width of the checkbox */
+  height: 25px; /* Height of the checkbox */
+  background-color: white;
+  border: 2px solid #808080; /* Black border */
+  border-radius: 4px; /* Rounded corners */
+  cursor: pointer;
+
+  /* For the checked state */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.checkbox-container input[type="checkbox"]:checked {
+  background-color: #007bff; /* Checked background color */
+  border-color: #007bff;
+}
+
+.checkbox-container input[type="checkbox"]:checked::after {
+  content: "✔"; /* Checked symbol */
+  color: white;
+  font-size: 18px;
+  font-weight: bold;
+}

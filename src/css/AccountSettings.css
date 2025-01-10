@@ -4,6 +4,7 @@
   min-height: 85vh;
   display: grid;
   justify-content: space-evenly;
+  padding-top: 15px;
 }
 .account-settings-page {
   padding: 20px;
