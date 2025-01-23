@@ -1,0 +1,101 @@
+/* Container Styling */
+.tracking-container {
+  font-family: Arial, sans-serif;
+  padding: 20px;
+  background-color: #f8f9fa;
+  border-radius: 10px;
+  max-width: 600px;
+  margin: 20px auto;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+}
+
+/* Title Styling */
+.tracking-title {
+  font-size: 24px;
+  text-align: center;
+  margin-bottom: 20px;
+  color: #333;
+}
+
+/* Timeline Styling */
+.tracking-timeline {
+  display: flex;
+  flex-direction: column;
+  position: relative;
+}
+
+/* Stage Block Styling */
+.tracking-stage {
+  display: flex;
+  align-items: center;
+  position: relative;
+  padding: 10px 0;
+}
+
+.tracking-dot {
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  margin-top: -35px;
+  background-color: #66a3e3;
+  flex-shrink: 0;
+  z-index: 1;
+  transition: background-color 0.3s;
+}
+
+.tracking-stage.completed .tracking-dot {
+  background-color: #034a94;
+}
+
+.tracking-details {
+  margin-left: 15px;
+}
+
+.tracking-details p:first-child {
+  margin-bottom: 0rem;
+}
+
+.tracking-status {
+  font-size: 16px;
+  font-weight: bold;
+  color: #333;
+}
+
+.tracking-date {
+  font-size: 14px;
+  color: #666;
+}
+
+/* Line Connecting the Dots */
+.tracking-line {
+  position: absolute;
+  width: 5px;
+  height: 100%;
+  background-color: #72a8e0;
+  top: 30px;
+  left: 8px;
+  z-index: 0;
+}
+
+.tracking-stage .tracking-line.completed {
+  background-color: #034a94;
+}
+
+/* Responsive Styling */
+@media (max-width: 768px) {
+  .tracking-container {
+    padding: 15px;
+  }
+
+  .tracking-title {
+    font-size: 20px;
+  }
+
+  .tracking-status {
+    font-size: 14px;
+  }
+
+  .tracking-date {
+    font-size: 12px;
+  }
+}

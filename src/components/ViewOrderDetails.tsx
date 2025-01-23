@@ -148,7 +148,7 @@ const ViewOrderDetails: React.FC<ViewOrderDetailsProps> = ({
                 </tr>
                 <tr>
                   <td>Shipping:</td>
-                  <td>$0.00</td>
+                  <td>${order.shippingFee.toFixed(2)}</td>
                 </tr>
                 <tr>
                   <td>Tax:</td>

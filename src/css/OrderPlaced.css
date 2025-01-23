@@ -1,0 +1,80 @@
+/* Full Page Styling */
+.order-placed-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+  width: 100%;
+  background-color: #f8f9fa;
+  overflow: hidden;
+  font-family: Arial, sans-serif;
+}
+
+/* Message Box Styling */
+.order-placed-message {
+  text-align: center;
+  background: white;
+  padding: 40px 30px;
+  border-radius: 15px;
+  /* box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.2); */
+  animation: fadeIn 1.5s ease-in-out;
+}
+
+.order-placed-message h1 {
+  font-size: 36px;
+  color: green;
+  margin-bottom: 20px;
+  text-align: center;
+}
+
+.order-placed-message p {
+  font-size: 18px;
+  color: #555;
+  margin-bottom: 30px;
+  line-height: 1.6;
+}
+
+.buttons-div {
+  display: flex;
+  justify-content: space-between;
+  flex-direction: column-reverse;
+  flex-wrap: wrap;
+  align-content: center;
+  align-items: center;
+  justify-items: center;
+}
+
+.buttons-div .btn {
+  border-radius: 20px !important;
+  width: 30% !important;
+  margin: 5px;
+  transition: background-color 0.3s ease;
+}
+
+/* .order-placed-message .btn {
+  padding: 10px 20px;
+  font-size: 16px;
+  font-weight: bold;
+  border-radius: 5px;
+  background-color: #007bff;
+  color: white;
+  border: none;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+} */
+
+.order-placed-message .btn:hover {
+  background-color: #0056b3;
+}
+
+/* Fade-In Animation */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: scale(0.9);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}

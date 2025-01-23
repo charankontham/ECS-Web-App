@@ -54,6 +54,10 @@
   width: 100%;
 }
 
+.shipping-address p {
+  margin-bottom: 0rem;
+}
+
 .order-summary-header {
   display: flex;
 }

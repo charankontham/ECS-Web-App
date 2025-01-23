@@ -36,7 +36,8 @@ import { Order, OrderItem } from "../interfaces/Order";
 import Address from "../interfaces/Address";
 import { Product } from "../interfaces/Product";
 import * as bootstrap from "bootstrap";
-import ViewOrderDetails from "./viewOrderDetails";
+import ViewOrderDetails from "./ViewOrderDetails";
+import OrderTracking from "./OrderTracking";
 
 const MyOrders = () => {
   const ordersPerPage = 2;
@@ -70,6 +71,10 @@ const MyOrders = () => {
   const [orderStatus, setOrderStatus] = useState<string>(orderStatuses[0]);
   const navigate = useNavigate();
   const last10Years: number[] = [];
+  const [visibleTracker, setVisibleTracker] = useState<number | null>(null);
+  const toggleTracker = (orderId: number) => {
+    setVisibleTracker((prev) => (prev === orderId ? null : orderId));
+  };
   for (let i = 0; i < 10; i++) {
     last10Years.push(currentYear - i);
   }
@@ -155,7 +160,7 @@ const MyOrders = () => {
     console.log("Search Value : ", orderSearchBar);
     if (
       orderSearchBar.trim().length === 0 ||
-      orderSearchBar.trim().length < 3
+      (orderSearchBar.trim().length < 3 && Number.isNaN(orderSearchBar.trim()))
     ) {
       console.log("null search or invalid search characters!");
       return;
@@ -509,6 +514,22 @@ const MyOrders = () => {
                   </div>
                 </div>
                 <div className="order-card-body">
+                  <h5>{order.shippingStatus}</h5>
+                  <a
+                    href="#"
+                    className="track-order-link"
+                    onClick={(e) => {
+                      e.preventDefault();
+                      toggleTracker(order.orderId);
+                    }}
+                  >
+                    {visibleTracker === order.orderId
+                      ? "Hide tracker"
+                      : "Track order"}
+                  </a>
+                  {visibleTracker === order.orderId && (
+                    <OrderTracking orderStatus={order.shippingStatus} />
+                  )}
                   {order.orderItems.map((orderItem, index) => (
                     <div className="order-item-body" key={index}>
                       <Col md={4} className="order-item-img-column">
@@ -525,7 +546,13 @@ const MyOrders = () => {
                       </Col>
                       <Col md={8} className="product-details">
                         <h5>
-                          <a href="#" className="product-link">
+                          <a
+                            href="#"
+                            className="product-link"
+                            onClick={() =>
+                              navigate(`/product/${orderItem.productId}`)
+                            }
+                          >
                             {orderItem.productName}
                           </a>
                         </h5>

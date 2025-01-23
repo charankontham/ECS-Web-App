@@ -19,6 +19,10 @@ import {
 import ProductsPage from "./ProductsPage";
 import AllCategories from "./AllCategories";
 import { Product } from "../interfaces/Product";
+import Customer from "../interfaces/Customer";
+import { jwtDecode } from "jwt-decode";
+import { CartItem } from "../interfaces/Cart";
+import { Order } from "../interfaces/Order";
 
 // interface Product {
 //   brand: string;
@@ -50,8 +54,17 @@ interface ProductSummary {
 const ViewProductDetails: React.FC = () => {
   const { productId } = useParams<{ productId: string }>();
   const [productDetails, setProductDetails] = useState<Product | null>(null);
-  const apiBaseURL = "http://localhost:8080/ecs-product/api/product";
+  const apiBaseURL = "http://localhost:8080";
   const [productCategoryId, setProductCategoryId] = useState(-1);
+  const [customer, setCustomer] = useState<Customer | null>(null);
+  const cartApiBaseURL = "http://localhost:8080/ecs-order/api/cart";
+  const [selectedProductQuantity, setSelectedProductQuantity] =
+    useState<number>(1);
+  const quantities = [1, 2, 3, 4, 5];
+  const [recentOrder, setRecentOrder] = useState<Order | null>(null);
+  const [myOrder, setMyOrders] = useState<Order[]>([]);
+  const navigate = useNavigate();
+  const [isPopupVisible, setPopupVisible] = useState(false);
   const reviews: Review[] = [
     {
       subject: "Super...",
@@ -115,6 +128,9 @@ const ViewProductDetails: React.FC = () => {
     warranty: "2 years",
     color: "black",
   };
+
+  const authToken = localStorage.getItem("authToken");
+
   // const product: Product = {
   //   brand: "fastrack",
   //   description: "fastrcak watches are the biggest brand in india",
@@ -136,12 +152,16 @@ const ViewProductDetails: React.FC = () => {
   //   similarProducts: similarProducts,
   //   specifications: specs,
   // };
+
+  useEffect(() => {
+    fetchCustomerAndOrders();
+  }, []);
+
   useEffect(() => {
     setProductCategoryId(-1);
-    console.log("Product Id in view product", productId);
     try {
       axios
-        .get(apiBaseURL + "/" + productId)
+        .get(apiBaseURL + "/ecs-product/api/product/" + productId)
         .then((response) => {
           setProductDetails(response.data);
         })
@@ -152,6 +172,65 @@ const ViewProductDetails: React.FC = () => {
       console.log("Error in try catch block : ", error);
     }
   }, [productId]);
+
+  const fetchCustomerAndOrders = async () => {
+    if (authToken) {
+      const decodedToken = jwtDecode(authToken);
+      const email = decodedToken.sub;
+      const currentTime = Date.now() / 1000;
+      if ((decodedToken.exp ? decodedToken.exp : 0) >= currentTime) {
+        const customerResponse = await axios.get(
+          apiBaseURL + `/ecs-customer/api/customer/getByEmail/${email}`,
+          {
+            headers: {
+              Authorization: `Bearer ${authToken}`,
+              "Content-Type": "application/json",
+            },
+          }
+        );
+
+        if (customerResponse.status == 200) {
+          setCustomer(customerResponse.data);
+        }
+
+        const myOrdersResponse = await axios.get(
+          apiBaseURL +
+            `/ecs-order/api/order/getOrdersByCustomerId/${customerResponse.data.customerId}`,
+          {
+            headers: {
+              Authorization: `Bearer ${authToken}`,
+              "Content-Type": "application/json",
+            },
+          }
+        );
+        myOrdersResponse.data.map((order: Order) => {
+          const standardOrderDate = new Date(order.orderDate);
+          const standardDeliveryDate = new Date(order.deliveryDate);
+          order.orderDate = standardOrderDate;
+          order.deliveryDate = standardDeliveryDate;
+        });
+        setMyOrders(myOrdersResponse.data);
+        // let orderHistoryList: Order[] = [];
+        let recentOrderDate: Date = new Date("1970-01-01");
+        myOrdersResponse.data.find((order: Order) => {
+          if (
+            order.orderItems.find((item: Product) => {
+              return item.productId == parseInt(productId || "-1");
+            })
+          ) {
+            if (order.orderDate.getTime() > recentOrderDate.getTime()) {
+              recentOrderDate = order.orderDate;
+              setRecentOrder(order);
+            }
+            // orderHistoryList.push(order);
+          }
+        });
+      } else {
+        console.log("Session Expired!");
+        localStorage.setItem("authToken", "");
+      }
+    }
+  };
 
   const StarRating = (rating: number, maxStars: number = 5) => {
     const stars = [];
@@ -199,6 +278,69 @@ const ViewProductDetails: React.FC = () => {
     setProductCategoryId(id);
   };
 
+  const showPopup = () => {
+    setPopupVisible(true);
+    setTimeout(() => {
+      setPopupVisible(false);
+    }, 2000);
+  };
+
+  const addToCart = (productId: number) => {
+    console.log("Adding product to cart : ", productId);
+    if (customer != null && productId !== -1) {
+      const cartItems = [
+        {
+          customerId: customer?.customerId,
+          productId: productId,
+          quantity: selectedProductQuantity,
+        },
+      ];
+      console.log("quantity : ", selectedProductQuantity);
+      const cartObject = {
+        customerId: customer?.customerId,
+        cartItems: cartItems,
+      };
+      axios
+        .post(cartApiBaseURL, cartObject, {
+          headers: {
+            Authorization: `Bearer ${authToken}`,
+            "Content-Type": "application/json",
+          },
+        })
+        .then((response) => {
+          console.log("Added to cart Successfully : ", response.data);
+          showPopup();
+        })
+        .catch((error) => {
+          console.log("Error Response : ", error.response.data);
+        });
+    } else {
+      console.log("Please login first");
+      navigate("/signIn");
+    }
+  };
+
+  const buyNow = (productId: number) => {
+    if (customer != null && productDetails != null && productId !== -1) {
+      const itemForCheckout: CartItem = {
+        cartItemId: null,
+        productDetails: productDetails,
+        orderQuantity: selectedProductQuantity,
+      };
+      localStorage.setItem(
+        "itemsForCheckout",
+        JSON.stringify([itemForCheckout])
+      );
+      let subTotal = productDetails.productPrice * selectedProductQuantity;
+      localStorage.setItem("subTotal", subTotal.toString());
+      console.log("Navigated to Checkout Page!");
+      navigate("/checkout");
+    } else {
+      console.log("Please login first");
+      navigate("/signIn");
+    }
+  };
+
   return (
     <>
       <div className="nav-bar">
@@ -207,6 +349,17 @@ const ViewProductDetails: React.FC = () => {
       <ProductCategoryBar
         setProductCategoryId={setCategoryId}
       ></ProductCategoryBar>
+
+      {recentOrder && (
+        <div className="container last-purchased-div">
+          {" "}
+          Last purchased on {recentOrder.orderDate.toDateString()},{" "}
+          <a className="view-recent-order-link" href="/account/my-orders">
+            view order
+          </a>
+        </div>
+      )}
+
       {productCategoryId == -1 && (
         <div className="product-container">
           <div className="product-intro">
@@ -264,6 +417,34 @@ const ViewProductDetails: React.FC = () => {
                 <span>
                   Zip Code: <a href="#">33496</a>
                 </span>
+                {productDetails?.productQuantity != undefined &&
+                  productDetails?.productQuantity > 0 && (
+                    <p className="in-stock">In Stock</p>
+                  )}
+                {productDetails?.productQuantity == undefined ||
+                  (productDetails.productQuantity <= 0 && (
+                    <p className="out-of-stock">Out of Stock</p>
+                  ))}
+                <select
+                  className="select-quantity btn"
+                  value={selectedProductQuantity}
+                  id="quantity-select"
+                  onChange={(e) =>
+                    setSelectedProductQuantity(parseInt(e.target.value))
+                  }
+                >
+                  <option value={selectedProductQuantity}>
+                    Quantity: {selectedProductQuantity}
+                  </option>
+                  {quantities.map(
+                    (quantity) =>
+                      quantity !== selectedProductQuantity && (
+                        <option key={quantity} value={quantity}>
+                          {quantity}
+                        </option>
+                      )
+                  )}
+                </select>
                 <div className="product-actions">
                   <button
                     className="btn btn-add-to-cart"
@@ -272,6 +453,7 @@ const ViewProductDetails: React.FC = () => {
                         ? true
                         : false
                     }
+                    onClick={() => addToCart(productDetails?.productId || -1)}
                   >
                     <FontAwesomeIcon icon={faCartShopping}></FontAwesomeIcon>{" "}
                     Add to Cart
@@ -279,10 +461,12 @@ const ViewProductDetails: React.FC = () => {
                   <button
                     className="btn btn-buy-now"
                     disabled={
-                      productDetails && productDetails?.productQuantity <= 0
+                      productDetails &&
+                      productDetails?.productQuantity <= selectedProductQuantity
                         ? true
                         : false
                     }
+                    onClick={() => buyNow(productDetails?.productId || -1)}
                   >
                     <FontAwesomeIcon icon={faBolt}></FontAwesomeIcon> Buy Now
                   </button>
@@ -374,7 +558,15 @@ const ViewProductDetails: React.FC = () => {
         ></ProductsPage>
       )}
 
-      {productCategoryId}
+      {isPopupVisible && (
+        <div className="popup-overlay">
+          <div className="popup-box">
+            <p>
+              Item added to cart <span className="color-green">&#x2713;</span>
+            </p>
+          </div>
+        </div>
+      )}
     </>
   );
 };

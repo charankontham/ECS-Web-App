@@ -45,6 +45,7 @@
 }
 
 .buy-product-options {
+  /* width: 100% !important; */
   background-color: #f2f2f2;
 }
 
@@ -70,25 +71,25 @@
 .btn-add-to-cart {
   background: orange;
   color: black;
-  border: 2px solid orange !important;
+  border: 3px solid orange !important;
 }
 
 .btn-add-to-cart:hover {
-  background: darkorange;
-  border: 2px solid darkorange !important;
+  background-color: darkorange !important;
+  border: 3px solid darkorange !important;
 }
 
 .btn-buy-now {
   background: transparent;
   border: 3px solid orange !important;
-  color: orange;
+  color: darkorange !important;
+  font-weight: bold !important;
   transition: font 0.7s ease;
 }
 
 .btn-buy-now:hover {
   border: 3px solid darkorange !important;
   transform: scale(1.02);
-  color: darkorange;
 }
 
 .btn-share {
@@ -177,6 +178,32 @@ td {
   margin-top: 10px;
 }
 
+.in-stock {
+  color: green;
+  margin: 5%;
+}
+
+.select-quantity {
+  color: black !important;
+  background-color: orange !important;
+}
+
+.out-of-stock {
+  color: red;
+}
+
+.last-purchased-div {
+  background-color: rgb(37, 142, 37, 0.2);
+  width: 100% !important;
+  padding: 10px;
+  margin-top: 5px;
+  border-radius: 20px;
+  border: 1px solid darkgreen;
+}
+
+.view-recent-order-link {
+  text-decoration: none;
+}
 /** Star Rating CSS */
 
 .star-rating {
@@ -223,4 +250,32 @@ td {
   top: 0;
   left: 0;
   width: 100%; /* Full width for the empty star */
+}
+
+/* Popup box styling */
+.popup-box {
+  background: #fff;
+  border-radius: 10px;
+  padding: 20px 30px;
+  text-align: center;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+  max-width: 400px;
+  width: 90%;
+  animation: slide-down 0.3s ease-out;
+}
+
+/* Heading and text */
+.popup-box h2 {
+  margin-bottom: 10px;
+  font-size: 20px;
+  color: #333;
+}
+
+.popup-box p {
+  margin-bottom: 20px;
+  color: #666;
+}
+
+.color-green {
+  color: green;
 }

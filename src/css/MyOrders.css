@@ -137,3 +137,10 @@
   color: black !important;
   background-color: white !important;
 }
+
+.track-order-link {
+  text-decoration: none;
+}
+.track-order-link:hover {
+  text-decoration: underline;
+}

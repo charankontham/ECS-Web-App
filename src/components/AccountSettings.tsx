@@ -7,7 +7,7 @@ import Footer from "./Footer";
 import LoginSubSettingModule from "./LoginSubSettingModule";
 import axios from "axios";
 import { jwtDecode } from "jwt-decode";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import Customer from "../interfaces/Customer";
 import Address from "../interfaces/Address";
 import UpdatePasswordModule from "./UpdatePasswordModule";
@@ -20,8 +20,21 @@ import MyOrders from "./MyOrders";
 const AccountSettings: React.FC<{ activeSection?: string }> = (
   accountSettings = { activeSection: "Login & Security" }
 ) => {
-  const apiBaseUrl = "http://localhost:8080/ecs-customer/api";
+  const {
+    orderId,
+    addressId,
+    orderFilterByDate,
+    orderFilterByStatus,
+    orderSearchByName,
+  } = useParams<{
+    orderId?: string;
+    addressId?: string;
+    orderFilterByDate?: string;
+    orderFilterByStatus?: string;
+    orderSearchByName?: string;
+  }>();
   const navigate = useNavigate();
+  const apiBaseUrl = "http://localhost:8080/ecs-customer/api";
   const authToken = localStorage.getItem("authToken");
   const [activeSection, setActiveSection] = useState("Login & Security");
   const [activeSubSetting, setActiveSubSetting] = useState("");

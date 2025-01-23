@@ -10,19 +10,20 @@ import Address from "../interfaces/Address";
 import { CartItem } from "../interfaces/Cart";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faPencil } from "@fortawesome/free-solid-svg-icons";
+import { OrderItem, OrderRequest } from "../interfaces/Order";
 
 const CheckoutPage = () => {
-  // const rawOrderItems = localStorage.getItem("itemsForCheckout");
+  const rawOrderItems = localStorage.getItem("itemsForCheckout");
   const authToken = localStorage.getItem("authToken");
   const [customer, setCustomer] = useState<Customer>();
   const [addresses, setAddresses] = useState<Address[]>([]);
   const [error, setError] = useState<any>(null);
   const [showPopup, setShowPopup] = useState(false);
-  const [orderItems, setOrderItems] = useState<CartItem[]>([]);
+  const [orderItems, setOrderItems] = useState<OrderItem[]>([]);
   const [orderSummary, setOrderSummary] = useState<any>(null);
   const [showAddresses, setShowAddresses] = useState(false);
   const [selectedAddress, setSelectedAddress] = useState<Address>();
-  const [selectedPaymentMethod, setSelectedPaymentMethod] = useState<String>();
+  const [selectedPaymentMethod, setSelectedPaymentMethod] = useState<string>();
   const paymentMethods = ["Credit/Debit Card", "PayPal", "Cash on Delivery"];
   const emptyAddress: Address = {
     addressId: null,
@@ -150,6 +151,57 @@ const CheckoutPage = () => {
     }
   };
 
+  const placeOrder = () => {
+    if (
+      selectedAddress &&
+      selectedPaymentMethod &&
+      authToken &&
+      addresses.find(
+        (address) => address.addressId == selectedAddress.addressId
+      ) &&
+      paymentMethods.includes(selectedPaymentMethod)
+    ) {
+      let today = new Date();
+      today.setDate(today.getDate() + 6);
+      const orderRequest: OrderRequest = {
+        orderId: null,
+        customerId: customer?.customerId ? customer.customerId : null,
+        addressId: selectedAddress.addressId,
+        paymentType: selectedPaymentMethod,
+        paymentStatus: "success",
+        shippingFee: Number(orderSummary.shippingFee),
+        orderDate: new Date(),
+        deliveryDate: today,
+        shippingStatus: "Order Placed",
+      };
+      axios
+        .post(
+          apiBaseUrl + "/ecs-order/api/order",
+          { orderDetails: orderRequest, orderItems: orderItems },
+          {
+            headers: { Authorization: `Bearer ${authToken}` },
+          }
+        )
+        .then((response) => {
+          if (response.status == 201) {
+            console.log("Success placing order");
+            localStorage.removeItem("itemsForCheckout");
+            navigate("/order-placed-success");
+          } else {
+            setError(response.data);
+            console.log("Error placing order");
+          }
+        })
+        .catch((error) => {
+          setError(error.response.data);
+          console.log("Error placing order : ", error);
+        });
+    } else {
+      setError("Please select address and payment method");
+      console.log("Please select address and payment method");
+    }
+  };
+
   useEffect(() => {
     fetchCustomerAndAddresses();
     const subTotalString = localStorage.getItem("subTotal");
@@ -160,6 +212,17 @@ const CheckoutPage = () => {
       tax: (subTotal * 0.07).toFixed(2),
       total: (subTotal + 6.99 + subTotal * 0.07).toFixed(2),
     });
+    const itemsForCheckout = JSON.parse(
+      localStorage.getItem("itemsForCheckout") || "[]"
+    );
+    const orderItems: OrderItem[] = itemsForCheckout.map((item: CartItem) => {
+      return {
+        productId: item.productDetails.productId,
+        quantity: item.orderQuantity,
+        productPrice: item.productDetails.productPrice,
+      };
+    });
+    setOrderItems(orderItems);
   }, []);
 
   useEffect(() => {
@@ -177,7 +240,6 @@ const CheckoutPage = () => {
       <div className="container py-5">
         <h1 className="text-center mb-4">Checkout</h1>
         <div className="row">
-          {/* Left Section - Address and Payment Selection */}
           <div className="col-md-8">
             {/* Address Section */}
             <div className="card mb-4">
@@ -284,65 +346,9 @@ const CheckoutPage = () => {
                     </label>
                   </div>
                 ))}
-
-                {paymentMethods.map((method) => (
-                  <div className="form-check mb-3" key={method}>
-                    <input
-                      className="form-check-input"
-                      type="radio"
-                      name="paymentMethod"
-                      onChange={() => setSelectedPaymentMethod(method)}
-                      id={method}
-                    />
-                    <label className="form-check-label" htmlFor={method}>
-                      {method}
-                    </label>
-                  </div>
-                ))}
-                {paymentMethods.map((method) => (
-                  <div className="form-check mb-3" key={method}>
-                    <input
-                      className="form-check-input"
-                      type="radio"
-                      name="paymentMethod"
-                      onChange={() => setSelectedPaymentMethod(method)}
-                      id={method}
-                    />
-                    <label className="form-check-label" htmlFor={method}>
-                      {method}
-                    </label>
-                  </div>
-                ))}
-                {paymentMethods.map((method) => (
-                  <div className="form-check mb-3" key={method}>
-                    <input
-                      className="form-check-input"
-                      type="radio"
-                      name="paymentMethod"
-                      onChange={() => setSelectedPaymentMethod(method)}
-                      id={method}
-                    />
-                    <label className="form-check-label" htmlFor={method}>
-                      {method}
-                    </label>
-                  </div>
-                ))}
-                {paymentMethods.map((method) => (
-                  <div className="form-check mb-3" key={method}>
-                    <input
-                      className="form-check-input"
-                      type="radio"
-                      name="paymentMethod"
-                      onChange={() => setSelectedPaymentMethod(method)}
-                      id={method}
-                    />
-                    <label className="form-check-label" htmlFor={method}>
-                      {method}
-                    </label>
-                  </div>
-                ))}
               </div>
             </div>
+            {error && <div className="error-msg">{error}</div>}
           </div>
 
           {/* Right Section - Order Summary */}
@@ -380,7 +386,9 @@ const CheckoutPage = () => {
                     </tr>
                   </tbody>
                 </table>
-                <button className="btn btn-success w-100">Place Order</button>
+                <button className="btn btn-success w-100" onClick={placeOrder}>
+                  Place Order
+                </button>
               </div>
             </div>
           </div>
