@@ -1,0 +1,21 @@
+.star-rating {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 30px;
+}
+
+.star {
+  cursor: pointer;
+  color: transparent;
+  -webkit-text-fill-color: white;
+  -webkit-text-stroke-width: 1px;
+  -webkit-text-stroke-color: gold;
+  padding: 5px;
+  transition: color 0.2s ease-in-out;
+}
+
+.filled {
+  color: gold !important;
+  -webkit-text-fill-color: gold;
+}

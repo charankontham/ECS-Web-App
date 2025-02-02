@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
+import "bootstrap/dist/css/bootstrap.css";
 import "../App.css";
 import "../css/ProductsPage.css";
-import "bootstrap/dist/css/bootstrap.css";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
 // import { Product } from "../interfaces/Product";
@@ -210,7 +210,6 @@ const ViewProductDetails: React.FC = () => {
           order.deliveryDate = standardDeliveryDate;
         });
         setMyOrders(myOrdersResponse.data);
-        // let orderHistoryList: Order[] = [];
         let recentOrderDate: Date = new Date("1970-01-01");
         myOrdersResponse.data.find((order: Order) => {
           if (
@@ -222,7 +221,6 @@ const ViewProductDetails: React.FC = () => {
               recentOrderDate = order.orderDate;
               setRecentOrder(order);
             }
-            // orderHistoryList.push(order);
           }
         });
       } else {
@@ -234,19 +232,16 @@ const ViewProductDetails: React.FC = () => {
 
   const StarRating = (rating: number, maxStars: number = 5) => {
     const stars = [];
-
     for (let i = 1; i <= maxStars; i++) {
       if (rating >= i) {
-        // Full star
         stars.push(
-          <span key={i} className="star full">
+          <span key={i} className="star-view full">
             <FontAwesomeIcon icon={faStar} />
           </span>
         );
       } else if (rating >= i - 0.5) {
-        // Half star
         stars.push(
-          <span key={i} className="star half">
+          <span key={i} className="star-view half">
             <div className="dd">
               <span className="half-filled">
                 <FontAwesomeIcon icon={faStar} />
@@ -258,17 +253,15 @@ const ViewProductDetails: React.FC = () => {
           </span>
         );
       } else {
-        // Empty star
         stars.push(
-          <span key={i} className="star empty">
+          <span key={i} className="star-view empty">
             <FontAwesomeIcon icon={faStar} />
           </span>
         );
       }
     }
-
     return (
-      <div className="star-rating">
+      <div className="star-rating-view">
         {rating} {stars}
       </div>
     );
@@ -354,7 +347,10 @@ const ViewProductDetails: React.FC = () => {
         <div className="container last-purchased-div">
           {" "}
           Last purchased on {recentOrder.orderDate.toDateString()},{" "}
-          <a className="view-recent-order-link" href="/account/my-orders">
+          <a
+            className="view-recent-order-link"
+            href={`/account/my-orders?orderId=${recentOrder.orderId}`}
+          >
             view order
           </a>
         </div>

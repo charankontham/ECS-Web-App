@@ -7,7 +7,7 @@ import Footer from "./Footer";
 import LoginSubSettingModule from "./LoginSubSettingModule";
 import axios from "axios";
 import { jwtDecode } from "jwt-decode";
-import { useNavigate, useParams } from "react-router-dom";
+import { useNavigate, useParams, useSearchParams } from "react-router-dom";
 import Customer from "../interfaces/Customer";
 import Address from "../interfaces/Address";
 import UpdatePasswordModule from "./UpdatePasswordModule";
@@ -16,23 +16,17 @@ import AddressForm from "./AddOrUpdateAddressModule";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faTrash } from "@fortawesome/free-solid-svg-icons";
 import MyOrders from "./MyOrders";
+import ProductReviews from "./ProductReviews";
 
 const AccountSettings: React.FC<{ activeSection?: string }> = (
   accountSettings = { activeSection: "Login & Security" }
 ) => {
-  const {
-    orderId,
-    addressId,
-    orderFilterByDate,
-    orderFilterByStatus,
-    orderSearchByName,
-  } = useParams<{
-    orderId?: string;
-    addressId?: string;
-    orderFilterByDate?: string;
-    orderFilterByStatus?: string;
-    orderSearchByName?: string;
-  }>();
+  const [searchParams] = useSearchParams();
+  const orderId = searchParams.get("orderId");
+  // const addressId = searchParams.get("addressId");
+  // const orderFilterByDate = searchParams.get("orderFilterByDate");
+  // const orderFilterByStatus = searchParams.get("orderFilterByStatus");
+  // const orderSearchByName = searchParams.get("orderSearchByName");
   const navigate = useNavigate();
   const apiBaseUrl = "http://localhost:8080/ecs-customer/api";
   const authToken = localStorage.getItem("authToken");
@@ -45,6 +39,7 @@ const AccountSettings: React.FC<{ activeSection?: string }> = (
     { name: "Login & Security", id: "login-security" },
     { name: "My Addresses", id: "my-addresses" },
     { name: "My Orders", id: "my-orders" },
+    { name: "My Reviews", id: "my-reviews" },
     { name: "Close Your ECS-Account", id: "close-account" },
     { name: "Logout", id: "logout" },
   ];
@@ -298,7 +293,13 @@ const AccountSettings: React.FC<{ activeSection?: string }> = (
     }
 
     if (activeSection === "My Orders") {
-      return <MyOrders></MyOrders>;
+      if (orderId) {
+        return <MyOrders orderId={orderId}></MyOrders>;
+      } else return <MyOrders></MyOrders>;
+    }
+
+    if (activeSection === "My Reviews") {
+      return <ProductReviews></ProductReviews>;
     }
 
     if (activeSection === "Close your ECS-Account") {

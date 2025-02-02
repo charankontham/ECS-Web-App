@@ -39,7 +39,12 @@ import * as bootstrap from "bootstrap";
 import ViewOrderDetails from "./ViewOrderDetails";
 import OrderTracking from "./OrderTracking";
 
-const MyOrders = () => {
+const MyOrders: React.FC<{
+  orderId?: string;
+  orderFilterByDate?: string;
+  orderFilterByStatus?: string;
+  orderSearchByName?: string;
+}> = ({ orderId }) => {
   const ordersPerPage = 2;
   const orderStatuses = [
     "Orders",
@@ -341,7 +346,6 @@ const MyOrders = () => {
             navigate("/signIn");
           }
           setCustomer(customerResponse.data);
-
           const myOrdersResponse = await axios.get(
             apiBaseUrl +
               `/order/getOrdersByCustomerId/${customerResponse.data.customerId}`,
@@ -358,12 +362,22 @@ const MyOrders = () => {
             order.orderDate = standardOrderDate;
             order.deliveryDate = standardDeliveryDate;
           });
-          setMyOrders(myOrdersResponse.data);
-          defaultCurrentOrders(myOrdersResponse.data);
+          if (orderId) {
+            const orders = myOrdersResponse.data.filter(
+              (order: Order) =>
+                Number.isSafeInteger(Number(orderId)) &&
+                order.orderId === Number(orderId)
+            );
+            setMyOrders(orders);
+            defaultCurrentOrders(orders);
+          } else {
+            setMyOrders(myOrdersResponse.data);
+            defaultCurrentOrders(myOrdersResponse.data);
+          }
         } else {
           console.log("Session Expired!");
           localStorage.setItem("authToken", "");
-          navigate("/signIn");
+          navigate("/");
         }
       } else {
         navigate("/");
@@ -413,6 +427,7 @@ const MyOrders = () => {
               <Form.Select
                 aria-label="Date Range Filter"
                 onChange={(e) => setOrderDateRange(e.target.value)}
+                disabled={orderId ? true : false}
                 key="dateRangeFilter"
               >
                 <option value="3-months" key="3-months">
@@ -437,6 +452,7 @@ const MyOrders = () => {
                 aria-label="Order Status Filter"
                 key="orderStatusFilter"
                 onChange={(e) => setOrderStatus(e.target.value)}
+                disabled={orderId ? true : false}
               >
                 {orderStatuses.map((status: string) => (
                   <option value={status} key={status}>
@@ -452,6 +468,7 @@ const MyOrders = () => {
                     placeholder="Search orders"
                     aria-label="Search orders"
                     onChange={(e) => setOrderSearchBar(e.target.value)}
+                    disabled={orderId ? true : false}
                   />
                   <button className="search-btn" type="submit">
                     <FontAwesomeIcon icon={faSearch} />

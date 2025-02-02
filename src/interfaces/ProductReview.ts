@@ -1,10 +1,8 @@
 export interface ProductReview {
-    reviewId: number | null;  
-    productId: number | null; 
-    customerId: number | null;
-    productReview: string;
-    productRating: number | null;
+  reviewId?: number;
+  productId?: number;
+  customerId?: number;
+  productRating?: number;
+  reviewHeadline?: string;
+  productReview?: string;
 }
-
-
-  

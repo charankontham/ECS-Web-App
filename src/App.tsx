@@ -26,13 +26,17 @@ const App: React.FC = () => {
           <Route path="/checkout" element={<CheckoutPage />} />
           <Route path="/account" element={<AccountSettings />} />
           <Route
+            path="/account/my-addresses"
+            element={<AccountSettings activeSection="My Addresses" />}
+          />
+          <Route
             path="/account/my-orders"
             element={<AccountSettings activeSection="My Orders" />}
           />
           <Route path="/account/login-security" element={<AccountSettings />} />
           <Route
-            path="/account/my-addresses"
-            element={<AccountSettings activeSection="My Addresses" />}
+            path="/account/my-reviews"
+            element={<AccountSettings activeSection="My Reviews" />}
           />
           <Route
             path="/account/close-account"
