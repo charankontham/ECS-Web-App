@@ -152,10 +152,6 @@ td {
   margin-bottom: 15px;
 }
 
-.reviews-list {
-  margin-top: 15px;
-}
-
 .review-card {
   background: white;
   border: 1px solid #ddd;
@@ -204,52 +200,35 @@ td {
 .view-recent-order-link {
   text-decoration: none;
 }
-/** Star Rating CSS */
 
-.star-rating-view {
+.product-rating {
   display: flex;
-  gap: 2px;
   position: relative;
+  gap: 5px;
 }
 
-.star-view {
-  font-size: 1rem;
-  position: relative;
-  display: inline-block;
+.h5-font {
+  font-size: x-large;
+  font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
 }
 
-.star-view.full {
-  color: orange; /* Full star color */
+.global-ratings-font {
+  color: gray;
+  font-family: "Lucida Sans", "Lucida Sans Regular", "Lucida Grande",
+    "Lucida Sans Unicode", Geneva, Verdana, sans-serif;
+  font-size: small;
 }
 
-.star-view.empty {
-  color: lightgray; /* Empty star color */
+.sort-dropdown {
+  border: 1px solid #ccc;
+  border-radius: 10px;
+  padding: 5px 10px;
+  cursor: pointer;
+  margin-bottom: 10px;
 }
 
-.star-view.half {
-  width: 1.125rem;
-}
-
-.dd {
-  position: absolute;
-  width: 1.18rem;
-}
-.star-view.half .half-filled {
-  color: orange; /* Filled half color */
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 50%; /* Half width */
-  overflow: hidden;
-  z-index: 1; /* Ensure it appears above empty part */
-}
-
-.star-view.half .half-empty {
-  color: lightgray; /* Empty half color */
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%; /* Full width for the empty star */
+.write-review {
+  margin-top: 20px;
 }
 
 /* Popup box styling */

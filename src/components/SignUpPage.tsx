@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import "bootstrap/dist/css/bootstrap.css";
-import "../App.css";
+import "@src/App.css";
 import "../css/SignUpPage.css";
 import axios from "axios";
 import Customer from "../interfaces/Customer";

@@ -6,7 +6,7 @@ import React, {
   useState,
 } from "react";
 import "bootstrap/dist/css/bootstrap.css";
-import "../App.css";
+import "@src/App.css";
 import "../css/AccountSettings.css";
 import "../css/MyOrders.css";
 import axios from "axios";

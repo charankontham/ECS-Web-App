@@ -1,18 +1,17 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
 import "bootstrap/dist/css/bootstrap.css";
-import "../App.css";
-import "../css/ProductReviews.css";
-import "../css/StarRatingRealtime.css";
+import "@src/App.css";
+import "@css/ProductReviews.css";
+import "@css/StarRatingRealtime.css";
 import { Button, Card, Form, Spinner } from "react-bootstrap";
 import { jwtDecode } from "jwt-decode";
-import Customer from "../interfaces/Customer";
+import Customer from "../../interfaces/Customer";
 import { useNavigate } from "react-router-dom";
-import { Order } from "../interfaces/Order";
-import { ProductReview } from "../interfaces/ProductReview";
+import { ProductReview } from "../../interfaces/ProductReview";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faLeftLong, faStar } from "@fortawesome/free-solid-svg-icons";
-import StarRatingRealtime from "./sub-components/StarRatingRealtime";
+import StarRatingRealtime from "./StarRatingRealtime";
 
 interface Product {
   productId: number;
@@ -22,14 +21,16 @@ interface Product {
 
 const ProductReviews: React.FC = () => {
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
+  const [customer, setCustomer] = useState<Customer | null>(null);
   const [review, setReview] = useState<ProductReview>({
+    customerId: customer?.customerId || 0,
+    customerName: customer?.customerName || "Noname User",
     productRating: 0,
     reviewHeadline: "",
     productReview: "",
   });
   const [loading, setLoading] = useState(false);
   const apiBaseURL = "http://localhost:8080";
-  const [customer, setCustomer] = useState<Customer | null>(null);
   const [myOrderedProducts, setMyOrderedProducts] = useState<Product[]>([]);
   const [myReviews, setMyReviews] = useState<ProductReview[]>([]);
   const [ratingSubmitted, setRatingSubmitted] = useState<boolean>(false);
@@ -82,8 +83,13 @@ const ProductReviews: React.FC = () => {
                 },
               }
             );
-
             setCustomer(customerResponse.data);
+            setReview((prevReview) => ({
+              ...prevReview,
+              customerId: customerResponse.data.customerId,
+              customerName: customerResponse.data.customerName,
+            }));
+
             if (customerResponse.status !== 200) {
               console.log(customerResponse.data);
               navigate("/signIn");
@@ -138,6 +144,7 @@ const ProductReviews: React.FC = () => {
       [name]: value,
       productId: selectedProduct?.productId,
       customerId: customer?.customerId || 0,
+      customerName: customer?.customerName || "Noname User",
     }));
   };
 
@@ -186,6 +193,8 @@ const ProductReviews: React.FC = () => {
   const goBack = () => {
     setSelectedProduct(null);
     setReview({
+      customerId: customer?.customerId || 0,
+      customerName: customer?.customerName || "Noname User",
       productRating: 0,
       reviewHeadline: "",
       productReview: "",
@@ -206,7 +215,12 @@ const ProductReviews: React.FC = () => {
     }
     let myReview = myReviews.find((review) => review.productId === productId);
     if (!myReview) {
-      myReview = { productId: productId, productRating: rating };
+      myReview = {
+        productId: productId,
+        productRating: rating,
+        customerId: customer?.customerId || 0,
+        customerName: customer?.customerName || "Noname User",
+      };
     } else {
       myReview.productRating = rating;
     }

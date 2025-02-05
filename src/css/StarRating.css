@@ -1,0 +1,59 @@
+.star-rating-view {
+  display: flex;
+  gap: 2px;
+  position: relative;
+}
+
+.star-view {
+  font-size: 1rem;
+  position: relative;
+  display: inline-block;
+}
+
+.star-view-larger {
+  font-size: 1.4rem !important;
+}
+
+.star-view.full {
+  color: orange;
+}
+
+.star-view.empty {
+  color: lightgray;
+}
+
+.star-view.half {
+  width: 1.125rem;
+}
+
+.dd {
+  position: absolute;
+  width: 1.18rem;
+}
+.star-view.half .half-filled {
+  color: orange;
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 50%;
+  overflow: hidden;
+  z-index: 1;
+}
+
+.star-view-larger.half .half-filled {
+  color: orange;
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 70% !important;
+  overflow: hidden;
+  z-index: 1;
+}
+
+.star-view.half .half-empty {
+  color: lightgray;
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+}

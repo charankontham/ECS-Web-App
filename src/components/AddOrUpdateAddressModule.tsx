@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import "bootstrap/dist/css/bootstrap.css";
-import "../App.css";
+import "@src/App.css";
 import "../css/AddressForm.css";
 import Address from "../interfaces/Address";
 import axios from "axios";

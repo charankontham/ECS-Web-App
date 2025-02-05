@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import "bootstrap/dist/css/bootstrap.css";
-import "../App.css";
+import "@src/App.css";
 import "../css/Addresses.css";
 import Address from "../interfaces/Address";
 import axios from "axios";

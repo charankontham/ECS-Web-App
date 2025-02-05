@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import "../css/OrderPlaced.css";
 import Confetti from "react-confetti";
-import Header from "./Header";
+import Header from "./home-common/Header";
 
 const OrderPlaced: React.FC = () => {
   const [windowWidth, windowHeight] = [window.innerWidth, window.innerHeight];

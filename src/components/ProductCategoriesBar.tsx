@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import "../css/ProductCategoryBar.css";
-import "../App.css";
+import "@src/App.css";
 import "bootstrap/dist/css/bootstrap.css";
 import { faUser } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";

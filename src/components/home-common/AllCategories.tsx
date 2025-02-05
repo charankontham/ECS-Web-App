@@ -1,13 +1,8 @@
 import React, { useEffect, useState } from "react";
-import "bootstrap/dist/css/bootstrap.css";
-import "../App.css";
-import "../css/AllCatgories.css";
-import { faUser } from "@fortawesome/free-solid-svg-icons";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { useNavigate } from "react-router-dom";
 import axios from "axios";
-import ProductCategory from "../interfaces/ProductCategory";
-import { Product } from "../interfaces/Product";
+import "bootstrap/dist/css/bootstrap.css";
+import "../../css/AllCatgories.css";
+import ProductCategory from "../../interfaces/ProductCategory";
 
 interface ChildProps {
   setProductCategoryId: (id: number) => void;

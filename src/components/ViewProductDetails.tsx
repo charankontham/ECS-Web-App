@@ -1,28 +1,26 @@
 import React, { useEffect, useState } from "react";
 import "bootstrap/dist/css/bootstrap.css";
-import "../App.css";
+import "@src/App.css";
 import "../css/ProductsPage.css";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
-// import { Product } from "../interfaces/Product";
 import { useParams } from "react-router-dom";
 import "../css/ProductDetails.css";
 import ProductImagesBlock from "./ProductImagesBlock";
-import Header from "./Header";
+import Header from "./home-common/Header";
 import ProductCategoryBar from "./ProductCategoriesBar";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import {
-  faBolt,
-  faCartShopping,
-  faStar,
-} from "@fortawesome/free-solid-svg-icons";
+import { faBolt, faCartShopping } from "@fortawesome/free-solid-svg-icons";
 import ProductsPage from "./ProductsPage";
-import AllCategories from "./AllCategories";
+import AllCategories from "./home-common/AllCategories";
 import { Product } from "../interfaces/Product";
 import Customer from "../interfaces/Customer";
 import { jwtDecode } from "jwt-decode";
 import { CartItem } from "../interfaces/Cart";
 import { Order } from "../interfaces/Order";
+import { ProductReview } from "../interfaces/ProductReview";
+import { RatingAndReviews } from "./reviews-and-ratings/RatingAndReviews";
+import StarRating from "./reviews-and-ratings/StarRating";
 
 // interface Product {
 //   brand: string;
@@ -62,34 +60,9 @@ const ViewProductDetails: React.FC = () => {
     useState<number>(1);
   const quantities = [1, 2, 3, 4, 5];
   const [recentOrder, setRecentOrder] = useState<Order | null>(null);
-  const [myOrder, setMyOrders] = useState<Order[]>([]);
   const navigate = useNavigate();
   const [isPopupVisible, setPopupVisible] = useState(false);
-  const reviews: Review[] = [
-    {
-      subject: "Super...",
-      description:
-        "A good product, i suggest everyone to choose fastrack black leather watch",
-      rating: 3.5,
-    },
-    {
-      subject: "Awesome",
-      description:
-        "Its an awesome product by the fastrcak. it works really well. thankyou fastrack",
-      rating: 4.0,
-    },
-    {
-      subject: "Wonderful product",
-      description: "great product from fastrcak brand...",
-      rating: 4.5,
-    },
-    {
-      subject: "Bad product",
-      description:
-        "I don't like the product much, because quality is not upto the mark",
-      rating: 1,
-    },
-  ];
+  const [productReviews, setProductReviews] = useState<ProductReview[]>([]);
   const similarProducts: ProductSummary[] = [
     {
       id: "34",
@@ -154,7 +127,7 @@ const ViewProductDetails: React.FC = () => {
   // };
 
   useEffect(() => {
-    fetchCustomerAndOrders();
+    fetchCustomerOrdersAndReviews();
   }, []);
 
   useEffect(() => {
@@ -173,7 +146,7 @@ const ViewProductDetails: React.FC = () => {
     }
   }, [productId]);
 
-  const fetchCustomerAndOrders = async () => {
+  const fetchCustomerOrdersAndReviews = async () => {
     if (authToken) {
       const decodedToken = jwtDecode(authToken);
       const email = decodedToken.sub;
@@ -191,6 +164,8 @@ const ViewProductDetails: React.FC = () => {
 
         if (customerResponse.status == 200) {
           setCustomer(customerResponse.data);
+        } else {
+          console.log("Error data : ", customerResponse.data);
         }
 
         const myOrdersResponse = await axios.get(
@@ -203,17 +178,17 @@ const ViewProductDetails: React.FC = () => {
             },
           }
         );
+
         myOrdersResponse.data.map((order: Order) => {
           const standardOrderDate = new Date(order.orderDate);
           const standardDeliveryDate = new Date(order.deliveryDate);
           order.orderDate = standardOrderDate;
           order.deliveryDate = standardDeliveryDate;
         });
-        setMyOrders(myOrdersResponse.data);
         let recentOrderDate: Date = new Date("1970-01-01");
-        myOrdersResponse.data.find((order: Order) => {
+        myOrdersResponse.data.map((order: Order) => {
           if (
-            order.orderItems.find((item: Product) => {
+            order.orderItems.map((item: Product) => {
               return item.productId == parseInt(productId || "-1");
             })
           ) {
@@ -228,44 +203,27 @@ const ViewProductDetails: React.FC = () => {
         localStorage.setItem("authToken", "");
       }
     }
+    const myReviewsResponse = await axios.get(
+      apiBaseURL +
+        `/ecs-reviews/api/productReview/getReviewsByProductId/${productId}`
+    );
+    setProductReviews(myReviewsResponse.data);
   };
 
-  const StarRating = (rating: number, maxStars: number = 5) => {
-    const stars = [];
-    for (let i = 1; i <= maxStars; i++) {
-      if (rating >= i) {
-        stars.push(
-          <span key={i} className="star-view full">
-            <FontAwesomeIcon icon={faStar} />
-          </span>
-        );
-      } else if (rating >= i - 0.5) {
-        stars.push(
-          <span key={i} className="star-view half">
-            <div className="dd">
-              <span className="half-filled">
-                <FontAwesomeIcon icon={faStar} />
-              </span>
-              <span className="half-empty">
-                <FontAwesomeIcon icon={faStar} />
-              </span>
-            </div>
-          </span>
-        );
-      } else {
-        stars.push(
-          <span key={i} className="star-view empty">
-            <FontAwesomeIcon icon={faStar} />
-          </span>
-        );
-      }
+  function calculateAverageRating(reviews: ProductReview[]): number {
+    if (reviews.length === 0) {
+      return 0;
     }
-    return (
-      <div className="star-rating-view">
-        {rating} {stars}
-      </div>
+
+    const totalRating: number = reviews.reduce(
+      (sum, review) => sum + (review.productRating || 0),
+      0
     );
-  };
+
+    console.log(totalRating / reviews.length);
+
+    return totalRating / reviews.length;
+  }
 
   const setCategoryId = (id: number) => {
     setProductCategoryId(id);
@@ -384,8 +342,16 @@ const ViewProductDetails: React.FC = () => {
                 <h1>{productDetails?.productName}</h1>
                 <h2>by {productDetails?.brand.brandName}</h2>
                 <div className="product-rating">
-                  <span> {StarRating(3.5)} </span> |{" "}
-                  <a href="#">11,056 ratings</a>
+                  {calculateAverageRating(productReviews).toFixed(1)}{" "}
+                  <StarRating
+                    rating={calculateAverageRating(productReviews)}
+                    size="regular"
+                  />{" "}
+                  |{" "}
+                  <a href="#product-reviews">
+                    {productReviews.length}{" "}
+                    {productReviews.length > 1 ? "ratings" : "rating"}
+                  </a>
                 </div>
                 <p> 3k+ bought in last month</p>
                 <hr></hr>
@@ -479,7 +445,7 @@ const ViewProductDetails: React.FC = () => {
               {/* {product-specifications-table} */}
               <tbody>
                 {Object.entries(specs).map(([key, value], index) => (
-                  <tr>
+                  <tr key={index}>
                     <td>
                       <strong>{key}</strong>
                     </td>
@@ -515,27 +481,45 @@ const ViewProductDetails: React.FC = () => {
           </div>
 
           {/* Product Ratings & Reviews */}
-          <div className="product-reviews">
+          <div className="product-reviews" id="product-reviews">
             <h3>Ratings & Reviews</h3>
             <hr />
-            <p>Average Rating: {4} / 5</p>
-            <button className="btn btn-write-review">Write a Review</button>
-
-            <div className="reviews-list">
-              {reviews.map((review, index) => (
-                <div key={index} className="review-card">
-                  <h4>{review.subject}</h4>
-                  <p>{review.description}</p>
-                  <p>Rating: {review.rating} / 5</p>
-                  {review.image && <img src={review.image} alt="Review" />}
-                  {review.video && (
-                    <video controls>
-                      <source src={review.video} type="video/mp4" />
-                      Your browser does not support the video tag.
-                    </video>
-                  )}
+            <div className="flex-gap-15">
+              <div className="col-lg-3">
+                <div className="average-product-rating">
+                  <div className="flex-gap-15">
+                    <StarRating
+                      rating={calculateAverageRating(productReviews)}
+                      size="large"
+                    />
+                    <span className="h5-font">
+                      {calculateAverageRating(productReviews)} out of 5{" "}
+                    </span>
+                  </div>
+                  <span className="global-ratings-font">
+                    {productReviews.length}{" "}
+                    {productReviews.length > 1
+                      ? "global ratings"
+                      : "global rating"}
+                  </span>
                 </div>
-              ))}
+                {recentOrder && (
+                  <div className="write-review">
+                    <div> Want to share your review with others?</div>
+                    <a
+                      href="/account/my-reviews"
+                      className="btn btn-info btn-write-review"
+                    >
+                      Write review
+                    </a>
+                  </div>
+                )}
+              </div>
+              <RatingAndReviews
+                averageRating={calculateAverageRating(productReviews)}
+                totalReviews={productReviews.length}
+                reviews={productReviews}
+              />
             </div>
           </div>
         </div>

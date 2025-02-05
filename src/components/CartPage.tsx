@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import "bootstrap/dist/css/bootstrap.css";
-import "../App.css";
-import Header from "./Header";
+import "@src/App.css";
+import Header from "./home-common/Header";
 import "../css/CartPage.css";
 import { useNavigate } from "react-router-dom";
 import {

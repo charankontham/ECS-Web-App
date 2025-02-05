@@ -1,8 +1,8 @@
 import React, { useEffect, useState } from "react";
 import "bootstrap/dist/css/bootstrap.css";
-import "../App.css";
+import "@src/App.css";
 import "../css/AccountSettings.css";
-import Header from "./Header";
+import Header from "./home-common/Header";
 import Footer from "./Footer";
 import LoginSubSettingModule from "./LoginSubSettingModule";
 import axios from "axios";
@@ -16,7 +16,7 @@ import AddressForm from "./AddOrUpdateAddressModule";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faTrash } from "@fortawesome/free-solid-svg-icons";
 import MyOrders from "./MyOrders";
-import ProductReviews from "./ProductReviews";
+import ProductReviews from "./reviews-and-ratings/ProductReviews";
 
 const AccountSettings: React.FC<{ activeSection?: string }> = (
   accountSettings = { activeSection: "Login & Security" }

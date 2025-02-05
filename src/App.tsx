@@ -7,7 +7,7 @@ import SignUpPage from "./components/SignUpPage";
 import "bootstrap/dist/css/bootstrap.css";
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import { useNavigate } from "react-router-dom";
-import "./App.css";
+import "@src/App.css";
 import AccountSettings from "./components/AccountSettings";
 import MyOrders from "./components/MyOrders";
 import AddressesModule from "./components/AddressesModule";

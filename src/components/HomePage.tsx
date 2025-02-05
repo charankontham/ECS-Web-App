@@ -1,13 +1,13 @@
 import React, { useEffect, useState } from "react";
 import "bootstrap/dist/css/bootstrap.css";
-import "../App.css";
+import "@src/App.css";
 import "../css/HomePage.css";
-import Header from "./Header";
+import Header from "./home-common/Header";
 import Footer from "./Footer";
 import ProductCategoryBar from "./ProductCategoriesBar";
 import ProductsPage from "./ProductsPage";
 import HeroBanner from "./HeroBanner";
-import AllCategories from "./AllCategories";
+import AllCategories from "./home-common/AllCategories";
 
 const Homepage: React.FC = () => {
   const authToken = localStorage.getItem("authToken");

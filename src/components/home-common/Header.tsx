@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import "bootstrap/dist/css/bootstrap.css";
-import "../App.css";
-import "../css/Header.css";
+import "@src/App.css";
+import "../../css/Header.css";
 import {
   faGears,
   faShoppingCart,
@@ -10,11 +10,11 @@ import {
   faWrench,
 } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import Customer from "../interfaces/Customer";
+import Customer from "../../interfaces/Customer";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import { jwtDecode } from "jwt-decode";
-import { Cart } from "../interfaces/Cart";
+import { Cart } from "../../interfaces/Cart";
 import { Client } from "@stomp/stompjs";
 import SockJS from "sockjs-client";
 

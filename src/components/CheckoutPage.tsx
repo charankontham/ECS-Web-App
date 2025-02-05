@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import "bootstrap/dist/css/bootstrap.min.css";
 import "../css/CheckoutPage.css";
-import Header from "./Header";
+import Header from "./home-common/Header";
 import { jwtDecode } from "jwt-decode";
 import axios from "axios";
 import Customer from "../interfaces/Customer";
