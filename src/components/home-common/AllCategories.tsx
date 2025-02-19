@@ -3,21 +3,13 @@ import axios from "axios";
 import "bootstrap/dist/css/bootstrap.css";
 import "../../css/AllCatgories.css";
 import ProductCategory from "../../interfaces/ProductCategory";
+import { useNavigate } from "react-router-dom";
 
-interface ChildProps {
-  setProductCategoryId: (id: number) => void;
-}
-
-const AllCategories: React.FC<ChildProps> = ({ setProductCategoryId }) => {
+const AllCategories: React.FC = () => {
   const [productCategories, setProductCategories] = useState<
     ProductCategory[] | null
   >(null);
-
-  interface Category {
-    id: number;
-    name: string;
-    image: string;
-  }
+  const navigate = useNavigate();
 
   useEffect(() => {
     try {
@@ -47,9 +39,7 @@ const AllCategories: React.FC<ChildProps> = ({ setProductCategoryId }) => {
                 <div
                   className="category-card card shadow-sm h-100 text-center"
                   onClick={() =>
-                    setProductCategoryId(
-                      category.categoryId ? category.categoryId : 0
-                    )
+                    navigate("/products/category/" + category.categoryId)
                   }
                 >
                   <img

@@ -35,7 +35,7 @@ const Header: React.FC = () => {
         console.log("Connected to WebSocket");
         stompClient.subscribe("/topic/messages", (message: any) => {
           const updatedCart = JSON.parse(message.body);
-          console.log("Cart from web socket : ", updatedCart);
+          // console.log("Cart from web socket : ", updatedCart);
           setCart(updatedCart);
         });
       },
@@ -46,7 +46,7 @@ const Header: React.FC = () => {
         console.error("Broker reported error:", frame.headers["message"]);
       },
       debug: (str) => {
-        console.log(str);
+        // console.log(str);
       },
     });
 

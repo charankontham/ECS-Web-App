@@ -11,8 +11,6 @@ import Header from "./home-common/Header";
 import ProductCategoryBar from "./ProductCategoriesBar";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faBolt, faCartShopping } from "@fortawesome/free-solid-svg-icons";
-import ProductsPage from "./ProductsPage";
-import AllCategories from "./home-common/AllCategories";
 import { Product } from "../interfaces/Product";
 import Customer from "../interfaces/Customer";
 import { jwtDecode } from "jwt-decode";
@@ -34,14 +32,6 @@ import StarRating from "./reviews-and-ratings/StarRating";
 //   similarProducts: ProductSummary[];
 // }
 
-interface Review {
-  subject: string;
-  description: string;
-  rating: number;
-  image?: string;
-  video?: string;
-}
-
 interface ProductSummary {
   id: string;
   name: string;
@@ -53,7 +43,6 @@ const ViewProductDetails: React.FC = () => {
   const { productId } = useParams<{ productId: string }>();
   const [productDetails, setProductDetails] = useState<Product | null>(null);
   const apiBaseURL = "http://localhost:8080";
-  const [productCategoryId, setProductCategoryId] = useState(-1);
   const [customer, setCustomer] = useState<Customer | null>(null);
   const cartApiBaseURL = "http://localhost:8080/ecs-order/api/cart";
   const [selectedProductQuantity, setSelectedProductQuantity] =
@@ -101,9 +90,7 @@ const ViewProductDetails: React.FC = () => {
     warranty: "2 years",
     color: "black",
   };
-
   const authToken = localStorage.getItem("authToken");
-
   // const product: Product = {
   //   brand: "fastrack",
   //   description: "fastrcak watches are the biggest brand in india",
@@ -131,7 +118,6 @@ const ViewProductDetails: React.FC = () => {
   }, []);
 
   useEffect(() => {
-    setProductCategoryId(-1);
     try {
       axios
         .get(apiBaseURL + "/ecs-product/api/product/" + productId)
@@ -145,6 +131,27 @@ const ViewProductDetails: React.FC = () => {
       console.log("Error in try catch block : ", error);
     }
   }, [productId]);
+
+  const setRecentOrderFunction = (
+    currentProductId: number,
+    orders: Order[]
+  ) => {
+    var recentOrderDate: Date = new Date("1970-01-01");
+    const recentOrders = orders.filter((order: Order) => {
+      return order.orderItems.find((item: Product) => {
+        return item.productId == currentProductId;
+      });
+    });
+    recentOrders.map((order: Order) => {
+      if (order.orderDate.getTime() > recentOrderDate.getTime()) {
+        recentOrderDate = order.orderDate;
+        setRecentOrder(order);
+      }
+    });
+    if (recentOrders.length < 1) {
+      setRecentOrder(null);
+    }
+  };
 
   const fetchCustomerOrdersAndReviews = async () => {
     if (authToken) {
@@ -161,42 +168,13 @@ const ViewProductDetails: React.FC = () => {
             },
           }
         );
-
         if (customerResponse.status == 200) {
           setCustomer(customerResponse.data);
         } else {
           console.log("Error data : ", customerResponse.data);
         }
-
-        const myOrdersResponse = await axios.get(
-          apiBaseURL +
-            `/ecs-order/api/order/getOrdersByCustomerId/${customerResponse.data.customerId}`,
-          {
-            headers: {
-              Authorization: `Bearer ${authToken}`,
-              "Content-Type": "application/json",
-            },
-          }
-        );
-
-        myOrdersResponse.data.map((order: Order) => {
-          const standardOrderDate = new Date(order.orderDate);
-          const standardDeliveryDate = new Date(order.deliveryDate);
-          order.orderDate = standardOrderDate;
-          order.deliveryDate = standardDeliveryDate;
-        });
-        let recentOrderDate: Date = new Date("1970-01-01");
-        myOrdersResponse.data.map((order: Order) => {
-          if (
-            order.orderItems.map((item: Product) => {
-              return item.productId == parseInt(productId || "-1");
-            })
-          ) {
-            if (order.orderDate.getTime() > recentOrderDate.getTime()) {
-              recentOrderDate = order.orderDate;
-              setRecentOrder(order);
-            }
-          }
+        getmyOrders(customerResponse.data.customerId).then((orders) => {
+          setRecentOrderFunction(Number(productId), orders);
         });
       } else {
         console.log("Session Expired!");
@@ -219,14 +197,15 @@ const ViewProductDetails: React.FC = () => {
       (sum, review) => sum + (review.productRating || 0),
       0
     );
-
-    console.log(totalRating / reviews.length);
-
     return totalRating / reviews.length;
   }
 
   const setCategoryId = (id: number) => {
-    setProductCategoryId(id);
+    if (id == 0) {
+      navigate("/all-categories");
+    } else {
+      navigate("/products/category/" + id);
+    }
   };
 
   const showPopup = () => {
@@ -292,6 +271,38 @@ const ViewProductDetails: React.FC = () => {
     }
   };
 
+  const getmyOrders = async (customerId: number): Promise<Order[]> => {
+    if (authToken) {
+      const decodedToken = jwtDecode(authToken);
+      const email = decodedToken.sub;
+      const currentTime = Date.now() / 1000;
+      if ((decodedToken.exp ? decodedToken.exp : 0) >= currentTime) {
+        const myOrdersResponse = await axios.get(
+          apiBaseURL +
+            `/ecs-order/api/order/getOrdersByCustomerId/${customerId}`,
+          {
+            headers: {
+              Authorization: `Bearer ${authToken}`,
+              "Content-Type": "application/json",
+            },
+          }
+        );
+
+        myOrdersResponse.data.map((order: Order) => {
+          const standardOrderDate = new Date(order.orderDate);
+          const standardDeliveryDate = new Date(order.deliveryDate);
+          order.orderDate = standardOrderDate;
+          order.deliveryDate = standardDeliveryDate;
+        });
+        return myOrdersResponse.data;
+      } else {
+        return [];
+      }
+    } else {
+      return [];
+    }
+  };
+
   return (
     <>
       <div className="nav-bar">
@@ -301,7 +312,7 @@ const ViewProductDetails: React.FC = () => {
         setProductCategoryId={setCategoryId}
       ></ProductCategoryBar>
 
-      {recentOrder && (
+      {recentOrder && recentOrder != null && (
         <div className="container last-purchased-div">
           {" "}
           Last purchased on {recentOrder.orderDate.toDateString()},{" "}
@@ -314,229 +325,214 @@ const ViewProductDetails: React.FC = () => {
         </div>
       )}
 
-      {productCategoryId == -1 && (
-        <div className="product-container">
-          <div className="product-intro">
-            {/* Product Images */}
-            <div className="product-images">
-              <ProductImagesBlock
-                images={
-                  productDetails == null
-                    ? []
-                    : [
-                        productDetails?.productImage,
-                        "hello",
-                        "world",
-                        "Test1",
-                        "Test2",
-                        "Test3",
-                        "Test4",
-                      ]
-                }
-              ></ProductImagesBlock>
-            </div>
+      <div className="product-container">
+        <div className="product-intro">
+          {/* Product Images */}
+          <div className="product-images">
+            <ProductImagesBlock
+              images={
+                productDetails == null
+                  ? []
+                  : [
+                      productDetails?.productImage,
+                      "hello",
+                      "world",
+                      "Test1",
+                      "Test2",
+                      "Test3",
+                      "Test4",
+                    ]
+              }
+            ></ProductImagesBlock>
+          </div>
 
-            {/* Product Info */}
-            <div className="product-info">
-              <div className="basic-details">
-                <h1>{productDetails?.productName}</h1>
-                <h2>by {productDetails?.brand.brandName}</h2>
-                <div className="product-rating">
-                  {calculateAverageRating(productReviews).toFixed(1)}{" "}
-                  <StarRating
-                    rating={calculateAverageRating(productReviews)}
-                    size="regular"
-                  />{" "}
-                  |{" "}
-                  <a href="#product-reviews">
-                    {productReviews.length}{" "}
-                    {productReviews.length > 1 ? "ratings" : "rating"}
-                  </a>
-                </div>
-                <p> 3k+ bought in last month</p>
-                <hr></hr>
-                <p className="product-price">
-                  ${productDetails?.productPrice.toFixed(2)}
-                </p>
-                <p className="product-description">
-                  {productDetails?.productDescription}
-                </p>
+          {/* Product Info */}
+          <div className="product-info">
+            <div className="basic-details">
+              <h1>{productDetails?.productName}</h1>
+              <h2>by {productDetails?.brand.brandName}</h2>
+              <div className="product-rating">
+                {calculateAverageRating(productReviews).toFixed(1)}{" "}
+                <StarRating
+                  rating={calculateAverageRating(productReviews)}
+                  size="regular"
+                />{" "}
+                |{" "}
+                <a href="#product-reviews">
+                  {productReviews.length}{" "}
+                  {productReviews.length > 1 ? "ratings" : "rating"}
+                </a>
               </div>
-              <div className="product-features">
-                <strong>Features</strong>
-                <p>1. very good wrist watch</p>
-              </div>
+              <p> 3k+ bought in last month</p>
+              <hr></hr>
+              <p className="product-price">
+                ${productDetails?.productPrice.toFixed(2)}
+              </p>
+              <p className="product-description">
+                {productDetails?.productDescription}
+              </p>
             </div>
-
-            <div className="buy-product-options">
-              <div className="pd-5">
-                <strong>FREE Delivery</strong>{" "}
-                <span>Get it by Tuesday, order within 7 hours</span>
-                <br />
-                <strong>Fast Delivery | Shipping Fee $6.99</strong>{" "}
-                <span>Get it by Tomorrow </span>
-                <br />
-                <span>
-                  Zip Code: <a href="#">33496</a>
-                </span>
-                {productDetails?.productQuantity != undefined &&
-                  productDetails?.productQuantity > 0 && (
-                    <p className="in-stock">In Stock</p>
-                  )}
-                {productDetails?.productQuantity == undefined ||
-                  (productDetails.productQuantity <= 0 && (
-                    <p className="out-of-stock">Out of Stock</p>
-                  ))}
-                <select
-                  className="select-quantity btn"
-                  value={selectedProductQuantity}
-                  id="quantity-select"
-                  onChange={(e) =>
-                    setSelectedProductQuantity(parseInt(e.target.value))
-                  }
-                >
-                  <option value={selectedProductQuantity}>
-                    Quantity: {selectedProductQuantity}
-                  </option>
-                  {quantities.map(
-                    (quantity) =>
-                      quantity !== selectedProductQuantity && (
-                        <option key={quantity} value={quantity}>
-                          {quantity}
-                        </option>
-                      )
-                  )}
-                </select>
-                <div className="product-actions">
-                  <button
-                    className="btn btn-add-to-cart"
-                    disabled={
-                      productDetails && productDetails?.productQuantity <= 0
-                        ? true
-                        : false
-                    }
-                    onClick={() => addToCart(productDetails?.productId || -1)}
-                  >
-                    <FontAwesomeIcon icon={faCartShopping}></FontAwesomeIcon>{" "}
-                    Add to Cart
-                  </button>
-                  <button
-                    className="btn btn-buy-now"
-                    disabled={
-                      productDetails &&
-                      productDetails?.productQuantity <= selectedProductQuantity
-                        ? true
-                        : false
-                    }
-                    onClick={() => buyNow(productDetails?.productId || -1)}
-                  >
-                    <FontAwesomeIcon icon={faBolt}></FontAwesomeIcon> Buy Now
-                  </button>
-                </div>
-              </div>
+            <div className="product-features">
+              <strong>Features</strong>
+              <p>1. very good wrist watch</p>
             </div>
           </div>
 
-          {/* Product Specifications */}
-          <div className="product-specifications">
-            <h3>Product Specifications</h3>
-            <hr />
-            <table className="table table-striped">
-              {/* {product-specifications-table} */}
-              <tbody>
-                {Object.entries(specs).map(([key, value], index) => (
-                  <tr key={index}>
-                    <td>
-                      <strong>{key}</strong>
-                    </td>
-                    <td>{value}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-
-          {/* Similar Products */}
-          <div className="similar-products">
-            <h3>Similar Products</h3>
-            <hr />
-            <div className="similar-products-list">
-              {similarProducts.map((similarProduct) => (
-                <div key={similarProduct.id} className="similar-product-card">
-                  <img
-                    src={
-                      similarProduct.image
-                        ? "/src/assets/images/product-images/" +
-                          similarProduct.image
-                        : ""
-                    }
-                    alt={similarProduct.name}
-                  />
-                  <h4>{similarProduct.name}</h4>
-                  <p>${similarProduct.price.toFixed(2)}</p>
-                </div>
-              ))}
-            </div>
-            {/* <ProductsPage type="similar-products" value={12}></ProductsPage> */}
-          </div>
-
-          {/* Product Ratings & Reviews */}
-          <div className="product-reviews" id="product-reviews">
-            <h3>Ratings & Reviews</h3>
-            <hr />
-            <div className="flex-gap-15">
-              <div className="col-lg-3">
-                <div className="average-product-rating">
-                  <div className="flex-gap-15">
-                    <StarRating
-                      rating={calculateAverageRating(productReviews)}
-                      size="large"
-                    />
-                    <span className="h5-font">
-                      {calculateAverageRating(productReviews)} out of 5{" "}
-                    </span>
-                  </div>
-                  <span className="global-ratings-font">
-                    {productReviews.length}{" "}
-                    {productReviews.length > 1
-                      ? "global ratings"
-                      : "global rating"}
-                  </span>
-                </div>
-                {recentOrder && (
-                  <div className="write-review">
-                    <div> Want to share your review with others?</div>
-                    <a
-                      href="/account/my-reviews"
-                      className="btn btn-info btn-write-review"
-                    >
-                      Write review
-                    </a>
-                  </div>
+          <div className="buy-product-options">
+            <div className="pd-5">
+              <strong>FREE Delivery</strong>{" "}
+              <span>Get it by Tuesday, order within 7 hours</span>
+              <br />
+              <strong>Fast Delivery | Shipping Fee $6.99</strong>{" "}
+              <span>Get it by Tomorrow </span>
+              <br />
+              <span>
+                Zip Code: <a href="#">33496</a>
+              </span>
+              {productDetails?.productQuantity != undefined &&
+                productDetails?.productQuantity > 0 && (
+                  <p className="in-stock">In Stock</p>
                 )}
+              {productDetails?.productQuantity == undefined ||
+                (productDetails.productQuantity <= 0 && (
+                  <p className="out-of-stock">Out of Stock</p>
+                ))}
+              <select
+                className="select-quantity btn"
+                value={selectedProductQuantity}
+                id="quantity-select"
+                onChange={(e) =>
+                  setSelectedProductQuantity(parseInt(e.target.value))
+                }
+              >
+                <option value={selectedProductQuantity}>
+                  Quantity: {selectedProductQuantity}
+                </option>
+                {quantities.map(
+                  (quantity) =>
+                    quantity !== selectedProductQuantity && (
+                      <option key={quantity} value={quantity}>
+                        {quantity}
+                      </option>
+                    )
+                )}
+              </select>
+              <div className="product-actions">
+                <button
+                  className="btn btn-add-to-cart"
+                  disabled={
+                    productDetails && productDetails?.productQuantity <= 0
+                      ? true
+                      : false
+                  }
+                  onClick={() => addToCart(productDetails?.productId || -1)}
+                >
+                  <FontAwesomeIcon icon={faCartShopping}></FontAwesomeIcon> Add
+                  to Cart
+                </button>
+                <button
+                  className="btn btn-buy-now"
+                  disabled={
+                    productDetails &&
+                    productDetails?.productQuantity <= selectedProductQuantity
+                      ? true
+                      : false
+                  }
+                  onClick={() => buyNow(productDetails?.productId || -1)}
+                >
+                  <FontAwesomeIcon icon={faBolt}></FontAwesomeIcon> Buy Now
+                </button>
               </div>
-              <RatingAndReviews
-                averageRating={calculateAverageRating(productReviews)}
-                totalReviews={productReviews.length}
-                reviews={productReviews}
-              />
             </div>
           </div>
         </div>
-      )}
 
-      {productCategoryId == 0 && (
-        <AllCategories
-          setProductCategoryId={setProductCategoryId}
-        ></AllCategories>
-      )}
+        {/* Product Specifications */}
+        <div className="product-specifications">
+          <h3>Product Specifications</h3>
+          <hr />
+          <table className="table table-striped">
+            {/* {product-specifications-table} */}
+            <tbody>
+              {Object.entries(specs).map(([key, value], index) => (
+                <tr key={index}>
+                  <td>
+                    <strong>{key}</strong>
+                  </td>
+                  <td>{value}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
 
-      {productCategoryId > 0 && (
-        <ProductsPage
-          type={"category"}
-          value={productCategoryId}
-        ></ProductsPage>
-      )}
+        {/* Similar Products */}
+        <div className="similar-products">
+          <h3>Similar Products</h3>
+          <hr />
+          <div className="similar-products-list">
+            {similarProducts.map((similarProduct) => (
+              <div key={similarProduct.id} className="similar-product-card">
+                <img
+                  src={
+                    similarProduct.image
+                      ? "/src/assets/images/product-images/" +
+                        similarProduct.image
+                      : ""
+                  }
+                  alt={similarProduct.name}
+                />
+                <h4>{similarProduct.name}</h4>
+                <p>${similarProduct.price.toFixed(2)}</p>
+              </div>
+            ))}
+          </div>
+          {/* <ProductsPage type="similar-products" value={12}></ProductsPage> */}
+        </div>
+
+        {/* Product Ratings & Reviews */}
+        <div className="product-reviews" id="product-reviews">
+          <h3>Ratings & Reviews</h3>
+          <hr />
+          <div className="flex-gap-15">
+            <div className="col-lg-3">
+              <div className="average-product-rating">
+                <div className="flex-gap-15">
+                  <StarRating
+                    rating={calculateAverageRating(productReviews)}
+                    size="large"
+                  />
+                  <span className="h5-font">
+                    {calculateAverageRating(productReviews)} out of 5{" "}
+                  </span>
+                </div>
+                <span className="global-ratings-font">
+                  {productReviews.length}{" "}
+                  {productReviews.length > 1
+                    ? "global ratings"
+                    : "global rating"}
+                </span>
+              </div>
+              {recentOrder && (
+                <div className="write-review">
+                  <div> Want to share your review with others?</div>
+                  <a
+                    href="/account/my-reviews"
+                    className="btn btn-info btn-write-review"
+                  >
+                    Write review
+                  </a>
+                </div>
+              )}
+            </div>
+            <RatingAndReviews
+              averageRating={calculateAverageRating(productReviews)}
+              totalReviews={productReviews.length}
+              reviews={productReviews}
+            />
+          </div>
+        </div>
+      </div>
 
       {isPopupVisible && (
         <div className="popup-overlay">

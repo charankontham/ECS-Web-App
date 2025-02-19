@@ -14,6 +14,7 @@ import AddressesModule from "./components/AddressesModule";
 import ViewProductDetails from "./components/ViewProductDetails";
 import CheckoutPage from "./components/CheckoutPage";
 import OrderPlaced from "./components/OrderPlaced";
+import ViewAllCategories from "@components/ViewAllCategories";
 
 const App: React.FC = () => {
   return (
@@ -48,6 +49,8 @@ const App: React.FC = () => {
           />
           <Route path="/cart" element={<CartPage />} />
           <Route path="/product/:productId" element={<ViewProductDetails />} />
+          <Route path="/products/:type/:value?" element={<ProductsPage />} />
+          <Route path="/all-categories" element={<ViewAllCategories />} />
           <Route path="/order-placed-success" element={<OrderPlaced />} />
         </Routes>
       </div>

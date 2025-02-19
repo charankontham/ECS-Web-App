@@ -5,38 +5,27 @@ import "../css/HomePage.css";
 import Header from "./home-common/Header";
 import Footer from "./Footer";
 import ProductCategoryBar from "./ProductCategoriesBar";
-import ProductsPage from "./ProductsPage";
 import HeroBanner from "./HeroBanner";
-import AllCategories from "./home-common/AllCategories";
+import { useNavigate } from "react-router-dom";
 
 const Homepage: React.FC = () => {
-  const authToken = localStorage.getItem("authToken");
-  const [categoryId, setProductCategoryId] = useState<number>(-1);
-
+  const navigate = useNavigate();
   const handleCategoryIdEvent = (categoryId: number) => {
-    setProductCategoryId(categoryId);
+    if (categoryId == 0) {
+      navigate("/all-categories");
+    } else {
+      console.log("Id : ", categoryId);
+      navigate("/products/category/" + categoryId);
+    }
   };
 
   return (
     <div className="homepage">
       <Header></Header>
-
       <ProductCategoryBar
         setProductCategoryId={handleCategoryIdEvent}
       ></ProductCategoryBar>
-
-      {categoryId == -1 && <HeroBanner></HeroBanner>}
-
-      {categoryId == 0 && (
-        <AllCategories
-          setProductCategoryId={handleCategoryIdEvent}
-        ></AllCategories>
-      )}
-
-      {categoryId > 0 && (
-        <ProductsPage type={"category"} value={categoryId}></ProductsPage>
-      )}
-
+      <HeroBanner></HeroBanner>
       <Footer></Footer>
     </div>
   );
