@@ -52,38 +52,39 @@ const ViewProductDetails: React.FC = () => {
   const navigate = useNavigate();
   const [isPopupVisible, setPopupVisible] = useState(false);
   const [productReviews, setProductReviews] = useState<ProductReview[]>([]);
-  const similarProducts: ProductSummary[] = [
-    {
-      id: "34",
-      name: "pd-34",
-      image: "samsung_galaxy_s23_ultra_12gb_256gb_2.jpg",
-      price: 5,
-    },
-    {
-      id: "35",
-      name: "pd-35",
-      image: "fastrack_leather_watch_brown_1.jpg",
-      price: 6,
-    },
-    {
-      id: "36",
-      name: "pd-36",
-      image: "fastrack_leather_watch_brown_1.jpg",
-      price: 7,
-    },
-    {
-      id: "37",
-      name: "pd-37",
-      image: "fastrack_leather_watch_brown_1.jpg",
-      price: 8,
-    },
-    {
-      id: "38",
-      name: "pd-38",
-      image: "fastrack_leather_watch_brown_1.jpg",
-      price: 9,
-    },
-  ];
+  const [similarProducts, setSimilarProducts] = useState<Product[]>([]);
+  // const similarProducts: ProductSummary[] = [
+  //   {
+  //     id: "34",
+  //     name: "pd-34",
+  //     image: "samsung_galaxy_s23_ultra_12gb_256gb_2.jpg",
+  //     price: 5,
+  //   },
+  //   {
+  //     id: "35",
+  //     name: "pd-35",
+  //     image: "fastrack_leather_watch_brown_1.jpg",
+  //     price: 6,
+  //   },
+  //   {
+  //     id: "36",
+  //     name: "pd-36",
+  //     image: "fastrack_leather_watch_brown_1.jpg",
+  //     price: 7,
+  //   },
+  //   {
+  //     id: "37",
+  //     name: "pd-37",
+  //     image: "fastrack_leather_watch_brown_1.jpg",
+  //     price: 8,
+  //   },
+  //   {
+  //     id: "38",
+  //     name: "pd-38",
+  //     image: "fastrack_leather_watch_brown_1.jpg",
+  //     price: 9,
+  //   },
+  // ];
   const specs: Record<string, string> = {
     weight: "2kgs",
     dimensions: "12 x 86 x 50",
@@ -181,11 +182,16 @@ const ViewProductDetails: React.FC = () => {
         localStorage.setItem("authToken", "");
       }
     }
-    const myReviewsResponse = await axios.get(
+    const productReviewsResponse = await axios.get(
       apiBaseURL +
         `/ecs-reviews/api/productReview/getReviewsByProductId/${productId}`
     );
-    setProductReviews(myReviewsResponse.data);
+    setProductReviews(productReviewsResponse.data);
+    const similarProductsResponse = await axios.get(
+      apiBaseURL +
+        `/ecs-product/api/product/getSimilarProductsById/${productId}`
+    );
+    setSimilarProducts(similarProductsResponse.data);
   };
 
   function calculateAverageRating(reviews: ProductReview[]): number {
@@ -472,19 +478,27 @@ const ViewProductDetails: React.FC = () => {
           <hr />
           <div className="similar-products-list">
             {similarProducts.map((similarProduct) => (
-              <div key={similarProduct.id} className="similar-product-card">
-                <img
-                  src={
-                    similarProduct.image
-                      ? "/src/assets/images/product-images/" +
-                        similarProduct.image
-                      : ""
-                  }
-                  alt={similarProduct.name}
-                />
-                <h4>{similarProduct.name}</h4>
-                <p>${similarProduct.price.toFixed(2)}</p>
-              </div>
+              <a href={"/product/" + similarProduct.productId}>
+                <div
+                  key={similarProduct.productId}
+                  className="similar-product-card"
+                  // onClick={() => navigate("/product/" + similarProduct.productId)}
+                >
+                  <img
+                    src={
+                      similarProduct.productImage
+                        ? "/src/assets/images/product-images/" +
+                          similarProduct.productImage
+                        : ""
+                    }
+                    alt={similarProduct.productName}
+                  />
+                  <h5 className="product-title">
+                    {similarProduct.productName}
+                  </h5>
+                  <p>${similarProduct.productPrice.toFixed(2)}</p>
+                </div>
+              </a>
             ))}
           </div>
           {/* <ProductsPage type="similar-products" value={12}></ProductsPage> */}

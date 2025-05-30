@@ -125,6 +125,7 @@ td {
 .similar-products-list {
   display: flex;
   gap: 15px;
+  overflow-x: scroll;
 }
 
 .similar-product-card {
@@ -134,6 +135,11 @@ td {
   border-radius: 5px;
   width: 150px;
   text-align: center;
+}
+
+.similar-products-list a {
+  text-decoration: none;
+  color: black;
 }
 
 .similar-product-card img {
@@ -229,6 +235,18 @@ td {
 
 .write-review {
   margin-top: 20px;
+}
+
+.product-title {
+  -webkit-line-clamp: 2;
+  max-height: 86.4px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  padding: 2px;
+  font-size: 15px;
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  text-rendering: optimizeLegibility;
 }
 
 /* Popup box styling */

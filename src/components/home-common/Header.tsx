@@ -96,7 +96,6 @@ const Header: React.FC = () => {
           }
         } else {
           console.log("Session Expired!");
-          // navigate("/login");
         }
       }
     } catch (error) {
