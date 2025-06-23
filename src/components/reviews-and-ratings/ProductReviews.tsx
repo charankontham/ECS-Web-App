@@ -352,10 +352,7 @@ const ProductReviews: React.FC = () => {
               <div key={product.productId}>
                 <div className="review-product-link" key={product.productId}>
                   <img
-                    src={
-                      "/src/assets/images/product-images/" +
-                      product.productImage
-                    }
+                    src={`http://localhost:8080/ecs-inventory-admin/api/public/images/view/getImageById/${product.productImage}`}
                     alt={product.productName}
                   />
                   <div className="product-review-list-view">
@@ -396,10 +393,7 @@ const ProductReviews: React.FC = () => {
           <br />
           <div className="product-heading">
             <img
-              src={
-                "/src/assets/images/product-images/" +
-                selectedProduct.productImage
-              }
+              src={`http://localhost:8080/ecs-inventory-admin/api/public/images/view/getImageById/${selectedProduct.productImage}`}
               alt={selectedProduct.productName}
             ></img>
             <p>{selectedProduct.productName}</p>

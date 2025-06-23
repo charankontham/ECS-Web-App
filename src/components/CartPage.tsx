@@ -264,12 +264,7 @@ const CartPage: React.FC = () => {
                     ></input>
                   </div>
                   <img
-                    src={
-                      item.productDetails.productImage
-                        ? "/src/assets/images/product-images/" +
-                          item.productDetails.productImage
-                        : ""
-                    }
+                    src={`http://localhost:8080/ecs-inventory-admin/api/public/images/view/getImageById/${item.productDetails.productImage}`}
                     alt={item.productDetails.productName}
                     className="item-image"
                   />

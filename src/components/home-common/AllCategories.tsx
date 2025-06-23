@@ -11,6 +11,26 @@ const AllCategories: React.FC = () => {
   >(null);
   const navigate = useNavigate();
 
+  // const getImageUrl = (imageId: string): string => {
+  //   try {
+  //     const response = axios.get(
+  //       `http://localhost:8080/ecs-inventory-admin/api/public/images/getByImageId/${imageId}`,
+  //       {
+  //         headers: {
+  //           "Content-Type": "application/json",
+  //         },
+  //       }
+  //     );
+
+  //     const imageUrl = `data:${response.data.contentType};base64,${response.data.image}`;
+  //     console.log("Image URL:", imageUrl);
+  //     return imageUrl;
+  //   } catch (error) {
+  //     console.error("Error fetching image:", error);
+  //     return "error"; // Or fallback image URL
+  //   }
+  // };
+
   useEffect(() => {
     try {
       axios
@@ -43,12 +63,7 @@ const AllCategories: React.FC = () => {
                   }
                 >
                   <img
-                    src={
-                      category.categoryImage
-                        ? "/src/assets/images/category-images/" +
-                          category.categoryImage
-                        : ""
-                    } //{category.image}
+                    src={`http://localhost:8080/ecs-inventory-admin/api/public/images/view/getImageById/${category.categoryImage}`}
                     alt={category.categoryName}
                     className="card-img-top category-image"
                   />

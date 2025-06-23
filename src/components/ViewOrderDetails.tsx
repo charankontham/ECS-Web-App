@@ -174,12 +174,7 @@ const ViewOrderDetails: React.FC<ViewOrderDetailsProps> = ({
           <div className="order-item" key={index}>
             <div>
               <img
-                src={
-                  orderItem.productImage
-                    ? "/src/assets/images/product-images/" +
-                      orderItem.productImage
-                    : ""
-                }
+                src={`http://localhost:8080/ecs-inventory-admin/api/public/images/view/getImageById/${orderItem.productImage}`}
                 alt={orderItem.productName}
                 className="order-item-image"
               />

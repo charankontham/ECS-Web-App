@@ -551,12 +551,7 @@ const MyOrders: React.FC<{
                     <div className="order-item-body" key={index}>
                       <Col md={4} className="order-item-img-column">
                         <img
-                          src={
-                            orderItem.productImage
-                              ? "/src/assets/images/product-images/" +
-                                orderItem.productImage
-                              : ""
-                          }
+                          src={`http://localhost:8080/ecs-inventory-admin/api/public/images/view/getImageById/${orderItem.productImage}`}
                           alt={orderItem.productName}
                           className="img-fluid rounded"
                         />

@@ -485,12 +485,7 @@ const ViewProductDetails: React.FC = () => {
                   // onClick={() => navigate("/product/" + similarProduct.productId)}
                 >
                   <img
-                    src={
-                      similarProduct.productImage
-                        ? "/src/assets/images/product-images/" +
-                          similarProduct.productImage
-                        : ""
-                    }
+                    src={`http://localhost:8080/ecs-inventory-admin/api/public/images/view/getImageById/${similarProduct.productImage}`}
                     alt={similarProduct.productName}
                   />
                   <h5 className="product-title">

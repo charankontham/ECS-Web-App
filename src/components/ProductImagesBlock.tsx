@@ -64,11 +64,7 @@ const ProductImagesBlock: React.FC<ProductImagesProps> = ({ images }) => {
           onMouseLeave={() => setIsZoomed(false)}
         >
           <img
-            src={
-              selectedImage.image
-                ? "/src/assets/images/product-images/" + selectedImage.image
-                : ""
-            }
+            src={`http://localhost:8080/ecs-inventory-admin/api/public/images/view/getImageById/${selectedImage.image}`}
             alt="Selected Product"
             className={`main-image ${isZoomed ? "zoomed" : ""}`}
             style={{ transformOrigin: `${zoomPosition.x}% ${zoomPosition.y}%` }}
