@@ -27,7 +27,7 @@ const CheckoutPage = () => {
   const paymentMethods = ["Credit/Debit Card", "PayPal", "Cash on Delivery"];
   const emptyAddress: Address = {
     addressId: null,
-    customerId: !!customer ? customer.customerId : null,
+    userId: !!customer ? "customer_" + customer.customerId : null,
     name: null,
     contact: null,
     street: "",
@@ -60,7 +60,7 @@ const CheckoutPage = () => {
             );
             setCustomer(customerResponse.data);
             const addressResponse = await axios.get(
-              `http://localhost:8080/ecs-customer/api/address/getAllAddressByCustomerId/${customerResponse.data.customerId}`,
+              `http://localhost:8080/ecs-customer/api/address/getAllAddressByUserId/customer_${customerResponse.data.customerId}`,
               {
                 headers: {
                   Authorization: `Bearer ${authToken}`,

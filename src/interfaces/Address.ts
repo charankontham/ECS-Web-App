@@ -1,6 +1,6 @@
 interface Address {
   addressId: number | null;
-  customerId: number | null;
+  userId: string | null;
   name: string | null;
   contact: string | null;
   street: string;

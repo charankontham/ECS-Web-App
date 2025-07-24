@@ -27,7 +27,7 @@ const AddressForm: React.FC<AddressFormProps> = ({
       ? address
       : {
           addressId: null,
-          customerId: customer !== null ? customer.customerId : null,
+          userId: customer !== null ? "customer_" + customer.customerId : null,
           name: "",
           contact: "",
           street: "",

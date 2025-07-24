@@ -26,6 +26,8 @@ const AddressesModule: React.FC<AddressProps> = ({
   const authToken = localStorage.getItem("authToken");
   const navigate = useNavigate();
   const [addresses, setAddresses] = useState<Address[]>(addressList);
+  const [error, setError] = useState<string | null>(null);
+  const [success, setSuccess] = useState<string | null>(null);
 
   const deleteAddress = (addressId: number) => {
     if (addressId === -1) {
@@ -46,9 +48,34 @@ const AddressesModule: React.FC<AddressProps> = ({
                 (address) => address.addressId !== addressId
               );
               setAddresses(updatedAddresses);
+              setSuccess("Address deleted successfully!");
+              setTimeout(() => {
+                setSuccess(null);
+              }, 3000);
+            } else {
+              console.error(
+                "Failed to delete address, status code:",
+                response.status
+              );
+              setError("Cannot delete address due to contraints!");
+              setTimeout(() => {
+                setError(null);
+              }, 3000);
             }
           })
-          .catch((error) => {});
+          .catch((error) => {
+            console.error("Error deleting address:", error);
+            if (error.response && error.response.status === 401) {
+              console.log("Unauthorized access, redirecting to sign in.");
+              navigate("/signIn");
+            } else {
+              console.error("Failed to delete address:", error);
+              setError("Cannot delete address due to contraints!");
+              setTimeout(() => {
+                setError(null);
+              }, 3000);
+            }
+          });
       } else {
         console.log("Session expired!");
         navigate("/signIn");
@@ -69,6 +96,8 @@ const AddressesModule: React.FC<AddressProps> = ({
         <FontAwesomeIcon icon={faPlus} size="xl"></FontAwesomeIcon> Add a new
         address
       </button>
+      {error && <div className="alert alert-danger">{error}</div>}
+      {success && <div className="alert alert-success">{success}</div>}
       <ul className="list-group" id="addresses-list">
         {addresses &&
           addresses.map((address) => (

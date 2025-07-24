@@ -129,7 +129,7 @@ const AccountSettings: React.FC<{ activeSection?: string }> = (
             }
 
             const addressResponse = await axios.get(
-              `http://localhost:8080/ecs-customer/api/address/getAllAddressByCustomerId/${customerResponse.data.customerId}`,
+              `http://localhost:8080/ecs-customer/api/address/getAllAddressByUserId/customer_${customerResponse.data.customerId}`,
               {
                 headers: {
                   Authorization: `Bearer ${authToken}`,
