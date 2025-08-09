@@ -5,6 +5,7 @@ Pending tasks
 - Update the validations for signin and singup forms
 - color grading for components
 - Responsiveness for the web-app
+- all colors are inverted to different colors. need to adjust the colors
 
 Run Application
 

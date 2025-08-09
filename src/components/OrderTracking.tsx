@@ -2,48 +2,111 @@ import React from "react";
 import "../css/OrderTracking.css";
 
 interface OrderStage {
-  status: string;
-  //   label: string;
-  date: string;
+  id: number;
+  value: string;
 }
 
-const OrderTracking: React.FC<{ orderStatus: string }> = ({ orderStatus }) => {
+const OrderTracking: React.FC<{ orderTrackingStatus: number }> = ({
+  orderTrackingStatus,
+}) => {
   const orderStages: OrderStage[] = [
-    { status: "Order Placed", date: "01/18/2025" },
-    { status: "Ready for Shipping", date: "01/19/2025" },
-    { status: "Shipped", date: "01/20/2025" },
-    { status: "Reached to nearest Delivery Hub", date: "01/21/2025" },
-    { status: "Out for Delivery", date: "01/22/2025" },
+    {
+      id: 1,
+      value: "OrderPlaced",
+    },
+    {
+      id: 2,
+      value: "ShipmentInTransit",
+    },
+    {
+      id: 3,
+      value: "Shipped",
+    },
+    {
+      id: 4,
+      value: "WaitingForDeliveryAgent",
+    },
+    {
+      id: 5,
+      value: "OutForDelivery",
+    },
+    {
+      id: 6,
+      value: "Delivered",
+    },
+    {
+      id: 7,
+      value: "Cancelled",
+    },
+  ];
+
+  if (orderTrackingStatus < 7) {
+    orderStages.pop();
+  }
+
+  const orderReturnStages: OrderStage[] = [
+    {
+      id: 8,
+      value: "ReadyForPickup",
+    },
+    {
+      id: 9,
+      value: "DeliveryAgentOnTheWay",
+    },
+    {
+      id: 10,
+      value: "OrderPickedUp",
+    },
+    {
+      id: 11,
+      value: "ReturnedToWarehouse",
+    },
+    {
+      id: 12,
+      value: "RefundInitiated",
+    },
+    {
+      id: 13,
+      value: "RefundCompleted",
+    },
+    {
+      id: 14,
+      value: "Returned",
+    },
   ];
 
   const currentStageIndex: number =
-    orderStages.findIndex((stage) => stage.status == orderStatus) + 1;
+    orderStages.findIndex((stage) => stage.id == orderTrackingStatus) + 1;
 
   return (
     <div className="tracking-container">
       <div className="tracking-timeline">
-        {orderStages.map((stage, index) => (
-          <div
-            key={index + 1}
-            className={`tracking-stage ${
-              index + 1 <= currentStageIndex ? "completed" : ""
-            }`}
-          >
-            <div className="tracking-dot"></div>
-            <div className="tracking-details">
-              <p className="tracking-status">{stage.status}</p>
-              <p className="tracking-date">{stage.date}</p>
-            </div>
-            {index + 1 <= orderStages.length &&
-              index + 1 != orderStages.length && (
-                <div
-                  className={`tracking-line ${
-                    index + 1 < currentStageIndex ? "completed" : ""
-                  }`}
-                ></div>
-              )}
-          </div>
-        ))}
+        {orderStages.map(
+          (stage, index) =>
+            (currentStageIndex > 6 && (index < 2 || index == 6)) ||
+            (currentStageIndex <= 6 && index != 6 && (
+              <div
+                key={index + 1}
+                className={`tracking-stage ${
+                  index + 1 <= currentStageIndex ? "completed" : ""
+                }`}
+              >
+                <div className="tracking-dot"></div>
+                <div className="tracking-details">
+                  <p className="tracking-status">{stage.value}</p>
+                  <p className="tracking-date">01/01/1999</p>
+                </div>
+                {index + 1 <= orderStages.length &&
+                  index + 1 != orderStages.length && (
+                    <div
+                      className={`tracking-line ${
+                        index + 1 < currentStageIndex ? "completed" : ""
+                      }`}
+                    ></div>
+                  )}
+              </div>
+            ))
+        )}
       </div>
     </div>
   );

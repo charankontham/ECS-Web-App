@@ -32,7 +32,6 @@ const Header: React.FC = () => {
         Authorization: `Bearer ${authToken}`,
       },
       onConnect: () => {
-        console.log("Connected to WebSocket");
         stompClient.subscribe("/topic/messages", (message: any) => {
           const updatedCart = JSON.parse(message.body);
           // console.log("Cart from web socket : ", updatedCart);
@@ -64,7 +63,6 @@ const Header: React.FC = () => {
     try {
       if (authToken) {
         const decodedToken = jwtDecode(authToken);
-        console.log(decodedToken);
         const email = decodedToken.sub;
         const currentTime = Date.now() / 1000;
         if ((decodedToken.exp ? decodedToken.exp : 0) >= currentTime) {
@@ -104,7 +102,6 @@ const Header: React.FC = () => {
   };
 
   const showCart = () => {
-    console.log(" cart : ", cart);
     navigate("/cart");
   };
 

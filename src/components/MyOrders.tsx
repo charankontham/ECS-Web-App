@@ -32,12 +32,13 @@ import {
 import { jwtDecode } from "jwt-decode";
 import { useNavigate } from "react-router-dom";
 import Customer from "../interfaces/Customer";
-import { Order, OrderItem } from "../interfaces/Order";
+import { Order, OrderItem, OrderTrackingEnriched } from "../interfaces/Order";
 import Address from "../interfaces/Address";
 import { Product } from "../interfaces/Product";
 import * as bootstrap from "bootstrap";
 import ViewOrderDetails from "./ViewOrderDetails";
 import OrderTracking from "./OrderTracking";
+import { OrderTrackingObject } from "@interfaces/Logistics";
 
 const MyOrders: React.FC<{
   orderId?: string;
@@ -47,17 +48,57 @@ const MyOrders: React.FC<{
 }> = ({ orderId }) => {
   const ordersPerPage = 2;
   const orderStatuses = [
-    "Orders",
-    "OrderPlaced",
-    "Delivered",
-    "Out-For-Delivery",
-    "Shipped",
-    "Cancelled",
-    "Returned",
+    {
+      id: 0,
+      value: "Orders",
+    },
+    {
+      id: 1,
+      value: "OrderPlaced",
+    },
+    {
+      id: 2,
+      value: "ShipmentInTransit",
+    },
+    {
+      id: 3,
+      value: "Shipped",
+    },
+    {
+      id: 4,
+      value: "WaitingForDeliveryAgent",
+    },
+    {
+      id: 5,
+      value: "OutForDelivery",
+    },
+    {
+      id: 6,
+      value: "Delivered",
+    },
+    {
+      id: 7,
+      value: "Cancelled",
+    },
+    {
+      id: 8,
+      value: "Returned",
+    },
+  ];
+  const paymentStatuses = [
+    { id: 1, value: "PaymentCompleted" },
+    { id: 2, value: "PaymentPending" },
+    { id: 3, value: "PaymentFailed" },
+    { id: 4, value: "PaymentRefunded" },
+    { id: 5, value: "PaymentCancelled" },
   ];
   const authToken = localStorage.getItem("authToken");
-  const apiBaseUrl = "http://localhost:8080/ecs-order/api";
+  const orderApiBaseUrl = "http://localhost:8080/ecs-order/api";
+  const logisticsApiBaseUrl = "http://localhost:8080/ecs-logistics/api";
   const [myOrders, setMyOrders] = useState<Order[]>([]);
+  const [ordersTracking, setOrdersTracking] = useState<OrderTrackingObject[]>(
+    []
+  );
   const currentYear = new Date().getFullYear();
   const [currentOrders, setCurrentOrders] = useState<Order[]>([]);
   const totalPages = Math.ceil(currentOrders.length / ordersPerPage);
@@ -72,13 +113,24 @@ const MyOrders: React.FC<{
     useState<boolean>(false);
   const [viewOrder, setViewOrder] = useState<Order | null>(null);
   const [orderSearchBar, setOrderSearchBar] = useState("");
-  const [orderDateRange, setOrderDateRange] = useState<string>("3-months");
-  const [orderStatus, setOrderStatus] = useState<string>(orderStatuses[0]);
+  const [orderDateRange, setOrderDateRange] = useState<string>("1-year");
+  const [orderStatus, setOrderStatus] = useState<number>(orderStatuses[0].id);
   const navigate = useNavigate();
   const last10Years: number[] = [];
-  const [visibleTracker, setVisibleTracker] = useState<number | null>(null);
-  const toggleTracker = (orderId: number) => {
-    setVisibleTracker((prev) => (prev === orderId ? null : orderId));
+  const [visibleTracker, setVisibleTracker] = useState<string | null>(null);
+  const toggleTracker = async (id: string) => {
+    setVisibleTracker((prev) => (prev === id ? null : id));
+    const ids = id.split("_");
+    const orderId = parseInt(ids[0]);
+    const productId = parseInt(ids[1]);
+    if (
+      ordersTracking.find(
+        (o) => o.orderId === orderId && o.productId === productId
+      )
+    ) {
+      return;
+    }
+    await fetchOrderTracking(orderId, productId);
   };
   for (let i = 0; i < 10; i++) {
     last10Years.push(currentYear - i);
@@ -141,12 +193,9 @@ const MyOrders: React.FC<{
 
   const filterOrdersByOrderStatus = (orders: Order[]): Order[] => {
     const currentStatus = orderStatus;
-    console.log(currentStatus);
-    if (!orderStatuses.includes(currentStatus)) {
+    if (!orderStatuses.find((status) => status.id === currentStatus)) {
       console.log(
-        `Invalid status: ${currentStatus}. Valid statuses are: ${orderStatuses.join(
-          ", "
-        )}`
+        `Invalid status: ${currentStatus}. Valid statuses are: ${orderStatuses}`
       );
       throw new Error(
         `Invalid status: ${currentStatus}. Valid statuses are: ${orderStatuses.join(
@@ -154,10 +203,10 @@ const MyOrders: React.FC<{
         )}`
       );
     }
-    if (currentStatus === "Orders") {
+    if (currentStatus === orderStatuses[0].id) {
       return orders;
     }
-    return orders.filter((order) => order.shippingStatus === currentStatus);
+    return orders.filter((order) => order.orderStatus === currentStatus);
   };
 
   const searchInOrders = (event?: React.FormEvent<HTMLFormElement>) => {
@@ -174,8 +223,8 @@ const MyOrders: React.FC<{
       if (findInAddress(order.shippingAddress)) {
         return true;
       } else if (
-        findInDate(order.orderDate) ||
-        findInDate(order.deliveryDate)
+        findInDate(order.orderDate)
+        // || findInDate(order.deliveryDate) // Temporarily disabled as deliveryDate not in order interface
       ) {
         return true;
       } else if (
@@ -185,7 +234,7 @@ const MyOrders: React.FC<{
           .includes(orderSearchBar.toLowerCase())
       ) {
         return true;
-      } else if (findInOrderItems(order.orderItems)) {
+      } else if (findInOrderItems(order.orderItems.map((oi) => oi.product))) {
         return true;
       } else return false;
     });
@@ -262,7 +311,7 @@ const MyOrders: React.FC<{
   const downloadFile = async (orderId: number, tooltipId: string) => {
     try {
       const response = await axios.get(
-        apiBaseUrl + `/order/downloadOrderInvoice/${orderId}`,
+        orderApiBaseUrl + `/order/downloadOrderInvoice/${orderId}`,
         {
           headers: {
             Authorization: `Bearer ${authToken}`,
@@ -346,8 +395,8 @@ const MyOrders: React.FC<{
             navigate("/signIn");
           }
           setCustomer(customerResponse.data);
-          const myOrdersResponse = await axios.get(
-            apiBaseUrl +
+          var myOrdersResponse = await axios.get(
+            orderApiBaseUrl +
               `/order/getOrdersByCustomerId/${customerResponse.data.customerId}`,
             {
               headers: {
@@ -358,9 +407,7 @@ const MyOrders: React.FC<{
           );
           myOrdersResponse.data.map((order: Order) => {
             const standardOrderDate = new Date(order.orderDate);
-            const standardDeliveryDate = new Date(order.deliveryDate);
             order.orderDate = standardOrderDate;
-            order.deliveryDate = standardDeliveryDate;
           });
           if (orderId) {
             const orders = myOrdersResponse.data.filter(
@@ -390,7 +437,7 @@ const MyOrders: React.FC<{
 
   const defaultCurrentOrders = (orders: Order[]) => {
     let startDate: Date = new Date();
-    startDate.setMonth(startDate.getMonth() - 3);
+    startDate.setMonth(startDate.getMonth() - 12);
     console.log("printing myorders: ", orders);
     const filteredOrders = orders.filter((order) => {
       return order.orderDate >= startDate;
@@ -402,6 +449,47 @@ const MyOrders: React.FC<{
     console.log("order details: ", order);
     setViewOrder(order);
     setEnableViewOrderDetails(true);
+  };
+
+  const fetchOrderTracking = async (orderId: number, productId: number) => {
+    if (
+      ordersTracking.find(
+        (o) => o.orderId === orderId && o.productId === productId
+      )
+    ) {
+      return;
+    }
+    var myOrdersTrackingResponse = await axios.get(
+      logisticsApiBaseUrl +
+        `/orderTracking/getByOrderIdAndProductId/${orderId}/${productId}`,
+      {
+        headers: {
+          Authorization: `Bearer ${authToken}`,
+          "Content-Type": "application/json",
+        },
+      }
+    );
+    if (myOrdersTrackingResponse.status !== 200) {
+      console.log(myOrdersTrackingResponse.data);
+      setOrdersTracking((prev) => [
+        ...prev,
+        { orderId, productId, orderTracking: null } as OrderTrackingObject,
+      ]);
+    } else if (myOrdersTrackingResponse.status !== 200) {
+      console.log("Session Expired!");
+      localStorage.setItem("authToken", "");
+      navigate("/");
+    } else {
+      setOrdersTracking((prev) => [
+        ...prev,
+        {
+          orderId,
+          productId,
+          orderTracking: myOrdersTrackingResponse.data,
+        } as OrderTrackingObject,
+      ]);
+    }
+    return;
   };
 
   useEffect(() => {
@@ -428,6 +516,7 @@ const MyOrders: React.FC<{
                 aria-label="Date Range Filter"
                 onChange={(e) => setOrderDateRange(e.target.value)}
                 disabled={orderId ? true : false}
+                value={orderDateRange}
                 key="dateRangeFilter"
               >
                 <option value="3-months" key="3-months">
@@ -451,12 +540,12 @@ const MyOrders: React.FC<{
               <Form.Select
                 aria-label="Order Status Filter"
                 key="orderStatusFilter"
-                onChange={(e) => setOrderStatus(e.target.value)}
+                onChange={(e) => setOrderStatus(Number(e.target.value))}
                 disabled={orderId ? true : false}
               >
-                {orderStatuses.map((status: string) => (
-                  <option value={status} key={status}>
-                    {status}
+                {orderStatuses.map((orderStatus) => (
+                  <option value={orderStatus.id} key={orderStatus.id}>
+                    {orderStatus.value}
                   </option>
                 ))}
               </Form.Select>
@@ -531,54 +620,90 @@ const MyOrders: React.FC<{
                   </div>
                 </div>
                 <div className="order-card-body">
-                  <h5>{order.shippingStatus}</h5>
-                  <a
-                    href="#"
-                    className="track-order-link"
-                    onClick={(e) => {
-                      e.preventDefault();
-                      toggleTracker(order.orderId);
-                    }}
-                  >
-                    {visibleTracker === order.orderId
-                      ? "Hide tracker"
-                      : "Track order"}
-                  </a>
-                  {visibleTracker === order.orderId && (
-                    <OrderTracking orderStatus={order.shippingStatus} />
-                  )}
                   {order.orderItems.map((orderItem, index) => (
-                    <div className="order-item-body" key={index}>
-                      <Col md={4} className="order-item-img-column">
-                        <img
-                          src={`http://localhost:8080/ecs-inventory-admin/api/public/images/view/getImageById/${orderItem.productImage}`}
-                          alt={orderItem.productName}
-                          className="img-fluid rounded"
-                        />
-                      </Col>
-                      <Col md={8} className="product-details">
-                        <h5>
+                    <div key={index}>
+                      <h5>
+                        {
+                          orderStatuses.find(
+                            (o) => o.id === orderItem.orderItemStatus
+                          )?.value
+                        }
+                      </h5>
+                      <div className="order-item-body" key={index}>
+                        {/* <div className="order-item-columns"> */}
+                        <Col md={4} className="order-item-img-column">
+                          <img
+                            src={`http://localhost:8080/ecs-inventory-admin/api/public/images/view/getImageById/${orderItem.product.productImage}`}
+                            alt={orderItem.product.productName}
+                            className="img-fluid rounded"
+                          />
+                        </Col>
+                        <Col md={5} className="product-details">
+                          <h5>
+                            <a
+                              href="#"
+                              className="product-link"
+                              onClick={() =>
+                                navigate(
+                                  `/product/${orderItem.product.productId}`
+                                )
+                              }
+                            >
+                              {orderItem.product.productName}
+                            </a>
+                          </h5>
+                          <div className="product-details-btns">
+                            <Button
+                              size="sm"
+                              className="btn product-support-btn"
+                            >
+                              Get Product Support
+                            </Button>
+                            {/* <br /> */}
+                            <Button
+                              size="sm"
+                              className="btn product-review-btn"
+                            >
+                              Write a Product Review
+                            </Button>
+                          </div>
+                        </Col>
+                        <Col md={3}>
                           <a
                             href="#"
-                            className="product-link"
-                            onClick={() =>
-                              navigate(`/product/${orderItem.productId}`)
-                            }
+                            className="track-order-link"
+                            onClick={async (e) => {
+                              e.preventDefault();
+                              await toggleTracker(
+                                order.orderId +
+                                  "_" +
+                                  orderItem.product.productId
+                              );
+                            }}
                           >
-                            {orderItem.productName}
+                            {visibleTracker ===
+                            order.orderId + "_" + orderItem.product.productId
+                              ? "Hide tracker"
+                              : "Track order"}
                           </a>
-                        </h5>
-                        <div className="product-details-btns">
-                          <Button size="sm" className="btn product-support-btn">
-                            Get Product Support
-                          </Button>
-                          {/* <br /> */}
-                          <Button size="sm" className="btn product-review-btn">
-                            Write a Product Review
-                          </Button>
-                        </div>
-                      </Col>
-                      {index < order.orderItems.length - 1 && <hr />}
+                          {visibleTracker ===
+                            order.orderId +
+                              "_" +
+                              orderItem.product.productId && (
+                            <OrderTracking
+                              orderTrackingStatus={
+                                ordersTracking.find(
+                                  (ot) =>
+                                    ot.orderId === order.orderId &&
+                                    ot.productId === orderItem.product.productId
+                                )?.orderTracking?.orderTrackingStatusId ?? -1
+                              }
+                            />
+                          )}
+                        </Col>
+                        {/* </div> */}
+                        {index < order.orderItems.length - 1 && <hr />}
+                      </div>
                     </div>
                   ))}
                 </div>

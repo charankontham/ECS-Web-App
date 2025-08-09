@@ -46,7 +46,7 @@ const ProductsPage: React.FC = () => {
         })
         .then((response) => {
           setData(response.data);
-          console.log(response.data);
+          // console.log(response.data);
           setLoading(false);
         })
         .catch((error) => {
@@ -103,11 +103,11 @@ const ProductsPage: React.FC = () => {
 
   const navigateToProductDetails = (productId: number) => {
     navigate("/product/" + productId);
-    console.log("Product Id: ", productId);
+    // console.log("Product Id: ", productId);
   };
 
   const addToCart = (productId: number) => {
-    console.log("Adding product to cart : ", productId);
+    // console.log("Adding product to cart : ", productId);
     const cartItems = [
       { customerId: customer?.customerId, productId: productId, quantity: 1 },
     ];
@@ -124,7 +124,7 @@ const ProductsPage: React.FC = () => {
           },
         })
         .then((response) => {
-          console.log("Added to cart Successfully : ", response.data);
+          // console.log("Added to cart Successfully : ", response.data);
           showPopup();
         })
         .catch((error) => {

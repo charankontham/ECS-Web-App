@@ -79,7 +79,7 @@ const CartPage: React.FC = () => {
         })
         .then((response) => {
           if (response.status == 200) {
-            console.log("Successfully updated!!");
+            // console.log("Successfully updated!!");
             setCart((prevCart) => {
               if (!prevCart) return null;
               const updatedCartItems = prevCart.cartItems.map((item) =>
@@ -107,7 +107,6 @@ const CartPage: React.FC = () => {
     try {
       if (authToken) {
         const decodedToken = jwtDecode(authToken);
-        console.log(decodedToken);
         const email = decodedToken.sub;
         const currentTime = Date.now() / 1000;
         if ((decodedToken.exp ? decodedToken.exp : 0) >= currentTime) {
@@ -131,7 +130,7 @@ const CartPage: React.FC = () => {
                 },
               }
             );
-            console.log("Server res: ", cartResponse.data);
+            // console.log("Server res: ", cartResponse.data);
             cartResponse.data.cartItems.forEach((cartItem: CartItem) => {
               cartItem.isChecked = true;
             });
@@ -173,7 +172,7 @@ const CartPage: React.FC = () => {
   const deleteCartItem = (cartItemId: number | null) => {
     if (authToken) {
       const decodedToken = jwtDecode(authToken);
-      console.log(decodedToken);
+      // console.log(decodedToken);
       const email = decodedToken.sub;
       const currentTime = Date.now() / 1000;
       if ((decodedToken.exp ? decodedToken.exp : 0) >= currentTime) {
@@ -185,7 +184,7 @@ const CartPage: React.FC = () => {
             },
           })
           .then((response) => {
-            console.log("Response : ", response);
+            // console.log("Response : ", response);
             if (
               response.status == 200 &&
               response.data == "CartItem deleted successfully!"
@@ -222,7 +221,7 @@ const CartPage: React.FC = () => {
       );
       let subTotal = calculateSubtotal();
       localStorage.setItem("subTotal", subTotal ? subTotal : "0");
-      console.log("Navigated to Checkout Page!");
+      // console.log("Navigated to Checkout Page!");
       navigate("/checkout");
     } else {
       alert("Select at least one item to proceed!");
@@ -231,7 +230,7 @@ const CartPage: React.FC = () => {
 
   useEffect(() => {
     setSelectedCartItemsLength(getSelectedCartItems().length);
-    console.log(selectedCartItemsLength);
+    // console.log(selectedCartItemsLength);
   }, [cart]);
 
   useEffect(() => {
@@ -318,14 +317,16 @@ const CartPage: React.FC = () => {
             )}
           </div>
         </div>
-        <div className="cart-summary col-lg-2">
-          <h5>
-            Subtotal ({selectedCartItemsLength} items): ${calculateSubtotal()}
-          </h5>
-          <button className="checkout-button" onClick={proceedToCheckout}>
-            Proceed to Checkout
-          </button>
-        </div>
+        {cart?.cartItems.length != undefined && cart?.cartItems.length > 0 && (
+          <div className="cart-summary col-lg-2">
+            <h5>
+              Subtotal ({selectedCartItemsLength} items): ${calculateSubtotal()}
+            </h5>
+            <button className="checkout-button" onClick={proceedToCheckout}>
+              Proceed to Checkout
+            </button>
+          </div>
+        )}
       </div>
     </>
   );

@@ -1,12 +1,12 @@
 /* Container Styling */
 .tracking-container {
   font-family: Arial, sans-serif;
-  padding: 20px;
+  padding: 10px;
   background-color: #f8f9fa;
   border-radius: 10px;
   max-width: 600px;
-  margin: 20px auto;
   box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+  transition: opacity 1s ease, transform 1s ease;
 }
 
 /* Title Styling */
@@ -27,16 +27,16 @@
 /* Stage Block Styling */
 .tracking-stage {
   display: flex;
-  align-items: center;
   position: relative;
-  padding: 10px 0;
+  align-items: stretch;
+  padding: 0px 0;
 }
 
 .tracking-dot {
-  width: 20px;
-  height: 20px;
+  width: 15px;
+  height: 15px;
   border-radius: 50%;
-  margin-top: -35px;
+  margin-top: 0px;
   background-color: #66a3e3;
   flex-shrink: 0;
   z-index: 1;
@@ -48,7 +48,7 @@
 }
 
 .tracking-details {
-  margin-left: 15px;
+  margin-left: 10px;
 }
 
 .tracking-details p:first-child {
@@ -56,24 +56,24 @@
 }
 
 .tracking-status {
-  font-size: 16px;
+  font-size: 12px;
   font-weight: bold;
   color: #333;
 }
 
 .tracking-date {
-  font-size: 14px;
+  font-size: 11px;
   color: #666;
 }
 
 /* Line Connecting the Dots */
 .tracking-line {
   position: absolute;
-  width: 5px;
+  width: 4px;
   height: 100%;
   background-color: #72a8e0;
-  top: 30px;
-  left: 8px;
+  top: 3px;
+  left: 6px;
   z-index: 0;
 }
 

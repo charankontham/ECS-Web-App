@@ -33,6 +33,7 @@ import { Order, OrderItem } from "../interfaces/Order";
 import Address from "../interfaces/Address";
 import { Product } from "../interfaces/Product";
 import * as bootstrap from "bootstrap";
+import { paymentMethods } from "@src/util/util";
 
 interface ViewOrderDetailsProps {
   order: Order;
@@ -136,7 +137,9 @@ const ViewOrderDetails: React.FC<ViewOrderDetailsProps> = ({
           </div>
           <div className="payment-method">
             <h6>Payment Methods</h6>
-            <p>{order.paymentType}</p>
+            <p>
+              {paymentMethods.find((x) => x.id === order.paymentType)?.value}
+            </p>
           </div>
           <div className="order-summary">
             <h6>Order Summary</h6>

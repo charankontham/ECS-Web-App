@@ -11,6 +11,7 @@ import { CartItem } from "../interfaces/Cart";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faPencil } from "@fortawesome/free-solid-svg-icons";
 import { OrderItem, OrderRequest } from "../interfaces/Order";
+import { paymentMethods, paymentStatus } from "@src/util/util";
 
 const CheckoutPage = () => {
   const rawOrderItems = localStorage.getItem("itemsForCheckout");
@@ -23,8 +24,7 @@ const CheckoutPage = () => {
   const [orderSummary, setOrderSummary] = useState<any>(null);
   const [showAddresses, setShowAddresses] = useState(false);
   const [selectedAddress, setSelectedAddress] = useState<Address>();
-  const [selectedPaymentMethod, setSelectedPaymentMethod] = useState<string>();
-  const paymentMethods = ["Credit/Debit Card", "PayPal", "Cash on Delivery"];
+  const [selectedPaymentMethod, setSelectedPaymentMethod] = useState<number>();
   const emptyAddress: Address = {
     addressId: null,
     userId: !!customer ? "customer_" + customer.customerId : null,
@@ -158,21 +158,17 @@ const CheckoutPage = () => {
       authToken &&
       addresses.find(
         (address) => address.addressId == selectedAddress.addressId
-      ) &&
-      paymentMethods.includes(selectedPaymentMethod)
+      )
     ) {
       let today = new Date();
       today.setDate(today.getDate() + 6);
       const orderRequest: OrderRequest = {
-        orderId: null,
         customerId: customer?.customerId ? customer.customerId : null,
         addressId: selectedAddress.addressId,
         paymentType: selectedPaymentMethod,
-        paymentStatus: "success",
+        paymentStatus: 1,
         shippingFee: Number(orderSummary.shippingFee),
         orderDate: new Date(),
-        deliveryDate: today,
-        shippingStatus: "Order Placed",
       };
       axios
         .post(
@@ -332,17 +328,17 @@ const CheckoutPage = () => {
                 <h5>Select Payment Method</h5>
               </div>
               <div className="card-body">
-                {paymentMethods.map((method) => (
-                  <div className="form-check mb-3" key={method}>
+                {paymentMethods.map((type) => (
+                  <div className="form-check mb-3" key={type.id}>
                     <input
                       className="form-check-input"
                       type="radio"
                       name="paymentMethod"
-                      onChange={() => setSelectedPaymentMethod(method)}
-                      id={method}
+                      onChange={() => setSelectedPaymentMethod(type.id)}
+                      id={type.id + ""}
                     />
-                    <label className="form-check-label" htmlFor={method}>
-                      {method}
+                    <label className="form-check-label" htmlFor={type.id + ""}>
+                      {type.value}
                     </label>
                   </div>
                 ))}

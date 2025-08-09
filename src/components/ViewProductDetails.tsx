@@ -15,7 +15,7 @@ import { Product } from "../interfaces/Product";
 import Customer from "../interfaces/Customer";
 import { jwtDecode } from "jwt-decode";
 import { CartItem } from "../interfaces/Cart";
-import { Order } from "../interfaces/Order";
+import { Order, OrderItemEnriched } from "../interfaces/Order";
 import { ProductReview } from "../interfaces/ProductReview";
 import { RatingAndReviews } from "./reviews-and-ratings/RatingAndReviews";
 import StarRating from "./reviews-and-ratings/StarRating";
@@ -139,8 +139,8 @@ const ViewProductDetails: React.FC = () => {
   ) => {
     var recentOrderDate: Date = new Date("1970-01-01");
     const recentOrders = orders.filter((order: Order) => {
-      return order.orderItems.find((item: Product) => {
-        return item.productId == currentProductId;
+      return order.orderItems.find((item: OrderItemEnriched) => {
+        return item.product.productId == currentProductId;
       });
     });
     recentOrders.map((order: Order) => {
@@ -222,7 +222,7 @@ const ViewProductDetails: React.FC = () => {
   };
 
   const addToCart = (productId: number) => {
-    console.log("Adding product to cart : ", productId);
+    // console.log("Adding product to cart : ", productId);
     if (customer != null && productId !== -1) {
       const cartItems = [
         {
@@ -231,7 +231,7 @@ const ViewProductDetails: React.FC = () => {
           quantity: selectedProductQuantity,
         },
       ];
-      console.log("quantity : ", selectedProductQuantity);
+      // console.log("quantity : ", selectedProductQuantity);
       const cartObject = {
         customerId: customer?.customerId,
         cartItems: cartItems,
@@ -244,7 +244,7 @@ const ViewProductDetails: React.FC = () => {
           },
         })
         .then((response) => {
-          console.log("Added to cart Successfully : ", response.data);
+          // console.log("Added to cart successfully : ", response.data);
           showPopup();
         })
         .catch((error) => {
@@ -269,7 +269,7 @@ const ViewProductDetails: React.FC = () => {
       );
       let subTotal = productDetails.productPrice * selectedProductQuantity;
       localStorage.setItem("subTotal", subTotal.toString());
-      console.log("Navigated to Checkout Page!");
+      // console.log("Navigated to Checkout Page!");
       navigate("/checkout");
     } else {
       console.log("Please login first");
@@ -296,9 +296,7 @@ const ViewProductDetails: React.FC = () => {
 
         myOrdersResponse.data.map((order: Order) => {
           const standardOrderDate = new Date(order.orderDate);
-          const standardDeliveryDate = new Date(order.deliveryDate);
           order.orderDate = standardOrderDate;
-          order.deliveryDate = standardDeliveryDate;
         });
         return myOrdersResponse.data;
       } else {
@@ -478,7 +476,10 @@ const ViewProductDetails: React.FC = () => {
           <hr />
           <div className="similar-products-list">
             {similarProducts.map((similarProduct) => (
-              <a href={"/product/" + similarProduct.productId}>
+              <a
+                href={"/product/" + similarProduct.productId}
+                key={similarProduct.productId}
+              >
                 <div
                   key={similarProduct.productId}
                   className="similar-product-card"

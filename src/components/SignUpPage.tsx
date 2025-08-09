@@ -10,6 +10,7 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 
 const SignUpPage: React.FC = () => {
   const [formData, setFormData] = useState({
+    customerId: null,
     customerName: "",
     email: "",
     phone: "",
@@ -41,9 +42,9 @@ const SignUpPage: React.FC = () => {
       return "name";
     } else if (formData.phone.length !== 10) {
       return "phone";
-    } else if (!passwordValidation(formData.password)) {
-      console.log(passwordValidation(formData.password));
-      return "password";
+      // } else if (!passwordValidation(formData.password)) {
+      //   console.log(passwordValidation(formData.password));
+      //   return "password";
     } else if (formData.confirmPassword !== formData.password) {
       return "confirm password";
     } else if (formData.email === null || formData.email === "") {
