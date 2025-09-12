@@ -668,7 +668,7 @@ const MyOrders: React.FC<{
                             </Button>
                           </div>
                         </Col>
-                        <Col md={3}>
+                        <Col md={4}>
                           <a
                             href="#"
                             className="track-order-link"
@@ -683,22 +683,41 @@ const MyOrders: React.FC<{
                           >
                             {visibleTracker ===
                             order.orderId + "_" + orderItem.product.productId
-                              ? "Hide tracker"
-                              : "Track order"}
+                              ? "hide tracker"
+                              : "view order tracking"}
                           </a>
+                          <br />
                           {visibleTracker ===
                             order.orderId +
                               "_" +
                               orderItem.product.productId && (
-                            <OrderTracking
-                              orderTrackingStatus={
-                                ordersTracking.find(
-                                  (ot) =>
-                                    ot.orderId === order.orderId &&
-                                    ot.productId === orderItem.product.productId
-                                )?.orderTracking?.orderTrackingStatusId ?? -1
-                              }
-                            />
+                            <>
+                              <span id="order-tracking-id-text">
+                                order-tracking-id#
+                                <br />
+                                <small>
+                                  {
+                                    ordersTracking.find(
+                                      (ot) =>
+                                        ot.orderId === order.orderId &&
+                                        ot.productId ===
+                                          orderItem.product.productId
+                                    )?.orderTracking?.orderTrackingId
+                                  }
+                                </small>
+                              </span>
+
+                              <OrderTracking
+                                orderTrackingStatus={
+                                  ordersTracking.find(
+                                    (ot) =>
+                                      ot.orderId === order.orderId &&
+                                      ot.productId ===
+                                        orderItem.product.productId
+                                  )?.orderTracking?.orderTrackingStatusId ?? -1
+                                }
+                              />
+                            </>
                           )}
                         </Col>
                         {/* </div> */}

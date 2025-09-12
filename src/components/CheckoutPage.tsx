@@ -44,7 +44,7 @@ const CheckoutPage = () => {
     try {
       if (authToken) {
         const decodedToken = jwtDecode(authToken);
-        console.log(decodedToken);
+        // console.log(decodedToken);
         const email = decodedToken.sub;
         const currentTime = Date.now() / 1000;
         if ((decodedToken.exp ? decodedToken.exp : 0) >= currentTime) {
@@ -68,7 +68,7 @@ const CheckoutPage = () => {
                 },
               }
             );
-            console.log("Server res: ", addressResponse.data);
+            // console.log("Server res: ", addressResponse.data);
             setAddresses(addressResponse.data);
           } catch (error) {
             console.error("Error: ", error);
@@ -108,7 +108,7 @@ const CheckoutPage = () => {
                 ...prevAddresses,
                 response.data,
               ]);
-              console.log("Success adding new address");
+              // console.log("Success adding new address");
             } else {
               setError(response.data);
               console.log("Error adding new address");
@@ -132,7 +132,7 @@ const CheckoutPage = () => {
                     : address
                 );
               });
-              console.log("Success updated address");
+              // console.log("Success updated address");
             } else {
               setError(response.data);
               console.log("Error updating the address");
@@ -168,7 +168,6 @@ const CheckoutPage = () => {
         paymentType: selectedPaymentMethod,
         paymentStatus: 1,
         shippingFee: Number(orderSummary.shippingFee),
-        orderDate: new Date(),
       };
       axios
         .post(
@@ -180,7 +179,7 @@ const CheckoutPage = () => {
         )
         .then((response) => {
           if (response.status == 201) {
-            console.log("Success placing order");
+            // console.log("Success placing order");
             localStorage.removeItem("itemsForCheckout");
             navigate("/order-placed-success");
           } else {
@@ -194,7 +193,7 @@ const CheckoutPage = () => {
         });
     } else {
       setError("Please select address and payment method");
-      console.log("Please select address and payment method");
+      console.error("Please select address and payment method");
     }
   };
 

@@ -144,3 +144,9 @@
 .track-order-link:hover {
   text-decoration: underline;
 }
+
+#order-tracking-id-text {
+  font-size: 15px;
+  font-weight: 500;
+  color: #63625f;
+}

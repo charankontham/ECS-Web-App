@@ -24,7 +24,7 @@ export interface OrderRequest {
   paymentType: number;
   paymentStatus: number;
   shippingFee: number;
-  orderDate: Date;
+  orderDate?: Date;
 }
 
 export interface OrderItem {
