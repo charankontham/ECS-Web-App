@@ -1,14 +1,16 @@
 import React from "react";
 import "../css/OrderTracking.css";
+import { OrderTrackingEnriched } from "@interfaces/Order";
 
 interface OrderStage {
   id: number;
   value: string;
 }
 
-const OrderTracking: React.FC<{ orderTrackingStatus: number }> = ({
-  orderTrackingStatus,
-}) => {
+const OrderTracking: React.FC<{
+  orderTrackingObj: OrderTrackingEnriched | null;
+  orderTypeId?: number;
+}> = ({ orderTrackingObj, orderTypeId = 1 }) => {
   const orderStages: OrderStage[] = [
     {
       id: 1,
@@ -40,61 +42,71 @@ const OrderTracking: React.FC<{ orderTrackingStatus: number }> = ({
     },
   ];
 
-  if (orderTrackingStatus < 7) {
-    orderStages.pop();
-  }
-
   const orderReturnStages: OrderStage[] = [
     {
-      id: 8,
-      value: "ReadyForPickup",
+      id: 1,
+      value: "Return Requested",
     },
     {
-      id: 9,
-      value: "DeliveryAgentOnTheWay",
+      id: 2,
+      value: "Return Accepted",
     },
     {
-      id: 10,
-      value: "OrderPickedUp",
+      id: 3,
+      value: "Ready For Pickup",
     },
     {
-      id: 11,
-      value: "ReturnedToWarehouse",
+      id: 4,
+      value: "Waiting For Agent",
     },
     {
-      id: 12,
-      value: "RefundInitiated",
+      id: 5,
+      value: "Out For Pickup",
     },
     {
-      id: 13,
-      value: "RefundCompleted",
+      id: 6,
+      value: "Refund Issued",
     },
     {
-      id: 14,
+      id: 7,
       value: "Returned",
     },
   ];
 
   const currentStageIndex: number =
-    orderStages.findIndex((stage) => stage.id == orderTrackingStatus) + 1;
+    (orderTypeId == 1 ? orderStages : orderReturnStages).findIndex(
+      (stage) => stage.id == orderTrackingObj?.orderTrackingStatusId
+    ) + 1;
+
+  if (orderTrackingObj?.orderTrackingStatusId! < 7) {
+    if (orderTypeId == 1) orderStages.pop();
+  }
 
   return (
     <div className="tracking-container">
       <div className="tracking-timeline">
-        {orderStages.map(
+        {(orderTypeId == 1 ? orderStages : orderReturnStages).map(
           (stage, index) =>
-            (currentStageIndex > 6 && (index < 2 || index == 6)) ||
-            (currentStageIndex <= 6 && index != 6 && (
+            ((currentStageIndex == 7 && (index < 1 || index == 6)) ||
+              (currentStageIndex <= 6 && index != 6) ||
+              orderTypeId == 2) && (
               <div
                 key={index + 1}
                 className={`tracking-stage ${
-                  index + 1 <= currentStageIndex ? "completed" : ""
+                  index + 1 <= currentStageIndex
+                    ? index + 1 == 7
+                      ? "cancelled"
+                      : "completed"
+                    : ""
                 }`}
               >
                 <div className="tracking-dot"></div>
                 <div className="tracking-details">
                   <p className="tracking-status">{stage.value}</p>
-                  <p className="tracking-date">01/01/1999</p>
+                  <p className="tracking-date">
+                    {orderTrackingObj?.actualDeliveryTime?.toLocaleString() ??
+                      "01/01/1999"}
+                  </p>
                 </div>
                 {index + 1 <= orderStages.length &&
                   index + 1 != orderStages.length && (
@@ -105,7 +117,7 @@ const OrderTracking: React.FC<{ orderTrackingStatus: number }> = ({
                     ></div>
                   )}
               </div>
-            ))
+            )
         )}
       </div>
     </div>

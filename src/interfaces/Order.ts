@@ -16,6 +16,7 @@ export interface Order {
   orderStatus: number;
   paymentType: number;
   paymentStatus: number;
+  invoiceId: number;
 }
 
 export interface OrderRequest {
@@ -33,15 +34,19 @@ export interface OrderItem {
   productId: number;
   quantity: number;
   productPrice: number;
+  invoiceId: number;
 }
 
 export interface OrderItemEnriched {
+  orderItemId: number;
+  orderId: number;
   product: Product;
   orderItemStatus: number;
+  invoiceId: number;
 }
 
 export interface OrderTracking {
-  orderTrackingId: number;
+  orderTrackingId: string;
   productId: number;
   orderItemId: number;
   deliveryAgentId: number;
@@ -55,7 +60,7 @@ export interface OrderTracking {
 }
 
 export interface OrderTrackingEnriched {
-  orderTrackingId: number;
+  orderTrackingId: string;
   orderItem: OrderItem;
   product: Product;
   deliveryAgent: DeliveryAgent;
@@ -66,4 +71,31 @@ export interface OrderTrackingEnriched {
   customerAddressId: number;
   customerInstructions: string | null;
   orderTrackingType: number;
+}
+
+export interface OrderReturnRequest {
+  OrderReturnId?: number;
+  OrderItemId: number;
+  ProductQuantity: number;
+  CustomerId: number;
+  PickupAddressId: number;
+  OrderTrackingId?: string;
+  ReturnReasonCategoryId: number;
+  ReturnReason?: string;
+  DateAdded?: Date;
+  DateModified?: Date;
+  ReturnPaymentSourceId: number;
+}
+
+export interface OrderReturn {
+  orderReturnId: number;
+  orderItemId: number;
+  productQuantity: number;
+  customerId: number;
+  orderTracking?: OrderTracking;
+  returnReasonCategoryId: number;
+  returnReason?: string;
+  dateAdded: Date;
+  dateModified: Date;
+  returnPaymentSourceId: number;
 }

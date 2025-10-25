@@ -108,7 +108,8 @@ const CheckoutPage = () => {
                 ...prevAddresses,
                 response.data,
               ]);
-              // console.log("Success adding new address");
+              console.log("Success adding new address");
+              setShowPopup(false);
             } else {
               setError(response.data);
               console.log("Error adding new address");
@@ -132,7 +133,8 @@ const CheckoutPage = () => {
                     : address
                 );
               });
-              // console.log("Success updated address");
+              console.log("Success updated address");
+              setShowPopup(false);
             } else {
               setError(response.data);
               console.log("Error updating the address");
@@ -195,6 +197,11 @@ const CheckoutPage = () => {
       setError("Please select address and payment method");
       console.error("Please select address and payment method");
     }
+  };
+
+  const selectDeliveryAddress = () => {
+    setShowAddresses(false);
+    console.log("Selected delivery address: ", selectedAddress);
   };
 
   useEffect(() => {
@@ -260,7 +267,7 @@ const CheckoutPage = () => {
                       onClick={() => setShowAddresses(true)}
                     >
                       <a href="#" className="">
-                        Change
+                        {addresses.length < 1 ? "Add address" : "change"}
                       </a>
                     </div>
                   </div>
@@ -274,7 +281,13 @@ const CheckoutPage = () => {
                           type="radio"
                           name="address"
                           id={address.addressId + ""}
-                          onChange={() => setSelectedAddress(address)}
+                          checked={
+                            selectedAddress?.addressId === address.addressId
+                          }
+                          onChange={() => {
+                            setSelectedAddress(address);
+                          }}
+                          value={address.addressId + ""}
                         />
                         <label
                           className="form-check-label"
@@ -304,6 +317,7 @@ const CheckoutPage = () => {
                       className="btn btn-primary btn-sm address-btns"
                       onClick={() => {
                         setAddressFormData(emptyAddress);
+                        setError(null);
                         setShowPopup(true);
                       }}
                     >
@@ -312,7 +326,8 @@ const CheckoutPage = () => {
                     <br />
                     <button
                       className="btn btn-warning btn-sm address-btns"
-                      onClick={() => setShowAddresses(false)}
+                      onClick={() => selectDeliveryAddress()}
+                      disabled={addresses.length < 1 ? true : false}
                     >
                       Deliver to this address
                     </button>

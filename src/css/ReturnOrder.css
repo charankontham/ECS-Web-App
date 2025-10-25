@@ -1,0 +1,91 @@
+.return-order-container {
+  max-width: 1200px;
+  min-height: 80vh;
+  margin: 0 auto;
+}
+
+.order-details-title {
+  text-align: center;
+  font-size: 1.6rem;
+  margin-bottom: 20px;
+  padding: 5px;
+  background: #f2f2f2;
+  border-radius: 10px;
+  color: #4d4c4c;
+}
+
+.return-order-section {
+  display: grid;
+  margin-bottom: 30px;
+  font-size: smaller;
+}
+
+.return-order-card {
+  box-shadow: 0 0 15px rgba(0, 0, 0, 0.15);
+  border-radius: 12px;
+  background-color: #fff;
+}
+
+.return-order-card h4 {
+  color: #767575;
+  font-weight: 600;
+  text-transform: uppercase;
+}
+
+.return-order-card .form-label {
+  font-size: 1rem;
+  color: #333;
+}
+
+.return-order-card textarea {
+  resize: none;
+  border-radius: 8px;
+  border: 1px solid #ced4da;
+  transition: 0.2s ease-in-out;
+}
+
+.return-order-card textarea:focus {
+  border-color: #007bff;
+  box-shadow: 0 0 5px rgba(0, 123, 255, 0.3);
+}
+
+.refund-options {
+  margin-top: 10px;
+}
+
+.confirm-return-btn {
+  padding: 10px 40px;
+  border-radius: 8px;
+  font-weight: 600;
+  font-size: 1.1rem;
+}
+
+.confirm-return-btn:disabled {
+  background-color: #7a7a7a;
+  border: none;
+}
+
+.reason-feedback {
+  margin-top: 8px;
+  display: flex;
+  flex-direction: column;
+}
+
+.char-count {
+  font-size: 0.85rem;
+  align-self: flex-end;
+}
+
+.char-count.valid {
+  color: #28a745;
+}
+
+.char-count.invalid {
+  color: #dc3545;
+}
+
+.error-text {
+  font-size: 0.85rem;
+  color: #dc3545;
+  margin-top: 2px;
+}

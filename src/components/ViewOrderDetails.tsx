@@ -177,17 +177,17 @@ const ViewOrderDetails: React.FC<ViewOrderDetailsProps> = ({
           <div className="order-item" key={index}>
             <div>
               <img
-                src={`http://localhost:8080/ecs-inventory-admin/api/public/images/view/getImageById/${orderItem.productImage}`}
-                alt={orderItem.productName}
+                src={`http://localhost:8080/ecs-inventory-admin/api/public/images/view/getImageById/${orderItem.product.productImage}`}
+                alt={orderItem.product.productName}
                 className="order-item-image"
               />
             </div>
             <div className="order-item-details">
               <h4>
-                <a href="#">{orderItem.productName}</a>
+                <a href="#">{orderItem.product.productName}</a>
               </h4>
-              <p>${orderItem.productPrice.toFixed(2)}</p>
-              <p>Quantity: {orderItem.productQuantity}</p>
+              <p>${orderItem.product.productPrice.toFixed(2)}</p>
+              <p>Quantity: {orderItem.product.productQuantity}</p>
               <div className="order-item-actions">
                 <button className="btn support-btn">Product Support</button>
                 <button className="btn review-btn">Product Review</button>

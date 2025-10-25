@@ -337,15 +337,7 @@ const ViewProductDetails: React.FC = () => {
               images={
                 productDetails == null
                   ? []
-                  : [
-                      productDetails?.productImage,
-                      "hello",
-                      "world",
-                      "Test1",
-                      "Test2",
-                      "Test3",
-                      "Test4",
-                    ]
+                  : [productDetails?.productImage, "", "", "", "", "", ""]
               }
             ></ProductImagesBlock>
           </div>
@@ -486,7 +478,12 @@ const ViewProductDetails: React.FC = () => {
                   // onClick={() => navigate("/product/" + similarProduct.productId)}
                 >
                   <img
-                    src={`http://localhost:8080/ecs-inventory-admin/api/public/images/view/getImageById/${similarProduct.productImage}`}
+                    src={
+                      similarProduct.productImage == "" ||
+                      similarProduct.productImage == null
+                        ? ""
+                        : `http://localhost:8080/ecs-inventory-admin/api/public/images/view/getImageById/${similarProduct.productImage}`
+                    }
                     alt={similarProduct.productName}
                   />
                   <h5 className="product-title">

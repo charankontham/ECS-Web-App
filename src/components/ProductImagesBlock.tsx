@@ -89,7 +89,11 @@ const ProductImagesBlock: React.FC<ProductImagesProps> = ({ images }) => {
           {images.map((image, index) => (
             <img
               key={index}
-              src={image ? "/src/assets/images/product-images/" + image : ""}
+              src={
+                image == "" || image == null
+                  ? ""
+                  : `http://localhost:8080/ecs-inventory-admin/api/public/images/view/getImageById/${image}`
+              }
               alt={`Thumbnail ${index + 1}`}
               className={`thumbnail ${
                 index === selectedImage.index ? "active" : ""

@@ -8,7 +8,7 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 const Footer: React.FC = () => {
   return (
     <footer className="footer">
-      <p>&copy; 2024 E-Shop. All rights reserved.</p>
+      <p>&copy; 2025 E-Shop. All rights reserved.</p>
     </footer>
   );
 };

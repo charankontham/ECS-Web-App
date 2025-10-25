@@ -162,7 +162,12 @@ const ProductsPage: React.FC = () => {
                     >
                       <div className="product-image-box">
                         <img
-                          src={`http://localhost:8080/ecs-inventory-admin/api/public/images/view/getImageById/${product.productImage}`}
+                          src={
+                            product.productImage == "" ||
+                            product.productImage == null
+                              ? ``
+                              : `http://localhost:8080/ecs-inventory-admin/api/public/images/view/getImageById/${product.productImage}`
+                          }
                           alt={product.productName}
                         />
                       </div>

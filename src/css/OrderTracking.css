@@ -6,7 +6,7 @@
   border-radius: 10px;
   max-width: 600px;
   box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
-  transition: opacity 1s ease, transform 1s ease;
+  transition: all 1s ease;
 }
 
 /* Title Styling */
@@ -47,6 +47,10 @@
   background-color: #034a94;
 }
 
+.tracking-stage.cancelled .tracking-dot {
+  background-color: #e60303;
+}
+
 .tracking-details {
   margin-left: 10px;
 }
@@ -64,6 +68,7 @@
 .tracking-date {
   font-size: 11px;
   color: #666;
+  text-align: left;
 }
 
 /* Line Connecting the Dots */

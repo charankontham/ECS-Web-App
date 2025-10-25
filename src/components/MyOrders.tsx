@@ -1,10 +1,4 @@
-import React, {
-  ReactElement,
-  ReactHTML,
-  ReactHTMLElement,
-  useEffect,
-  useState,
-} from "react";
+import React, { useEffect, useState } from "react";
 import "bootstrap/dist/css/bootstrap.css";
 import "@src/App.css";
 import "../css/AccountSettings.css";
@@ -24,21 +18,30 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
   faSearch,
   faFileInvoice,
-  faArrowRight,
-  faArrowDown,
   faAngleDown,
-  faXmark,
+  faRotateLeft,
 } from "@fortawesome/free-solid-svg-icons";
 import { jwtDecode } from "jwt-decode";
 import { useNavigate } from "react-router-dom";
 import Customer from "../interfaces/Customer";
-import { Order, OrderItem, OrderTrackingEnriched } from "../interfaces/Order";
+import {
+  Order,
+  OrderItemEnriched,
+  OrderReturn,
+  OrderTrackingEnriched,
+} from "../interfaces/Order";
 import Address from "../interfaces/Address";
 import { Product } from "../interfaces/Product";
 import * as bootstrap from "bootstrap";
 import ViewOrderDetails from "./ViewOrderDetails";
-import OrderTracking from "./OrderTracking";
 import { OrderTrackingObject } from "@interfaces/Logistics";
+import {
+  ORDER_TRACKING_STATUS_MAP,
+  OrderTrackingStatusEnum,
+} from "@src/util/util";
+import ReturnOrder from "./ReturnOrder";
+import OrderTracking from "./OrderTracking";
+import OrderItemBody from "./order-item-body/order-item-body";
 
 const MyOrders: React.FC<{
   orderId?: string;
@@ -96,6 +99,7 @@ const MyOrders: React.FC<{
   const orderApiBaseUrl = "http://localhost:8080/ecs-order/api";
   const logisticsApiBaseUrl = "http://localhost:8080/ecs-logistics/api";
   const [myOrders, setMyOrders] = useState<Order[]>([]);
+  const [returnedOrders, setReturnedOrders] = useState<OrderReturn[]>([]);
   const [ordersTracking, setOrdersTracking] = useState<OrderTrackingObject[]>(
     []
   );
@@ -111,27 +115,41 @@ const MyOrders: React.FC<{
   const [customer, setCustomer] = useState<Customer | null>(null);
   const [enableViewOrderDetailsBlock, setEnableViewOrderDetails] =
     useState<boolean>(false);
+  const [enableReturnOrderBlock, setEnableReturnOrderBlock] =
+    useState<boolean>(false);
   const [viewOrder, setViewOrder] = useState<Order | null>(null);
+  const [returnOrderDetails, setReturnOrderDetails] = useState<{
+    order: Order;
+  } | null>(null);
   const [orderSearchBar, setOrderSearchBar] = useState("");
   const [orderDateRange, setOrderDateRange] = useState<string>("1-year");
   const [orderStatus, setOrderStatus] = useState<number>(orderStatuses[0].id);
   const navigate = useNavigate();
   const last10Years: number[] = [];
   const [visibleTracker, setVisibleTracker] = useState<string | null>(null);
+
   const toggleTracker = async (id: string) => {
     setVisibleTracker((prev) => (prev === id ? null : id));
+    console.log("Ids: ", id.split("_"));
     const ids = id.split("_");
     const orderId = parseInt(ids[0]);
     const productId = parseInt(ids[1]);
+    const trackingTypeId = parseInt(ids[2]);
+    console.log("Orders tracking : ", ordersTracking);
     if (
       ordersTracking.find(
-        (o) => o.orderId === orderId && o.productId === productId
+        (o) =>
+          o.orderId === orderId &&
+          o.productId === productId &&
+          o.orderTracking?.orderTrackingType == trackingTypeId
       )
     ) {
+      console.log("=== ");
       return;
     }
-    await fetchOrderTracking(orderId, productId);
+    await fetchOrderTracking(orderId, productId, trackingTypeId);
   };
+
   for (let i = 0; i < 10; i++) {
     last10Years.push(currentYear - i);
   }
@@ -217,6 +235,7 @@ const MyOrders: React.FC<{
       (orderSearchBar.trim().length < 3 && Number.isNaN(orderSearchBar.trim()))
     ) {
       console.log("null search or invalid search characters!");
+      setCurrentOrders(myOrders);
       return;
     }
     const searchResults = myOrders.filter((order) => {
@@ -405,10 +424,23 @@ const MyOrders: React.FC<{
               },
             }
           );
+
+          const returnOrdersResponse = await axios.get(
+            `http://localhost:8080/ecs-logistics/api/orderReturns/getAllOrderReturnsByCustomerId/${customerResponse.data.customerId}`,
+            {
+              headers: {
+                Authorization: `Bearer ${authToken}`,
+                "Content-Type": "application/json",
+              },
+            }
+          );
+
           myOrdersResponse.data.map((order: Order) => {
             const standardOrderDate = new Date(order.orderDate);
             order.orderDate = standardOrderDate;
           });
+          setReturnedOrders(returnOrdersResponse.data);
+          console.log("Returns : ", returnOrdersResponse.data);
           if (orderId) {
             const orders = myOrdersResponse.data.filter(
               (order: Order) =>
@@ -451,10 +483,17 @@ const MyOrders: React.FC<{
     setEnableViewOrderDetails(true);
   };
 
-  const fetchOrderTracking = async (orderId: number, productId: number) => {
+  const fetchOrderTracking = async (
+    orderId: number,
+    productId: number,
+    trackingTypeId: number
+  ) => {
     if (
       ordersTracking.find(
-        (o) => o.orderId === orderId && o.productId === productId
+        (o) =>
+          o.orderId === orderId &&
+          o.productId === productId &&
+          o.orderTracking?.orderTrackingType == trackingTypeId
       )
     ) {
       return;
@@ -469,11 +508,18 @@ const MyOrders: React.FC<{
         },
       }
     );
-    if (myOrdersTrackingResponse.status !== 200) {
-      console.log(myOrdersTrackingResponse.data);
+    if (myOrdersTrackingResponse.status == 200) {
+      console.log("tracking response: ", myOrdersTrackingResponse.data);
       setOrdersTracking((prev) => [
         ...prev,
-        { orderId, productId, orderTracking: null } as OrderTrackingObject,
+        ...myOrdersTrackingResponse.data.map(
+          (orderTrackingItem: OrderTrackingEnriched) =>
+            ({
+              orderId,
+              productId,
+              orderTracking: orderTrackingItem,
+            } as OrderTrackingObject)
+        ),
       ]);
     } else if (myOrdersTrackingResponse.status !== 200) {
       console.log("Session Expired!");
@@ -492,6 +538,25 @@ const MyOrders: React.FC<{
     return;
   };
 
+  const returnOrder = (order: Order) => {
+    setEnableReturnOrderBlock(true);
+    setReturnOrderDetails({ order });
+  };
+
+  function isOrderItemReturned(orderItemId: number): boolean {
+    return returnedOrders.find(
+      (returnOrder) => returnOrder.orderItemId == orderItemId
+    ) != undefined
+      ? true
+      : false;
+  }
+
+  function getReturnOrder(orderItemId: number): OrderReturn {
+    return returnedOrders.find(
+      (returnOrder) => returnOrder.orderItemId == orderItemId
+    )!;
+  }
+
   useEffect(() => {
     fetchCustomerAndOrders();
   }, []);
@@ -502,11 +567,12 @@ const MyOrders: React.FC<{
 
   const setBackToViewOrders = () => {
     setEnableViewOrderDetails(false);
+    setEnableReturnOrderBlock(false);
   };
 
   return (
     <>
-      {!enableViewOrderDetailsBlock && (
+      {!enableViewOrderDetailsBlock && !enableReturnOrderBlock && (
         <Container>
           <h2 className="my-4">My Orders</h2>
           {/* Filter Section */}
@@ -588,19 +654,29 @@ const MyOrders: React.FC<{
                       <FontAwesomeIcon icon={faAngleDown}></FontAwesomeIcon>
                     </p>
                   </div>
-                  <div>
+                  <div className="order-return-header">
                     <span>Order Id # {order.orderId}</span>
+                    {order.orderStatus == OrderTrackingStatusEnum.Delivered && (
+                      <a
+                        className="return-order-link"
+                        href="#"
+                        onClick={() => returnOrder(order)}
+                      >
+                        {"Return"}
+                        <FontAwesomeIcon icon={faRotateLeft}></FontAwesomeIcon>
+                      </a>
+                    )}
                   </div>
                   <div className="order-card-header-links">
                     <a
                       href={`#`}
                       onClick={() =>
                         downloadFile(
-                          order.orderId || -1,
-                          `tooltip-${order.orderId}`
+                          order.invoiceId,
+                          `tooltip-${order.invoiceId}`
                         )
                       }
-                      id={`tooltip-${order.orderId}`}
+                      id={`tooltip-${order.invoiceId}`}
                       data-bs-toggle="tooltip"
                       data-bs-placement="bottom"
                       className="p-0"
@@ -619,111 +695,66 @@ const MyOrders: React.FC<{
                     </a>
                   </div>
                 </div>
-                <div className="order-card-body">
+                <div className="order-card-body" key={order.orderId}>
                   {order.orderItems.map((orderItem, index) => (
-                    <div key={index}>
-                      <h5>
-                        {
-                          orderStatuses.find(
-                            (o) => o.id === orderItem.orderItemStatus
-                          )?.value
-                        }
-                      </h5>
-                      <div className="order-item-body" key={index}>
-                        {/* <div className="order-item-columns"> */}
-                        <Col md={4} className="order-item-img-column">
-                          <img
-                            src={`http://localhost:8080/ecs-inventory-admin/api/public/images/view/getImageById/${orderItem.product.productImage}`}
-                            alt={orderItem.product.productName}
-                            className="img-fluid rounded"
-                          />
-                        </Col>
-                        <Col md={5} className="product-details">
-                          <h5>
-                            <a
-                              href="#"
-                              className="product-link"
-                              onClick={() =>
-                                navigate(
-                                  `/product/${orderItem.product.productId}`
-                                )
-                              }
-                            >
-                              {orderItem.product.productName}
-                            </a>
-                          </h5>
-                          <div className="product-details-btns">
-                            <Button
-                              size="sm"
-                              className="btn product-support-btn"
-                            >
-                              Get Product Support
-                            </Button>
-                            {/* <br /> */}
-                            <Button
-                              size="sm"
-                              className="btn product-review-btn"
-                            >
-                              Write a Product Review
-                            </Button>
-                          </div>
-                        </Col>
-                        <Col md={4}>
-                          <a
-                            href="#"
-                            className="track-order-link"
-                            onClick={async (e) => {
-                              e.preventDefault();
-                              await toggleTracker(
-                                order.orderId +
-                                  "_" +
-                                  orderItem.product.productId
-                              );
-                            }}
-                          >
-                            {visibleTracker ===
-                            order.orderId + "_" + orderItem.product.productId
-                              ? "hide tracker"
-                              : "view order tracking"}
-                          </a>
-                          <br />
-                          {visibleTracker ===
-                            order.orderId +
-                              "_" +
-                              orderItem.product.productId && (
-                            <>
-                              <span id="order-tracking-id-text">
-                                order-tracking-id#
-                                <br />
-                                <small>
-                                  {
-                                    ordersTracking.find(
-                                      (ot) =>
-                                        ot.orderId === order.orderId &&
-                                        ot.productId ===
-                                          orderItem.product.productId
-                                    )?.orderTracking?.orderTrackingId
-                                  }
-                                </small>
-                              </span>
-
-                              <OrderTracking
-                                orderTrackingStatus={
-                                  ordersTracking.find(
-                                    (ot) =>
-                                      ot.orderId === order.orderId &&
-                                      ot.productId ===
-                                        orderItem.product.productId
-                                  )?.orderTracking?.orderTrackingStatusId ?? -1
-                                }
-                              />
-                            </>
-                          )}
-                        </Col>
-                        {/* </div> */}
-                        {index < order.orderItems.length - 1 && <hr />}
-                      </div>
-                    </div>
+                    <OrderItemBody
+                      key={index}
+                      index={index}
+                      productImage={orderItem.product.productImage}
+                      productName={orderItem.product.productName}
+                      productId={orderItem.product.productId}
+                      orderItemQuantity={
+                        isOrderItemReturned(orderItem.orderItemId)
+                          ? getReturnOrder(orderItem.orderItemId)
+                              .productQuantity
+                          : orderItem.product.productQuantity
+                      }
+                      toggleTrackerParameter={
+                        order.orderId +
+                        "_" +
+                        orderItem.product.productId +
+                        (isOrderItemReturned(orderItem.orderItemId)
+                          ? "_2"
+                          : "_1")
+                      }
+                      toggleTracker={toggleTracker}
+                      visibleTracker={visibleTracker}
+                      orderTrackingId={
+                        ordersTracking.find(
+                          (ot) =>
+                            ot.orderId === order.orderId &&
+                            ot.productId === orderItem.product.productId &&
+                            ot.orderTracking?.orderTrackingType ===
+                              (isOrderItemReturned(orderItem.orderItemId)
+                                ? 2
+                                : 1)
+                        )?.orderTracking?.orderTrackingId
+                      }
+                      orderTrackingObj={
+                        ordersTracking.find(
+                          (ot) =>
+                            ot.orderId === order.orderId &&
+                            ot.productId === orderItem.product.productId &&
+                            ot.orderTracking?.orderTrackingType ===
+                              (isOrderItemReturned(orderItem.orderItemId)
+                                ? 2
+                                : 1)
+                        )?.orderTracking ?? null
+                      }
+                      orderTrackingStatus={
+                        ordersTracking.find(
+                          (ot) =>
+                            ot.orderId === order.orderId &&
+                            ot.productId === orderItem.product.productId &&
+                            ot.orderTracking?.orderTrackingType ===
+                              (isOrderItemReturned(orderItem.orderItemId)
+                                ? 2
+                                : 1)
+                        )?.orderTracking?.orderTrackingStatusId ??
+                        orderItem.orderItemStatus
+                      }
+                      orderItemsLength={order.orderItems.length}
+                    ></OrderItemBody>
                   ))}
                 </div>
               </Card.Body>
@@ -769,6 +800,13 @@ const MyOrders: React.FC<{
           order={viewOrder}
           goBack={setBackToViewOrders}
         ></ViewOrderDetails>
+      )}
+
+      {enableReturnOrderBlock && returnOrderDetails && (
+        <ReturnOrder
+          order={returnOrderDetails?.order!}
+          goBack={setBackToViewOrders}
+        ></ReturnOrder>
       )}
     </>
   );
