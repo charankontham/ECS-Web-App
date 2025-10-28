@@ -42,6 +42,7 @@ import {
 import ReturnOrder from "./ReturnOrder";
 import OrderTracking from "./OrderTracking";
 import OrderItemBody from "./order-item-body/order-item-body";
+import { ScaleLoader } from "react-spinners";
 
 const MyOrders: React.FC<{
   orderId?: string;
@@ -121,6 +122,7 @@ const MyOrders: React.FC<{
   const [returnOrderDetails, setReturnOrderDetails] = useState<{
     order: Order;
   } | null>(null);
+  const [isLoading, setLoader] = useState<boolean>(true);
   const [orderSearchBar, setOrderSearchBar] = useState("");
   const [orderDateRange, setOrderDateRange] = useState<string>("1-year");
   const [orderStatus, setOrderStatus] = useState<number>(orderStatuses[0].id);
@@ -449,9 +451,11 @@ const MyOrders: React.FC<{
             );
             setMyOrders(orders);
             defaultCurrentOrders(orders);
+            setLoader(false);
           } else {
             setMyOrders(myOrdersResponse.data);
             defaultCurrentOrders(myOrdersResponse.data);
+            setLoader(false);
           }
         } else {
           console.log("Session Expired!");
@@ -634,136 +638,151 @@ const MyOrders: React.FC<{
           </Row>
 
           {/* Order Cards */}
-          {currentPageOrders.map((order, index) => (
-            <Card className="mb-3 order-card" key={index}>
-              <Card.Body>
-                {/* Order Details */}
-                <div className="order-card-header">
-                  <div>
-                    <span>Order Placed</span>{" "}
-                    <p>{order.orderDate.toDateString()}</p>
-                  </div>
-                  <div>
-                    <span>Total</span>{" "}
-                    <p>{convertToPriceString(order.totalOrderValue)}</p>
-                  </div>
-                  <div>
-                    <span>Ship To</span>{" "}
-                    <p>
-                      {order.shippingAddress?.name}{" "}
-                      <FontAwesomeIcon icon={faAngleDown}></FontAwesomeIcon>
-                    </p>
-                  </div>
-                  <div className="order-return-header">
-                    <span>Order Id # {order.orderId}</span>
-                    {order.orderStatus == OrderTrackingStatusEnum.Delivered && (
+          {!isLoading &&
+            currentPageOrders.map((order, index) => (
+              <Card className="mb-3 order-card" key={index}>
+                <Card.Body>
+                  {/* Order Details */}
+                  <div className="order-card-header">
+                    <div>
+                      <span>Order Placed</span>{" "}
+                      <p>{order.orderDate.toDateString()}</p>
+                    </div>
+                    <div>
+                      <span>Total</span>{" "}
+                      <p>{convertToPriceString(order.totalOrderValue)}</p>
+                    </div>
+                    <div>
+                      <span>Ship To</span>{" "}
+                      <p>
+                        {order.shippingAddress?.name}{" "}
+                        <FontAwesomeIcon icon={faAngleDown}></FontAwesomeIcon>
+                      </p>
+                    </div>
+                    <div className="order-return-header">
+                      <span>Order Id # {order.orderId}</span>
+                      {order.orderStatus ==
+                        OrderTrackingStatusEnum.Delivered && (
+                        <a
+                          className="return-order-link"
+                          href="#"
+                          onClick={() => returnOrder(order)}
+                        >
+                          {"Return"}
+                          <FontAwesomeIcon
+                            icon={faRotateLeft}
+                          ></FontAwesomeIcon>
+                        </a>
+                      )}
+                    </div>
+                    <div className="order-card-header-links">
                       <a
-                        className="return-order-link"
-                        href="#"
-                        onClick={() => returnOrder(order)}
+                        href={`#`}
+                        onClick={() =>
+                          downloadFile(
+                            order.invoiceId,
+                            `tooltip-${order.invoiceId}`
+                          )
+                        }
+                        id={`tooltip-${order.invoiceId}`}
+                        data-bs-toggle="tooltip"
+                        data-bs-placement="bottom"
+                        className="p-0"
                       >
-                        {"Return"}
-                        <FontAwesomeIcon icon={faRotateLeft}></FontAwesomeIcon>
+                        <FontAwesomeIcon
+                          icon={faFileInvoice}
+                          className="me-2"
+                        />
+                        Invoice{" "}
+                        <FontAwesomeIcon icon={faAngleDown}></FontAwesomeIcon>
                       </a>
-                    )}
+                      <br />
+                      <a
+                        href="#"
+                        className="p-0"
+                        onClick={() => viewOrderDetails(order)}
+                      >
+                        View order details
+                      </a>
+                    </div>
                   </div>
-                  <div className="order-card-header-links">
-                    <a
-                      href={`#`}
-                      onClick={() =>
-                        downloadFile(
-                          order.invoiceId,
-                          `tooltip-${order.invoiceId}`
-                        )
-                      }
-                      id={`tooltip-${order.invoiceId}`}
-                      data-bs-toggle="tooltip"
-                      data-bs-placement="bottom"
-                      className="p-0"
-                    >
-                      <FontAwesomeIcon icon={faFileInvoice} className="me-2" />
-                      Invoice{" "}
-                      <FontAwesomeIcon icon={faAngleDown}></FontAwesomeIcon>
-                    </a>
-                    <br />
-                    <a
-                      href="#"
-                      className="p-0"
-                      onClick={() => viewOrderDetails(order)}
-                    >
-                      View order details
-                    </a>
+                  <div className="order-card-body" key={order.orderId}>
+                    {order.orderItems.map((orderItem, index) => (
+                      <OrderItemBody
+                        key={index}
+                        index={index}
+                        productImage={orderItem.product.productImage}
+                        productName={orderItem.product.productName}
+                        productId={orderItem.product.productId}
+                        orderItemQuantity={
+                          isOrderItemReturned(orderItem.orderItemId)
+                            ? getReturnOrder(orderItem.orderItemId)
+                                .productQuantity
+                            : orderItem.product.productQuantity
+                        }
+                        toggleTrackerParameter={
+                          order.orderId +
+                          "_" +
+                          orderItem.product.productId +
+                          (isOrderItemReturned(orderItem.orderItemId)
+                            ? "_2"
+                            : "_1")
+                        }
+                        toggleTracker={toggleTracker}
+                        visibleTracker={visibleTracker}
+                        orderTrackingId={
+                          ordersTracking.find(
+                            (ot) =>
+                              ot.orderId === order.orderId &&
+                              ot.productId === orderItem.product.productId &&
+                              ot.orderTracking?.orderTrackingType ===
+                                (isOrderItemReturned(orderItem.orderItemId)
+                                  ? 2
+                                  : 1)
+                          )?.orderTracking?.orderTrackingId
+                        }
+                        orderTrackingObj={
+                          ordersTracking.find(
+                            (ot) =>
+                              ot.orderId === order.orderId &&
+                              ot.productId === orderItem.product.productId &&
+                              ot.orderTracking?.orderTrackingType ===
+                                (isOrderItemReturned(orderItem.orderItemId)
+                                  ? 2
+                                  : 1)
+                          )?.orderTracking ?? null
+                        }
+                        orderTrackingStatus={
+                          ordersTracking.find(
+                            (ot) =>
+                              ot.orderId === order.orderId &&
+                              ot.productId === orderItem.product.productId &&
+                              ot.orderTracking?.orderTrackingType ===
+                                (isOrderItemReturned(orderItem.orderItemId)
+                                  ? 2
+                                  : 1)
+                          )?.orderTracking?.orderTrackingStatusId ??
+                          orderItem.orderItemStatus
+                        }
+                        orderItemsLength={order.orderItems.length}
+                      ></OrderItemBody>
+                    ))}
                   </div>
-                </div>
-                <div className="order-card-body" key={order.orderId}>
-                  {order.orderItems.map((orderItem, index) => (
-                    <OrderItemBody
-                      key={index}
-                      index={index}
-                      productImage={orderItem.product.productImage}
-                      productName={orderItem.product.productName}
-                      productId={orderItem.product.productId}
-                      orderItemQuantity={
-                        isOrderItemReturned(orderItem.orderItemId)
-                          ? getReturnOrder(orderItem.orderItemId)
-                              .productQuantity
-                          : orderItem.product.productQuantity
-                      }
-                      toggleTrackerParameter={
-                        order.orderId +
-                        "_" +
-                        orderItem.product.productId +
-                        (isOrderItemReturned(orderItem.orderItemId)
-                          ? "_2"
-                          : "_1")
-                      }
-                      toggleTracker={toggleTracker}
-                      visibleTracker={visibleTracker}
-                      orderTrackingId={
-                        ordersTracking.find(
-                          (ot) =>
-                            ot.orderId === order.orderId &&
-                            ot.productId === orderItem.product.productId &&
-                            ot.orderTracking?.orderTrackingType ===
-                              (isOrderItemReturned(orderItem.orderItemId)
-                                ? 2
-                                : 1)
-                        )?.orderTracking?.orderTrackingId
-                      }
-                      orderTrackingObj={
-                        ordersTracking.find(
-                          (ot) =>
-                            ot.orderId === order.orderId &&
-                            ot.productId === orderItem.product.productId &&
-                            ot.orderTracking?.orderTrackingType ===
-                              (isOrderItemReturned(orderItem.orderItemId)
-                                ? 2
-                                : 1)
-                        )?.orderTracking ?? null
-                      }
-                      orderTrackingStatus={
-                        ordersTracking.find(
-                          (ot) =>
-                            ot.orderId === order.orderId &&
-                            ot.productId === orderItem.product.productId &&
-                            ot.orderTracking?.orderTrackingType ===
-                              (isOrderItemReturned(orderItem.orderItemId)
-                                ? 2
-                                : 1)
-                        )?.orderTracking?.orderTrackingStatusId ??
-                        orderItem.orderItemStatus
-                      }
-                      orderItemsLength={order.orderItems.length}
-                    ></OrderItemBody>
-                  ))}
-                </div>
-              </Card.Body>
-            </Card>
-          ))}
+                </Card.Body>
+              </Card>
+            ))}
 
           {/* No Orders Message */}
-          {currentOrders.length == 0 && (
+          {currentOrders.length == 0 && !isLoading && (
             <h6 className="no-orders-placed">No orders placed!</h6>
+          )}
+
+          {isLoading && (
+            <div className="loading-div">
+              <center>
+                <ScaleLoader />
+              </center>
+            </div>
           )}
 
           {/* Pagination */}

@@ -215,3 +215,8 @@ span.status-hidden {
   display: none !important;
   transition: all 0.9s ease;
 }
+
+.loading-div {
+  padding: 70px;
+  min-height: 150px;
+}
