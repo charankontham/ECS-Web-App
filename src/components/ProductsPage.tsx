@@ -9,6 +9,7 @@ import Customer from "../interfaces/Customer";
 import { jwtDecode } from "jwt-decode";
 import Header from "./home-common/Header";
 import ProductCategoryBar from "./ProductCategoriesBar";
+import Footer from "./Footer";
 
 const ProductsPage: React.FC = () => {
   const { type, value } = useParams<{ type: string; value?: string }>();
@@ -200,6 +201,7 @@ const ProductsPage: React.FC = () => {
             </div>
           </div>
         )}
+        <Footer></Footer>
       </section>
     </>
   );

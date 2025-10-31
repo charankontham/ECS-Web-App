@@ -19,6 +19,7 @@ import { Order, OrderItemEnriched } from "../interfaces/Order";
 import { ProductReview } from "../interfaces/ProductReview";
 import { RatingAndReviews } from "./reviews-and-ratings/RatingAndReviews";
 import StarRating from "./reviews-and-ratings/StarRating";
+import Footer from "./Footer";
 
 // interface Product {
 //   brand: string;
@@ -85,34 +86,13 @@ const ViewProductDetails: React.FC = () => {
   //     price: 9,
   //   },
   // ];
-  const specs: Record<string, string> = {
+  const [specs, setSpecs] = useState<Record<string, string>>({
     weight: "2kgs",
     dimensions: "12 x 86 x 50",
     warranty: "2 years",
     color: "black",
-  };
+  });
   const authToken = localStorage.getItem("authToken");
-  // const product: Product = {
-  //   brand: "fastrack",
-  //   description: "fastrcak watches are the biggest brand in india",
-  //   images: [
-  //     "fastrack_leather_watch_brown_1.jpg",
-  //     "AUTOMET_womens_long_sleeve_shirt_top_outfit_womens_6.jpg",
-  //     "samsung_galaxy_s23_ultra_12gb_256gb_2.jpg",
-  //     "samsung_galaxy_s23_ultra_12gb_256gb_2.jpg",
-  //     "samsung_galaxy_s23_ultra_12gb_256gb_2.jpg",
-  //     "samsung_galaxy_s23_ultra_12gb_256gb_2.jpg",
-  //     "samsung_galaxy_s23_ultra_12gb_256gb_2.jpg",
-  //     "samsung_galaxy_s23_ultra_12gb_256gb_2.jpg",
-  //     "samsung_galaxy_s23_ultra_12gb_256gb_2.jpg",
-  //   ],
-  //   name: "Fastrack black leather watch",
-  //   price: 45.99,
-  //   rating: 4.5,
-  //   reviews: reviews,
-  //   similarProducts: similarProducts,
-  //   specifications: specs,
-  // };
 
   useEffect(() => {
     fetchCustomerOrdersAndReviews();
@@ -124,6 +104,12 @@ const ViewProductDetails: React.FC = () => {
         .get(apiBaseURL + "/ecs-product/api/product/" + productId)
         .then((response) => {
           setProductDetails(response.data);
+          setSpecs((specs) => ({
+            ...specs,
+            weight: response.data.productWeight + " grams",
+            dimensions: response.data.productDimensions,
+            color: response.data.productColor,
+          }));
         })
         .catch((err) => {
           console.log("Error in response catch: ", err);
@@ -365,6 +351,8 @@ const ViewProductDetails: React.FC = () => {
                 ${productDetails?.productPrice.toFixed(2)}
               </p>
               <p className="product-description">
+                <b>About the item:</b>
+                <br />
                 {productDetails?.productDescription}
               </p>
             </div>
@@ -550,6 +538,7 @@ const ViewProductDetails: React.FC = () => {
           </div>
         </div>
       )}
+      <Footer></Footer>
     </>
   );
 };

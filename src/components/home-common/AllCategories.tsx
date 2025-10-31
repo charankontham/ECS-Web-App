@@ -4,6 +4,7 @@ import "bootstrap/dist/css/bootstrap.css";
 import "../../css/AllCatgories.css";
 import ProductCategory from "../../interfaces/ProductCategory";
 import { useNavigate } from "react-router-dom";
+import Footer from "@components/Footer";
 
 const AllCategories: React.FC = () => {
   const [productCategories, setProductCategories] = useState<
@@ -69,15 +70,13 @@ const AllCategories: React.FC = () => {
                   />
                   <div className="card-body">
                     <h5 className="card-title">{category.categoryName}</h5>
-                    {/* <button className="btn btn-outline-primary btn-sm">
-                      Explore {category.categoryName}
-                    </button> */}
                   </div>
                 </div>
               </div>
             ))}
         </div>
       </div>
+      <Footer></Footer>
     </section>
   );
 };

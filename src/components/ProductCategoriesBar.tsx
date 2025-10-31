@@ -26,7 +26,13 @@ const ProductCategoryBar: React.FC<ChildProps> = ({ setProductCategoryId }) => {
             "Content-Type": "application/json",
           },
         })
-        .then((response) => setProductCategories(response.data))
+        .then((response) =>
+          setProductCategories(
+            (response.data as ProductCategory[]).filter(
+              (x) => x.categoryId != 18
+            )
+          )
+        )
         .catch((error) =>
           console.error("Error fetching customer data:", error)
         );
