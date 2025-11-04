@@ -9,7 +9,6 @@ import {
   Row,
   Col,
   Card,
-  Button,
   Form,
   InputGroup,
   Pagination,
@@ -24,23 +23,14 @@ import {
 import { jwtDecode } from "jwt-decode";
 import { useNavigate } from "react-router-dom";
 import Customer from "../interfaces/Customer";
-import {
-  Order,
-  OrderItemEnriched,
-  OrderReturn,
-  OrderTrackingEnriched,
-} from "../interfaces/Order";
+import { Order, OrderReturn, OrderTrackingEnriched } from "../interfaces/Order";
 import Address from "../interfaces/Address";
 import { Product } from "../interfaces/Product";
 import * as bootstrap from "bootstrap";
 import ViewOrderDetails from "./ViewOrderDetails";
 import { OrderTrackingObject } from "@interfaces/Logistics";
-import {
-  ORDER_TRACKING_STATUS_MAP,
-  OrderTrackingStatusEnum,
-} from "@src/util/util";
+import { OrderTrackingStatusEnum } from "@src/util/util";
 import ReturnOrder from "./ReturnOrder";
-import OrderTracking from "./OrderTracking";
 import OrderItemBody from "./order-item-body/order-item-body";
 import { ScaleLoader } from "react-spinners";
 
@@ -58,11 +48,11 @@ const MyOrders: React.FC<{
     },
     {
       id: 1,
-      value: "OrderPlaced",
+      value: "Order Placed",
     },
     {
       id: 2,
-      value: "ShipmentInTransit",
+      value: "In-Transit",
     },
     {
       id: 3,
@@ -70,11 +60,11 @@ const MyOrders: React.FC<{
     },
     {
       id: 4,
-      value: "WaitingForDeliveryAgent",
+      value: "Waiting For Agent",
     },
     {
       id: 5,
-      value: "OutForDelivery",
+      value: "Out For Delivery",
     },
     {
       id: 6,
@@ -158,23 +148,19 @@ const MyOrders: React.FC<{
 
   const applyFilters = () => {
     const dateRangeFilteredOrders = filterOrdersByDateRange(myOrders);
+    console.log("Date Range Filtered Orders: ", dateRangeFilteredOrders);
     const statusFilteredOrders = filterOrdersByOrderStatus(
-      // currentOrderStatus,
       dateRangeFilteredOrders
     );
+    console.log("Status Filtered Orders: ", statusFilteredOrders);
     setCurrentOrders(statusFilteredOrders);
   };
 
-  const filterOrdersByDateRange = (
-    // dateRange: string,
-    orders: Order[]
-  ): Order[] => {
+  const filterOrdersByDateRange = (orders: Order[]): Order[] => {
     let startDate: Date;
     let endDate: Date;
     const currentDate = new Date();
     const dateRange = orderDateRange;
-    console.log("orderDateRange : ", orderDateRange);
-    console.log("data range filkter : ", dateRange);
     switch (dateRange.toLowerCase()) {
       case "6-months":
         startDate = new Date();
@@ -193,8 +179,8 @@ const MyOrders: React.FC<{
       case "1-year":
         startDate = new Date();
         endDate = new Date();
+        console.log("End Date : ", endDate);
         startDate.setFullYear(currentDate.getFullYear() - 1);
-        endDate.setDate(endDate.getDay() + 1);
         break;
 
       default:
@@ -206,27 +192,36 @@ const MyOrders: React.FC<{
           throw new Error(`Invalid date range: ${dateRange}`);
         }
     }
+    console.log("End Date : ", endDate);
     return orders.filter(
-      (order) => order.orderDate >= startDate && order.orderDate < endDate
+      (order) => order.orderDate >= startDate && order.orderDate <= endDate
     );
   };
 
   const filterOrdersByOrderStatus = (orders: Order[]): Order[] => {
-    const currentStatus = orderStatus;
-    if (!orderStatuses.find((status) => status.id === currentStatus)) {
+    if (!orderStatuses.find((status) => status.id === orderStatus)) {
       console.log(
-        `Invalid status: ${currentStatus}. Valid statuses are: ${orderStatuses}`
+        `Invalid status: ${orderStatus}. Valid statuses are: ${orderStatuses}`
       );
       throw new Error(
-        `Invalid status: ${currentStatus}. Valid statuses are: ${orderStatuses.join(
+        `Invalid status: ${orderStatus}. Valid statuses are: ${orderStatuses.join(
           ", "
         )}`
       );
     }
-    if (currentStatus === orderStatuses[0].id) {
+    if (orderStatus == orderStatuses[0].id) {
       return orders;
     }
-    return orders.filter((order) => order.orderStatus === currentStatus);
+    return orders.filter(
+      (order) =>
+        order.orderStatus == orderStatus ||
+        order.orderItems.find(
+          (oi) =>
+            oi.orderItemStatus == orderStatus ||
+            returnedOrders.find((ro) => ro.orderItemId == oi.orderItemId) !=
+              undefined
+        ) != undefined
+    );
   };
 
   const searchInOrders = (event?: React.FormEvent<HTMLFormElement>) => {
@@ -329,10 +324,10 @@ const MyOrders: React.FC<{
     }
   };
 
-  const downloadFile = async (orderId: number, tooltipId: string) => {
+  const downloadFile = async (invoiceId: number, tooltipId: string) => {
     try {
       const response = await axios.get(
-        orderApiBaseUrl + `/order/downloadOrderInvoice/${orderId}`,
+        orderApiBaseUrl + `/order/downloadOrderInvoice/${invoiceId}`,
         {
           headers: {
             Authorization: `Bearer ${authToken}`,

@@ -93,15 +93,14 @@ body {
 }
 
 .signup-btn {
-  background-color: #ffc107; /* Yellow Button */
-  color: #333;
+  background-color: #ffc107 !important;
+  color: #333 !important;
 }
 
 .signup-btn:hover {
-  background-color: #e0a800;
+  background-color: #e0a800 !important;
 }
 
-/* Additional Links */
 .additional-links {
   text-align: center;
   margin-top: 20px;
@@ -121,6 +120,7 @@ body {
 }
 .errorMessage {
   color: Red;
+  font-size: 0.9rem;
 }
 .loadingMessage {
   color: darkgreen;

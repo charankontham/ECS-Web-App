@@ -54,7 +54,6 @@ const ProductImagesBlock: React.FC<ProductImagesProps> = ({ images }) => {
 
   return (
     <div className="product-images-container">
-      {/* Center: Main Image */}
       <div className="main-image-container">
         <div
           className="main-image-wrapper"
@@ -64,7 +63,11 @@ const ProductImagesBlock: React.FC<ProductImagesProps> = ({ images }) => {
           onMouseLeave={() => setIsZoomed(false)}
         >
           <img
-            src={`http://localhost:8080/ecs-inventory-admin/api/public/images/view/getImageById/${selectedImage.image}`}
+            src={
+              selectedImage.image
+                ? `http://localhost:8080/ecs-inventory-admin/api/public/images/view/getImageById/${selectedImage.image}`
+                : "/assets/images/image-placeholder.jpg"
+            }
             alt="Selected Product"
             className={`main-image ${isZoomed ? "zoomed" : ""}`}
             style={{ transformOrigin: `${zoomPosition.x}% ${zoomPosition.y}%` }}
@@ -91,7 +94,7 @@ const ProductImagesBlock: React.FC<ProductImagesProps> = ({ images }) => {
               key={index}
               src={
                 image == "" || image == null
-                  ? ""
+                  ? "/assets/images/image-placeholder.jpg"
                   : `http://localhost:8080/ecs-inventory-admin/api/public/images/view/getImageById/${image}`
               }
               alt={`Thumbnail ${index + 1}`}

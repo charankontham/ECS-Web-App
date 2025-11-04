@@ -14,7 +14,7 @@ import UpdatePasswordModule from "./UpdatePasswordModule";
 import AddressesModule from "./AddressesModule";
 import AddressForm from "./AddOrUpdateAddressModule";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faTrash } from "@fortawesome/free-solid-svg-icons";
+import { faSignOut, faTrash } from "@fortawesome/free-solid-svg-icons";
 import MyOrders from "./MyOrders";
 import ProductReviews from "./reviews-and-ratings/ProductReviews";
 
@@ -75,7 +75,7 @@ const AccountSettings: React.FC<{ activeSection?: string }> = (
 
   const logout = () => {
     localStorage.setItem("authToken", "");
-    navigate("/signIn");
+    navigate("/");
   };
 
   const handleConfirm = () => {
@@ -350,8 +350,8 @@ const AccountSettings: React.FC<{ activeSection?: string }> = (
         <div className="settings-content">
           <h3>Logout</h3>
           <p>Click the button below to log out of your account.</p>
-          <button className="btn btn-secondary" onClick={logout}>
-            Logout
+          <button className="btn btn-warning" onClick={logout}>
+            Logout <FontAwesomeIcon icon={faSignOut}></FontAwesomeIcon>
           </button>
         </div>
       );

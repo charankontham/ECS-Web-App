@@ -18,7 +18,7 @@ const SignUpPage: React.FC = () => {
     confirmPassword: "",
   });
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<any | null>(null);
+  const [error, setError] = useState<string | null>(null);
   const [showPassword, setShowPassword] = useState(false);
   const apiBaseURL = "http://localhost:8080/ecs-customer/api/customer";
   const navigate = useNavigate();
@@ -42,9 +42,9 @@ const SignUpPage: React.FC = () => {
       return "name";
     } else if (formData.phone.length !== 10) {
       return "phone";
-      // } else if (!passwordValidation(formData.password)) {
-      //   console.log(passwordValidation(formData.password));
-      //   return "password";
+    } else if (!passwordValidation(formData.password)) {
+      console.log(passwordValidation(formData.password));
+      return "password";
     } else if (formData.confirmPassword !== formData.password) {
       return "confirm password";
     } else if (formData.email === null || formData.email === "") {
@@ -94,10 +94,9 @@ const SignUpPage: React.FC = () => {
         });
     } else {
       setLoading(false);
-      setError(validationResult);
+      setError(validationResult != "success" ? validationResult : null);
     }
     setLoading(false);
-    // console.log(formData);
   };
 
   return (
@@ -204,10 +203,11 @@ const SignUpPage: React.FC = () => {
             <p className="errorMessage">
               {error == "Duplicate email!"
                 ? "Email already exists"
-                : "Invalid " + error!}
-              {error == "name"
-                ? <br /> + "Name should lessthan 20 characters"
-                : ""}
+                : error == "name"
+                ? "Name should lessthan 20 characters"
+                : error == "password"
+                ? "Password must be 8-20 characters long, include at least one uppercase letter, one lowercase letter, one digit, and one special character."
+                : "Invalid " + error}
             </p>
           )}
 
@@ -222,7 +222,7 @@ const SignUpPage: React.FC = () => {
           <p>
             Already have an account?{" "}
             <a href="/signIn" className="link signin-link">
-              Sign In
+              Sign In here
             </a>
           </p>
         </div>

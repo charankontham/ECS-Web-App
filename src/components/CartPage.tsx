@@ -18,6 +18,7 @@ import { faTrashCan } from "@fortawesome/free-solid-svg-icons";
 
 const CartPage: React.FC = () => {
   const [customer, setCustomer] = useState<Customer | null>(null);
+  const [error, setError] = useState<string | null>(null);
   const [cart, setCart] = useState<Cart | null>(null);
   const [selectedCartItemsLength, setSelectedCartItemsLength] =
     useState<number>(cart?.cartItems.length || 0);
@@ -47,6 +48,7 @@ const CartPage: React.FC = () => {
     cart?.cartItems.forEach((cartItem) => {
       if (cartItem.cartItemId == cartItemId) {
         if ((cartItem.orderQuantity || 1) + delta == 0) {
+          setError("Must order at least 1 item!");
           console.log("Minimum order quantity is 1");
           return;
         } else if (
@@ -59,7 +61,13 @@ const CartPage: React.FC = () => {
             productId: cartItem.productDetails.productId,
             quantity: (cartItem.orderQuantity || 1) + delta,
           });
+          setError(null);
         } else {
+          setError(
+            "Only " +
+              cartItem.productDetails.productQuantity +
+              " items available!"
+          );
           console.log("Maximum order quantity reached!");
         }
       }
@@ -79,7 +87,6 @@ const CartPage: React.FC = () => {
         })
         .then((response) => {
           if (response.status == 200) {
-            // console.log("Successfully updated!!");
             setCart((prevCart) => {
               if (!prevCart) return null;
               const updatedCartItems = prevCart.cartItems.map((item) =>
@@ -272,9 +279,9 @@ const CartPage: React.FC = () => {
                     <p className="item-description">
                       {item.productDetails.productDescription}
                     </p>
-                    <p className="delivery">
+                    {/* <p className="delivery">
                       FREE delivery: <strong>"Jan 13 - Feb 4"</strong>
-                    </p>
+                    </p> */}
                     {/* {item.isGift && <p className="gift">🎁 This is a gift</p>} */}
                     <div className="item-actions">
                       <div className="quantity-controls">
@@ -300,6 +307,7 @@ const CartPage: React.FC = () => {
                         Save for later
                       </button> */}
                     </div>
+                    {error && <p className="error-message">{error}</p>}
                   </div>
                   <div className="item-price">
                     {item.productDetails.productPrice && (

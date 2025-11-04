@@ -5,6 +5,8 @@ import "../../css/Header.css";
 import {
   faGears,
   faShoppingCart,
+  faSign,
+  faSignIn,
   faSliders,
   faUser,
   faWrench,
@@ -132,10 +134,10 @@ const Header: React.FC = () => {
         ) : (
           <>
             <button
-              className="btn btn-blue"
+              className="btn btn-warning sign-in-btn"
               onClick={() => navigate("/signIn")}
             >
-              Sign In
+              Sign In <FontAwesomeIcon icon={faSignIn} />
             </button>
           </>
         )}

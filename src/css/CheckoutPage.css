@@ -70,8 +70,6 @@
 }
 
 .address-btns {
-  /* display: flex;
-  justify-content: space-between; */
   max-width: 30%;
   border-radius: 20px !important;
   margin-bottom: 5px;
@@ -82,7 +80,21 @@
 }
 .error-msg {
   color: red;
-  /* padding: 30px; */
+}
+
+.add-address-form .form-control.filled {
+  color: black !important;
+  -webkit-text-fill-color: black !important;
+}
+
+.form-actions .btn {
+  width: max-content;
+}
+
+.popup-body .form-actions {
+  gap: 15px;
+  justify-content: flex-start;
+  margin-top: 0;
 }
 
 @keyframes popup-show {

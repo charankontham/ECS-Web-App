@@ -28,8 +28,12 @@ export function RatingAndReviews({ reviews }: RatingAndReviewsProps) {
         value={sortOption}
         onChange={(e) => setSortOption(e.target.value as "recent" | "popular")}
       >
-        <option value="recent">Most Recent</option>
-        <option value="popular">Most Popular</option>
+        <option value="recent" key={1}>
+          Most Recent
+        </option>
+        <option value="popular" key={2}>
+          Most Popular
+        </option>
       </select>
       {sortedReviews.map((review, index) => (
         <div key={index} className="review-card">
@@ -52,6 +56,9 @@ export function RatingAndReviews({ reviews }: RatingAndReviewsProps) {
                       )} */}
         </div>
       ))}
+      {sortedReviews.length === 0 && (
+        <h2 className="no-reviews-text">No reviews available.</h2>
+      )}
     </div>
   );
 }

@@ -28,6 +28,7 @@ import {
   OrderReturn,
   OrderReturnRequest,
   OrderTracking,
+  OrderTrackingEnriched,
 } from "@interfaces/Order";
 import Address from "@interfaces/Address";
 
@@ -53,6 +54,9 @@ const ReturnOrder: React.FC<ReturnOrderProps> = ({ order, goBack }) => {
   const [selectedPickupAddress, setPickupAddress] = useState<number>(0);
   const [addressList, setAddressList] = useState<Address[]>([]);
   const characterLimit = 10;
+  const [orderTackings, setOrderTrackings] = useState<OrderTrackingEnriched[]>(
+    []
+  );
 
   const handleReasonChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
     const input = e.target.value;
@@ -151,24 +155,30 @@ const ReturnOrder: React.FC<ReturnOrderProps> = ({ order, goBack }) => {
     }
   };
 
-  const fetchOrderTracking = async (productId: number) => {
+  const fetchOrderTracking = async (productId?: number) => {
     try {
       if (authToken) {
         const decodedToken = jwtDecode(authToken);
         const email = decodedToken.sub;
         const currentTime = Date.now() / 1000;
         if ((decodedToken.exp ? decodedToken.exp : 0) >= currentTime) {
-          return await axios.get(
-            logisticsApiBaseUrl +
-              `/orderTracking/getByOrderIdAndProductId/${order.orderId}/${productId}`,
-            {
-              headers: {
-                Authorization: `Bearer ${authToken}`,
-                "Content-Type": "application/json",
-              },
-            }
-          );
-          // setAddressList(addressResponse.data);
+          order.orderItems.forEach(async (oi) => {
+            const response = await axios.get(
+              logisticsApiBaseUrl +
+                `/orderTracking/getByOrderIdAndProductId/${order.orderId}/${oi.product.productId}`,
+              {
+                headers: {
+                  Authorization: `Bearer ${authToken}`,
+                  "Content-Type": "application/json",
+                },
+              }
+            );
+            console.log("Order Tracking Response : ", response.data[0]);
+            setOrderTrackings((prevTrackings) => [
+              ...prevTrackings,
+              ...response.data,
+            ]);
+          });
         } else {
           console.log("Session Expired!");
           localStorage.setItem("authToken", "");
@@ -190,26 +200,27 @@ const ReturnOrder: React.FC<ReturnOrderProps> = ({ order, goBack }) => {
         ?.orderItemStatus != OrderTrackingStatusEnum.Delivered
     )
       return false;
-    fetchOrderTracking(
-      order.orderItems.find((ot) => ot.orderItemId == orderItemId)!.product!
-        .productId!
-    ).then((response) => {
-      if (
-        (response?.data as OrderTracking[]).length == 1 &&
-        (response?.data as OrderTracking[])[0].actualDeliveryDate?.getTime()! +
-          THIRTY_DAYS_IN_MS >=
-          Date.now()
-      ) {
-        return true;
-      } else {
-        return false;
-      }
-    });
-    return false;
+    if (
+      orderTackings.filter((ot) => ot.orderItem.orderItemId == orderItemId)
+        .length > 0 &&
+      new Date(
+        orderTackings.filter(
+          (ot) => ot.orderItem.orderItemId == orderItemId
+        )[0]!.actualDeliveryDate!
+      ).getTime() +
+        THIRTY_DAYS_IN_MS >=
+        Date.now()
+    ) {
+      return true;
+    } else {
+      return false;
+    }
   }
 
   useEffect(() => {
     fetchOrderItemAndAddress();
+    fetchOrderTracking();
+    console.log("Order Trackings : ", orderTackings);
   }, []);
 
   return (
@@ -256,8 +267,8 @@ const ReturnOrder: React.FC<ReturnOrderProps> = ({ order, goBack }) => {
             </Form.Group>
 
             {/* Step 0: Select Quantity */}
-            {(order.orderItems.find((ot) => ot.orderItemId == selectedOrderItem)
-              ?.product!.productQuantity ?? -1) > 1 && (
+            {order.orderItems.find((ot) => ot.orderItemId == selectedOrderItem)
+              ?.product!.productQuantity! > 1 && (
               <Form.Group className="mb-4">
                 <Form.Label className="fw-semibold">
                   Select Product Quantity

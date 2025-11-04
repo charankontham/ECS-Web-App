@@ -4,6 +4,9 @@ import "bootstrap/dist/css/bootstrap.css";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import Customer from "../interfaces/Customer";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faSignIn } from "@fortawesome/free-solid-svg-icons";
+import Header from "./home-common/Header";
 
 const SignInPage: React.FC = () => {
   const navigate = useNavigate();
@@ -26,7 +29,11 @@ const SignInPage: React.FC = () => {
     setLoading(true);
     event.preventDefault();
     if (password && email) {
-      const customer: Customer = { email: email, password: password };
+      const customer: Customer = {
+        customerId: null,
+        email: email,
+        password: password,
+      };
       try {
         axios
           .post(
@@ -64,68 +71,71 @@ const SignInPage: React.FC = () => {
   };
 
   return (
-    <div className="signin-container">
-      <div className="signin-box">
-        <h1 className="signin-title">Welcome Back</h1>
-        <p className="signin-subtitle">Sign in to your account</p>
+    <>
+      <Header />
+      <div className="signin-container">
+        <div className="signin-box">
+          <h1 className="signin-title">Welcome Back</h1>
+          <p className="signin-subtitle">Sign in to your account</p>
 
-        <form className="signin-form" onSubmit={validateCredentials}>
-          <div className="form-group">
-            <label htmlFor="email" className="form-label">
-              Email Address
-            </label>
-            <input
-              type="email"
-              id="email"
-              className="form-input"
-              onChange={(e) => setEmail(e.target.value)}
-              value={email}
-              placeholder="Enter your email"
-              required
-            />
-          </div>
+          <form className="signin-form" onSubmit={validateCredentials}>
+            <div className="form-group">
+              <label htmlFor="email" className="form-label">
+                Email Address
+              </label>
+              <input
+                type="email"
+                id="email"
+                className="form-input"
+                onChange={(e) => setEmail(e.target.value)}
+                value={email}
+                placeholder="Enter your email"
+                required
+              />
+            </div>
 
-          <div className="form-group">
-            <label htmlFor="password" className="form-label">
-              Password
-            </label>
-            <input
-              type="password"
-              id="password"
-              className="form-input"
-              onChange={(e) => setPassword(e.target.value)}
-              value={password}
-              placeholder="Enter your password"
-              required
-            />
-          </div>
+            <div className="form-group">
+              <label htmlFor="password" className="form-label">
+                Password
+              </label>
+              <input
+                type="password"
+                id="password"
+                className="form-input"
+                onChange={(e) => setPassword(e.target.value)}
+                value={password}
+                placeholder="Enter your password"
+                required
+              />
+            </div>
 
-          {error && (
-            <p className="errorMessage">Wrong credentials! try again</p>
-          )}
+            {error && (
+              <p className="errorMessage">Wrong credentials! try again</p>
+            )}
 
-          {loading && <p>Wait a second, getting your account!</p>}
+            {loading && <p>Wait a second, authentication in progress!</p>}
 
-          <div className="form-actions">
-            <button type="submit" className="btn signin-btn">
-              Sign In
-            </button>
-          </div>
-        </form>
+            <div className="form-actions">
+              <button type="submit" className="btn signin-btn">
+                Sign In <FontAwesomeIcon icon={faSignIn} />
+              </button>
+            </div>
+          </form>
 
-        <div className="additional-links">
-          <a href="/forgot-password" className="link forgot-link">
-            Forgot your password?
-          </a>
-          <p>
-            New here?{" "}
-            <a href="/signUp" className="link signup-link">
-              Sign Up
+          <div className="additional-links">
+            <a href="/forgot-password" className="link forgot-link">
+              Forgot your password?
             </a>
-          </p>
+            <p>
+              New to ecs?{" "}
+              <a href="/signUp" className="link signup-link">
+                Sign Up here
+              </a>
+            </p>
+          </div>
         </div>
       </div>
-    </div>
+    </>
   );
 };
 

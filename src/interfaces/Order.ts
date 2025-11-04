@@ -67,7 +67,7 @@ export interface OrderTrackingEnriched {
   nearestHub: DeliveryHub;
   orderTrackingStatusId: number;
   estimatedDeliveryTime: Date;
-  actualDeliveryTime: Date | null;
+  actualDeliveryDate: Date | null;
   customerAddressId: number;
   customerInstructions: string | null;
   orderTrackingType: number;

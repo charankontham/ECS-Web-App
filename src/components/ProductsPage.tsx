@@ -104,7 +104,6 @@ const ProductsPage: React.FC = () => {
 
   const navigateToProductDetails = (productId: number) => {
     navigate("/product/" + productId);
-    // console.log("Product Id: ", productId);
   };
 
   const addToCart = (productId: number) => {
@@ -140,39 +139,37 @@ const ProductsPage: React.FC = () => {
   if (error) return <p>Error: {error}</p>;
 
   return (
-    <>
+    <div className="products-page-container">
       <div className="nav-bar">
         <Header></Header>
       </div>
       <ProductCategoryBar
         setProductCategoryId={setCategoryId}
       ></ProductCategoryBar>
-
       <section className="products">
         {!loading && (
           <div className="product-grid">
             {data != null &&
-              ((data.length == 0 && <p> No products Available</p>) ||
+              ((data.length == 0 && (
+                <p className="no-products-available"> No Products! </p>
+              )) ||
                 data.map((product) => (
                   <div className="product-card" key={product.productId}>
-                    <div
-                      className="product-link-div"
-                      onClick={() =>
-                        navigateToProductDetails(product.productId || -1)
-                      }
-                    >
-                      <div className="product-image-box">
-                        <img
-                          src={
-                            product.productImage == "" ||
-                            product.productImage == null
-                              ? ``
-                              : `http://localhost:8080/ecs-inventory-admin/api/public/images/view/getImageById/${product.productImage}`
-                          }
-                          alt={product.productName}
-                        />
-                      </div>
-                      <h6 className="product-title">{product.productName}</h6>
+                    <div className="product-link-div">
+                      <a href={`/product/${product.productId}`}>
+                        <div className="product-image-box">
+                          <img
+                            src={
+                              product.productImage == "" ||
+                              product.productImage == null
+                                ? `/assets/images/image-placeholder.jpg`
+                                : `http://localhost:8080/ecs-inventory-admin/api/public/images/view/getImageById/${product.productImage}`
+                            }
+                            alt={product.productName}
+                          />
+                        </div>
+                        <h6 className="product-title">{product.productName}</h6>
+                      </a>
                     </div>
                     <div className="product-non-link-div">
                       <strong>${product.productPrice.toFixed(2)}</strong>
@@ -201,9 +198,9 @@ const ProductsPage: React.FC = () => {
             </div>
           </div>
         )}
-        <Footer></Footer>
       </section>
-    </>
+      <Footer></Footer>
+    </div>
   );
 };
 

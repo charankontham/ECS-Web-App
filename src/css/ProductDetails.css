@@ -13,6 +13,7 @@
 .product-info {
   display: grid;
   max-width: 500px;
+  min-width: 300px;
 }
 
 .basic-details h1 {
@@ -20,16 +21,17 @@
   margin: 0;
 }
 
-.basic-details h2 {
-  font-size: 1.2rem;
+.basic-details h4 {
+  font-size: 1rem !important;
   color: gray;
   margin: 5px 0;
 }
 
 .product-price {
   font-size: 1.5rem;
-  color: #007bff;
+  color: #084f9a;
   margin: 10px 0;
+  font-weight: 600;
 }
 
 .product-description {
@@ -47,8 +49,10 @@
 }
 
 .buy-product-options {
-  width: 100% !important;
+  width: max-content;
   background-color: #f2f2f2;
+  max-height: fit-content;
+  padding-bottom: 20px;
 }
 
 .pd-5 {
@@ -155,7 +159,8 @@ td {
 }
 
 .product-reviews {
-  margin-top: 30px;
+  margin-top: 2%;
+  margin-bottom: 2%;
 }
 
 .product-reviews h3 {
@@ -195,7 +200,9 @@ td {
 }
 
 .out-of-stock {
+  padding-top: 10px;
   color: red;
+  font-weight: bold;
 }
 
 .last-purchased-div {
@@ -232,9 +239,10 @@ td {
 .sort-dropdown {
   border: 1px solid #ccc;
   border-radius: 10px;
-  padding: 5px 10px;
+  padding: 2px 5px;
   cursor: pointer;
   margin-bottom: 10px;
+  font-size: small;
 }
 
 .write-review {
@@ -279,4 +287,16 @@ td {
 
 .color-green {
   color: green;
+}
+
+.no-reviews-text {
+  color: rgb(184, 184, 184);
+  font-weight: 600;
+  font-size: 25px;
+  padding: 25px 25px 25px 0px;
+}
+
+.last-month-sales-info {
+  font-size: 0.8rem;
+  color: #636363;
 }

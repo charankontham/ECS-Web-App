@@ -103,3 +103,11 @@ export const ORDER_TRACKING_STATUS_MAP: Readonly<Record<number, string>> = {
   [OrderTrackingStatusEnum.Cancelled]: "Cancelled",
   [OrderTrackingStatusEnum.ReturnedToDeliveryHub]: "Returned",
 };
+
+export interface BaseFilters {
+  searchValue?: string | null;
+  offset: number;
+  currentPage: number;
+  sortField?: string;
+  sortDirection?: "asc" | "desc";
+}

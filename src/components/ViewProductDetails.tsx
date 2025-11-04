@@ -54,43 +54,11 @@ const ViewProductDetails: React.FC = () => {
   const [isPopupVisible, setPopupVisible] = useState(false);
   const [productReviews, setProductReviews] = useState<ProductReview[]>([]);
   const [similarProducts, setSimilarProducts] = useState<Product[]>([]);
-  // const similarProducts: ProductSummary[] = [
-  //   {
-  //     id: "34",
-  //     name: "pd-34",
-  //     image: "samsung_galaxy_s23_ultra_12gb_256gb_2.jpg",
-  //     price: 5,
-  //   },
-  //   {
-  //     id: "35",
-  //     name: "pd-35",
-  //     image: "fastrack_leather_watch_brown_1.jpg",
-  //     price: 6,
-  //   },
-  //   {
-  //     id: "36",
-  //     name: "pd-36",
-  //     image: "fastrack_leather_watch_brown_1.jpg",
-  //     price: 7,
-  //   },
-  //   {
-  //     id: "37",
-  //     name: "pd-37",
-  //     image: "fastrack_leather_watch_brown_1.jpg",
-  //     price: 8,
-  //   },
-  //   {
-  //     id: "38",
-  //     name: "pd-38",
-  //     image: "fastrack_leather_watch_brown_1.jpg",
-  //     price: 9,
-  //   },
-  // ];
   const [specs, setSpecs] = useState<Record<string, string>>({
-    weight: "2kgs",
-    dimensions: "12 x 86 x 50",
+    weight: "N/A",
+    dimensions: "N/A",
     warranty: "2 years",
-    color: "black",
+    color: "N/A",
   });
   const authToken = localStorage.getItem("authToken");
 
@@ -317,7 +285,6 @@ const ViewProductDetails: React.FC = () => {
 
       <div className="product-container">
         <div className="product-intro">
-          {/* Product Images */}
           <div className="product-images">
             <ProductImagesBlock
               images={
@@ -328,11 +295,10 @@ const ViewProductDetails: React.FC = () => {
             ></ProductImagesBlock>
           </div>
 
-          {/* Product Info */}
           <div className="product-info">
             <div className="basic-details">
               <h1>{productDetails?.productName}</h1>
-              <h2>by {productDetails?.brand.brandName}</h2>
+              <h4>by {productDetails?.brand.brandName}</h4>
               <div className="product-rating">
                 {calculateAverageRating(productReviews).toFixed(1)}{" "}
                 <StarRating
@@ -341,11 +307,10 @@ const ViewProductDetails: React.FC = () => {
                 />{" "}
                 |{" "}
                 <a href="#product-reviews">
-                  {productReviews.length}{" "}
-                  {productReviews.length > 1 ? "ratings" : "rating"}
+                  {productReviews.length} {"ratings"}
                 </a>
               </div>
-              <p> 3k+ bought in last month</p>
+              <p className="last-month-sales-info"> 3k+ bought in last month</p>
               <hr></hr>
               <p className="product-price">
                 ${productDetails?.productPrice.toFixed(2)}
@@ -356,10 +321,10 @@ const ViewProductDetails: React.FC = () => {
                 {productDetails?.productDescription}
               </p>
             </div>
-            <div className="product-features">
+            {/* <div className="product-features">
               <strong>Features</strong>
               <p>1. very good wrist watch</p>
-            </div>
+            </div> */}
           </div>
 
           <div className="buy-product-options">
@@ -385,8 +350,21 @@ const ViewProductDetails: React.FC = () => {
                 className="select-quantity btn"
                 value={selectedProductQuantity}
                 id="quantity-select"
-                onChange={(e) =>
-                  setSelectedProductQuantity(parseInt(e.target.value))
+                onChange={(e) => {
+                  if (
+                    productDetails &&
+                    parseInt(e.target.value) <= productDetails.productQuantity
+                  ) {
+                    setSelectedProductQuantity(parseInt(e.target.value));
+                  } else {
+                    alert("Selected quantity exceeds available stock!");
+                    e.preventDefault();
+                  }
+                }}
+                disabled={
+                  productDetails && productDetails.productQuantity <= 0
+                    ? true
+                    : false
                 }
               >
                 <option value={selectedProductQuantity}>
@@ -431,12 +409,10 @@ const ViewProductDetails: React.FC = () => {
           </div>
         </div>
 
-        {/* Product Specifications */}
         <div className="product-specifications">
           <h3>Product Specifications</h3>
           <hr />
           <table className="table table-striped">
-            {/* {product-specifications-table} */}
             <tbody>
               {Object.entries(specs).map(([key, value], index) => (
                 <tr key={index}>
@@ -450,7 +426,6 @@ const ViewProductDetails: React.FC = () => {
           </table>
         </div>
 
-        {/* Similar Products */}
         <div className="similar-products">
           <h3>Similar Products</h3>
           <hr />
@@ -469,7 +444,7 @@ const ViewProductDetails: React.FC = () => {
                     src={
                       similarProduct.productImage == "" ||
                       similarProduct.productImage == null
-                        ? ""
+                        ? "/assets/images/image-placeholder.jpg"
                         : `http://localhost:8080/ecs-inventory-admin/api/public/images/view/getImageById/${similarProduct.productImage}`
                     }
                     alt={similarProduct.productName}
@@ -485,12 +460,11 @@ const ViewProductDetails: React.FC = () => {
           {/* <ProductsPage type="similar-products" value={12}></ProductsPage> */}
         </div>
 
-        {/* Product Ratings & Reviews */}
         <div className="product-reviews" id="product-reviews">
           <h3>Ratings & Reviews</h3>
           <hr />
           <div className="flex-gap-15">
-            <div className="col-lg-3">
+            <div className="col-lg-4">
               <div className="average-product-rating">
                 <div className="flex-gap-15">
                   <StarRating

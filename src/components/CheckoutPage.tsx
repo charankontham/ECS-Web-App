@@ -303,7 +303,7 @@ const CheckoutPage = () => {
                               setShowPopup(true);
                             }}
                           >
-                            Edit
+                            Edit Address
                           </a>
                           <br />
                           {address.street}, {address.city}, {address.state},{" "}
