@@ -1,13 +1,12 @@
 import React, { useEffect, useState } from "react";
-import "../css/ProductCategoryBar.css";
+import "../../css/ProductCategoryBar.css";
 import "@src/App.css";
 import "bootstrap/dist/css/bootstrap.css";
 import { faUser } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
-import ProductCategory from "../interfaces/ProductCategory";
-import { Product } from "../interfaces/Product";
+import ProductCategory from "../../interfaces/ProductCategory";
 
 interface ChildProps {
   setProductCategoryId: (id: number) => void; // Function type for callback

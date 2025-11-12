@@ -19,6 +19,7 @@ import { jwtDecode } from "jwt-decode";
 import { Cart } from "../../interfaces/Cart";
 import { Client } from "@stomp/stompjs";
 import SockJS from "sockjs-client";
+import SearchBar from "./SearchBar";
 
 const Header: React.FC = () => {
   const [customer, setCustomer] = useState<Customer | null>(null);
@@ -116,11 +117,7 @@ const Header: React.FC = () => {
       <div className="logo">
         <a href="/">ECS-Shopper</a>
       </div>
-      <input
-        type="text"
-        className="search-bar"
-        placeholder="Search products..."
-      />
+      <SearchBar />
       <div className="header-buttons">
         {customer ? (
           <div className="user-info" onClick={() => navigate("/account")}>

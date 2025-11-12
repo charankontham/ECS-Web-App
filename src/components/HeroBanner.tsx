@@ -85,7 +85,6 @@ const HeroBanner: React.FC = () => {
           if (customerResponse.status !== 200) {
             console.log(customerResponse.data);
             setUserLoggedIn(false);
-            navigate("/signIn");
           } else {
             setUserLoggedIn(true);
             return customerResponse.data;
@@ -94,17 +93,15 @@ const HeroBanner: React.FC = () => {
           console.log("Session Expired!");
           localStorage.setItem("authToken", "");
           setUserLoggedIn(false);
-          navigate("/");
         }
       } else {
         setUserLoggedIn(false);
-        navigate("/");
       }
     } catch (error) {
       console.error("Error: ", error);
       setUserLoggedIn(false);
-      navigate("/signIn");
     }
+    return null;
   }
 
   async function fetchRecentlyPurchasedItems(userId: number) {
@@ -173,8 +170,9 @@ const HeroBanner: React.FC = () => {
     fetchFeatureProducts();
     try {
       fetchUserDetails()
-        .then(async (userData: Customer) => {
-          await fetchRecentlyPurchasedItems(userData.customerId!);
+        .then(async (userData: Customer | null) => {
+          if (userData != null)
+            await fetchRecentlyPurchasedItems(userData.customerId!);
         })
         .catch((error) => {
           console.error("Error: ", error);

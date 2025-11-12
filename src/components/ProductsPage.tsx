@@ -8,7 +8,7 @@ import { Product } from "../interfaces/Product";
 import Customer from "../interfaces/Customer";
 import { jwtDecode } from "jwt-decode";
 import Header from "./home-common/Header";
-import ProductCategoryBar from "./ProductCategoriesBar";
+import ProductCategoryBar from "./home-common/ProductCategoriesBar";
 import Footer from "./Footer";
 
 const ProductsPage: React.FC = () => {

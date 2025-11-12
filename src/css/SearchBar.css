@@ -1,0 +1,139 @@
+.search-bar-container {
+  position: relative;
+  width: 100%;
+  max-width: 600px;
+}
+
+.search-list-item {
+  padding-top: 0px !important;
+  padding-bottom: 0px !important;
+  margin-top: 2px !important;
+  margin-bottom: 2px !important;
+}
+
+.search-list-item span {
+  font-size: 0.85rem;
+}
+
+.search-list-item p {
+  font-size: 0.7rem;
+}
+
+/* 
+.search-input {
+  background-color: white !important;
+}
+
+.search-input-icon {
+  margin-right: 8px;
+  color: #999;
+  font-size: 20px;
+}
+
+.suggestions-dropdown {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  max-height: 400px;
+  overflow-y: auto;
+  z-index: 1300;
+  box-shadow: 0 2px 16px rgba(0, 0, 0, 0.15) !important;
+  border-radius: 4px;
+}
+
+.suggestions-list {
+  padding: 0 !important;
+}
+
+.suggestion-item {
+  padding: 0px !important;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+.suggestion-item:hover {
+  background-color: #f5f5f5;
+}
+
+.suggestion-item.suggestion-product {
+  border-left: 3px solid #1976d2;
+}
+
+.suggestion-item.suggestion-trending {
+  border-left: 3px solid #ff9800;
+}
+
+.suggestion-item.suggestion-recent {
+  border-left: 3px solid #9c27b0;
+}
+
+.suggestion-icon {
+  min-width: 10px !important;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.suggestion-item.suggestion-product .suggestion-icon {
+  color: #1976d2;
+}
+
+.suggestion-item.suggestion-trending .suggestion-icon {
+  color: #ff9800;
+}
+
+.suggestion-item.suggestion-recent .suggestion-icon {
+  color: #9c27b0;
+}
+
+.loading-container {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  gap: 12px;
+}
+
+.loading-text {
+  color: #666;
+  font-size: 14px;
+}
+
+.no-results {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  text-align: center;
+  color: #999;
+}
+
+.no-results-icon {
+  font-size: 32px;
+  margin-bottom: 8px;
+  opacity: 0.5;
+}
+
+.no-results p {
+  margin: 0;
+  font-size: 14px;
+}
+
+.suggestions-dropdown::-webkit-scrollbar {
+  width: 6px;
+}
+
+.suggestions-dropdown::-webkit-scrollbar-track {
+  background: #f1f1f1;
+}
+
+.suggestions-dropdown::-webkit-scrollbar-thumb {
+  background: #888;
+  border-radius: 3px;
+}
+
+.suggestions-dropdown::-webkit-scrollbar-thumb:hover {
+  background: #555;
+} */

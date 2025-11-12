@@ -8,7 +8,7 @@ import { useParams } from "react-router-dom";
 import "../css/ProductDetails.css";
 import ProductImagesBlock from "./ProductImagesBlock";
 import Header from "./home-common/Header";
-import ProductCategoryBar from "./ProductCategoriesBar";
+import ProductCategoryBar from "./home-common/ProductCategoriesBar";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faBolt, faCartShopping } from "@fortawesome/free-solid-svg-icons";
 import { Product } from "../interfaces/Product";

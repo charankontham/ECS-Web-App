@@ -4,9 +4,9 @@ import "@src/App.css";
 import "../css/HomePage.css";
 import Header from "./home-common/Header";
 import Footer from "./Footer";
-import ProductCategoryBar from "./ProductCategoriesBar";
 import HeroBanner from "./HeroBanner";
 import { useNavigate } from "react-router-dom";
+import ProductCategoryBar from "./home-common/ProductCategoriesBar";
 
 const Homepage: React.FC = () => {
   const navigate = useNavigate();

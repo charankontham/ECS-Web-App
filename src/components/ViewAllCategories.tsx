@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import "bootstrap/dist/css/bootstrap.css";
 import "@src/App.css";
 import Header from "./home-common/Header";
-import ProductCategoryBar from "./ProductCategoriesBar";
+import ProductCategoryBar from "./home-common/ProductCategoriesBar";
 import { useNavigate } from "react-router-dom";
 import AllCategories from "./home-common/AllCategories";
 
