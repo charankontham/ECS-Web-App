@@ -1,12 +1,12 @@
 import { BaseFilters } from "@src/util/util";
 import ProductBrand from "./ProductBrand";
-import ProductCategory from "./ProductCategory";
+import ProductCategory, { SubCategory } from "./ProductCategory";
 
 export interface Product {
   productId: number | null;
   productName: string;
   brand: ProductBrand;
-  productCategory: ProductCategory;
+  productSubCategory: SubCategory;
   productDescription: string | null;
   productPrice: number;
   productQuantity: number;
@@ -15,6 +15,8 @@ export interface Product {
   productWeight: number | null;
   productDimensions: string | null;
   productCondition: string | null;
+  dateAdded: Date;
+  dateModified: Date;
 }
 
 export interface ProductRequest {

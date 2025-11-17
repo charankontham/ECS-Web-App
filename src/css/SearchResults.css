@@ -1,0 +1,78 @@
+/* Search Results Page Container */
+.search-results-page {
+  min-height: 100vh;
+  background-color: #ffffff;
+}
+
+/* Results Header */
+.search-results-title {
+  font-size: 28px;
+  font-weight: 700;
+  color: #333;
+  margin: 0;
+  display: flex;
+  gap: 8px;
+}
+
+.search-results-title .search-query {
+  color: #1976d2;
+  font-weight: 700;
+}
+
+.results-info {
+  font-size: 14px;
+  color: #999;
+  margin-top: 8px;
+  margin-bottom: 0;
+}
+
+/* Layout and Responsiveness */
+@media (max-width: 768px) {
+  /* Stack layout on mobile */
+  .search-results-layout {
+    flex-direction: column;
+  }
+
+  .filters-sidebar {
+    width: 100% !important;
+    margin-bottom: 24px;
+  }
+
+  .results-panel {
+    width: 100% !important;
+  }
+
+  .search-results-title {
+    font-size: 22px;
+  }
+
+  /* Make product grid single column on small screens */
+  .product-grid {
+    grid-template-columns: 1fr !important;
+  }
+
+  /* Make related searches single column on small screens */
+  .related-searches-grid {
+    grid-template-columns: 1fr !important;
+  }
+}
+
+/* Smooth transitions */
+.search-results-page * {
+  transition: all 0.2s ease;
+}
+
+/* Loading state */
+.loading-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 400px;
+}
+
+/* Pagination styling */
+.pagination-container {
+  display: flex;
+  justify-content: center;
+  margin: 32px 0;
+}

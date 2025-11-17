@@ -15,6 +15,7 @@ import ViewProductDetails from "./components/ViewProductDetails";
 import CheckoutPage from "./components/CheckoutPage";
 import OrderPlaced from "./components/OrderPlaced";
 import ViewAllCategories from "@components/ViewAllCategories";
+import SearchResults from "@components/SearchResults";
 
 const App: React.FC = () => {
   return (
@@ -52,6 +53,7 @@ const App: React.FC = () => {
           <Route path="/products/:type/:value?" element={<ProductsPage />} />
           <Route path="/all-categories" element={<ViewAllCategories />} />
           <Route path="/order-placed-success" element={<OrderPlaced />} />
+          <Route path="/search-results" element={<SearchResults />} />
         </Routes>
       </div>
     </Router>

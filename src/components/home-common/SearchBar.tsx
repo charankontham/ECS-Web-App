@@ -1,5 +1,5 @@
 "use client";
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, FormEvent } from "react";
 import {
   TextField,
   Paper,
@@ -19,6 +19,7 @@ import axios from "axios";
 import Customer from "@interfaces/Customer";
 import { jwtDecode } from "jwt-decode";
 import SearchHistory, { UserSearchDoc } from "@interfaces/SearchHistory";
+import { useNavigate } from "react-router-dom";
 
 const TRENDING_SEARCHES = [
   "Electronics",
@@ -49,73 +50,71 @@ const SearchBar: React.FC = () => {
   const [searchHistory, setSearchHistory] = useState<SearchHistory | null>(
     null
   );
+  const navigate = useNavigate();
 
   useEffect(() => {
     setIsLoading(true);
     if (searchQuery.trim().length === 0) {
-      setSuggestions(getRecentSearches());
+      setSuggestions(getRecentSearches);
       setIsOpen(true);
       setIsLoading(false);
       setError(null);
       return;
     }
     setError(null);
-
-    const fetchSuggestions = async () => {
-      try {
-        const query = searchQuery.toLowerCase();
-        const response = await axios.get(
-          `http://localhost:8080/ecs-product/api/search/${encodeURIComponent(
-            query
-          )}`,
-          {
-            headers: {
-              "Content-Type": "application/json",
-            },
-          }
-        );
-
-        const productSuggestions: SearchSuggestion[] = response.data;
-
-        const trendingSuggestions: SearchSuggestion[] =
-          TRENDING_SEARCHES.filter((trend) =>
-            trend.toLowerCase().includes(query)
-          )
-            .slice(0, 3)
-            .map((trend, index) => ({
-              itemId: index + 1000,
-              itemName: trend,
-              itemType: "trending",
-              itemCategory: undefined,
-              relevanceScore: 0,
-            }));
-
-        const allSuggestions = [
-          ...productSuggestions,
-          ...trendingSuggestions,
-          {
-            itemId: 0,
-            itemName: query,
-            itemType: "search",
-            itemCategory: "search",
-            relevanceScore: 0,
-          } as SearchSuggestion,
-        ];
-        setSuggestions(allSuggestions);
-        setIsOpen(allSuggestions.length > 0);
-      } catch (err) {
-        setError("Failed to fetch suggestions");
-        setSuggestions([]);
-        setIsOpen(false);
-      } finally {
-        setIsLoading(false);
-      }
-    };
     const timer = setTimeout(() => {
       fetchSuggestions();
     }, 300);
     return () => clearTimeout(timer);
   }, [searchQuery]);
+
+  const fetchSuggestions = async () => {
+    try {
+      const query = searchQuery.toLowerCase();
+      const response = await axios.get(
+        `http://localhost:8080/ecs-product/api/search/${encodeURIComponent(
+          query
+        )}`,
+        {
+          headers: {
+            "Content-Type": "application/json",
+          },
+        }
+      );
+      const productSuggestions: SearchSuggestion[] = response.data;
+      const trendingSuggestions: SearchSuggestion[] = TRENDING_SEARCHES.filter(
+        (trend) => trend.toLowerCase().includes(query)
+      )
+        .slice(0, 3)
+        .map((trend, index) => ({
+          itemId: index + 1000,
+          itemName: trend,
+          itemType: "trending",
+          itemCategory: undefined,
+          relevanceScore: 0,
+        }));
+
+      const allSuggestions = [
+        ...productSuggestions,
+        ...trendingSuggestions,
+        {
+          itemId: 0,
+          itemName: query,
+          itemType: "search",
+          itemCategory: "search",
+          relevanceScore: 0,
+        } as SearchSuggestion,
+      ];
+      setSuggestions(allSuggestions);
+      setIsOpen(allSuggestions.length > 0);
+    } catch (err) {
+      setError("Failed to fetch suggestions");
+      setSuggestions([]);
+      setIsOpen(false);
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   useEffect(() => {
     fetchCustomerAndSearchHistory();
@@ -128,7 +127,6 @@ const SearchBar: React.FC = () => {
         const email = decodedToken.sub;
         const currentTime = Date.now() / 1000;
         if ((decodedToken.exp ? decodedToken.exp : 0) >= currentTime) {
-          // try {
           const customerResponse = await axios.get(
             `http://localhost:8080/ecs-customer/api/customer/getByEmail/${email}`,
             {
@@ -150,11 +148,17 @@ const SearchBar: React.FC = () => {
           );
           if (searchHistoryResponse.status === 200)
             setSearchHistory(searchHistoryResponse.data);
-          // } catch (error) {
-          //   console.log("Error: ", error);
-          // }
         } else {
           console.log("Session Expired!");
+          // const localHistoryRaw = localStorage.getItem("ecs_search_history");
+          // const localHistory: SearchHistory = localHistoryRaw
+          //   ? JSON.parse(localHistoryRaw)
+          //   : {
+          //       id: 1,
+          //       customerId: 0,
+          //       searchHistory: [],
+          //     };
+          // setSearchHistory(localHistory);
         }
       }
     } catch (error) {
@@ -203,15 +207,26 @@ const SearchBar: React.FC = () => {
       } catch (error) {
         console.error("Error: ", error);
       }
+    } else {
+      // var history: { [key: string]: any }[] ;
+      // if(searchHistory!.searchHistory!.length < 1 ){
+      //   history = [
+      //   {itemId: 1,
+      //   itemName: query,
+      //   itemType: "recent",
+      //   relevanceScore: 0}
+      // ];
+      // }else{
+      //   setSearchHistory((prev) => prev, );
+      // }
+      // setSearchHistory(localStorage.getItem("ecs_search_history")!);
     }
   };
 
   const handleSuggestionClick = (suggestion: SearchSuggestion) => {
-    setSearchQuery(suggestion.itemName);
     setIsOpen(false);
-    // TODO: Implement actual search functionality here
-
-    addSearchHistory(suggestion.itemName);
+    addSearchHistory(searchQuery);
+    navigate(`/search-results?query=${encodeURIComponent(searchQuery)}`);
   };
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -220,8 +235,10 @@ const SearchBar: React.FC = () => {
 
   const handleInputFocus = () => {
     if (searchQuery.trim().length === 0) {
-      setSuggestions(getRecentSearches());
+      setSuggestions(getRecentSearches);
       setIsOpen(true);
+    } else {
+      fetchSuggestions();
     }
   };
 
@@ -229,6 +246,12 @@ const SearchBar: React.FC = () => {
     setTimeout(() => {
       setIsOpen(false);
     }, 200);
+  };
+
+  const handleSubmit = (event: FormEvent) => {
+    event.preventDefault();
+    addSearchHistory(searchQuery);
+    navigate(`/search-results?query=${encodeURIComponent(searchQuery)}`);
   };
 
   const getRecentSearches = (): SearchSuggestion[] => {
@@ -261,29 +284,31 @@ const SearchBar: React.FC = () => {
 
   return (
     <Box className="search-bar-container">
-      <TextField
-        fullWidth
-        size="small"
-        placeholder="Search ECS Shopper"
-        value={searchQuery}
-        onChange={handleInputChange}
-        onFocus={handleInputFocus}
-        onBlur={handleInputBlur}
-        variant="outlined"
-        slotProps={{
-          input: {
-            startAdornment: (
-              <SearchIcon sx={{ mr: 1, color: "#999", fontSize: "20px" }} />
-            ),
-          },
-        }}
-        sx={{
-          backgroundColor: "white",
-          "& .MuiOutlinedInput-root": {
+      <form onSubmit={(e) => handleSubmit(e)}>
+        <TextField
+          fullWidth
+          size="small"
+          placeholder="Search ECS Shopper"
+          value={searchQuery}
+          onChange={handleInputChange}
+          onFocus={handleInputFocus}
+          onBlur={handleInputBlur}
+          variant="outlined"
+          slotProps={{
+            input: {
+              startAdornment: (
+                <SearchIcon sx={{ mr: 1, color: "#999", fontSize: "20px" }} />
+              ),
+            },
+          }}
+          sx={{
             backgroundColor: "white",
-          },
-        }}
-      />
+            "& .MuiOutlinedInput-root": {
+              backgroundColor: "white",
+            },
+          }}
+        />
+      </form>
 
       {isOpen && (
         <Paper
