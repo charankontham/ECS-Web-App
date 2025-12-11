@@ -201,16 +201,18 @@ const HeroBanner: React.FC = () => {
           <h3>Categories to explore</h3>
           <div className="featured-categories-grid">
             {featuredCategories.map((cat, index) => (
-              <div
+              <a
+                href={"/search-results?query=" + cat.name}
                 key={index}
-                className="featured-category-card"
-                onClick={() => handleFeatureCategoryClick(cat)}
+                className="featured-link"
               >
-                <div className="icon-wrapper" style={{ color: cat.color }}>
-                  <FontAwesomeIcon icon={cat.icon} size="2x" />
+                <div key={index} className="featured-category-card">
+                  <div className="icon-wrapper" style={{ color: cat.color }}>
+                    <FontAwesomeIcon icon={cat.icon} size="2x" />
+                  </div>
+                  <p>{cat.name}</p>
                 </div>
-                <p>{cat.name}</p>
-              </div>
+              </a>
             ))}
           </div>
         </section>
@@ -219,14 +221,12 @@ const HeroBanner: React.FC = () => {
           <h3>Shop items by prices</h3>
           <div className="feature-cards">
             {shopByPrices.map((product) => (
-              <div
-                key={product.id}
-                className="features-product-card"
-                onClick={() =>
-                  navigate("/search-results?query=&price=" + product.id)
-                }
-              >
-                <a href="#" onClick={(e) => e.preventDefault()}>
+              <div key={product.id} className="features-product-card">
+                <a
+                  href={"/search-results?query=&price=" + product.id}
+                  key={product.id}
+                  className="featured-link"
+                >
                   <div className="features-product-image">
                     <img src={product.image} alt={product.name} />
                   </div>

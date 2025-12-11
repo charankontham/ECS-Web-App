@@ -39,6 +39,11 @@
   cursor: pointer;
 }
 
+.featured-link {
+  text-decoration: none;
+  color: #000000;
+}
+
 .featured-category-card:hover {
   transform: translateY(-6px);
   box-shadow: 0 6px 16px rgba(0, 0, 0, 0.12);
