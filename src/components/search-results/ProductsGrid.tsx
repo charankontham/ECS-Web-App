@@ -16,6 +16,10 @@ import ShoppingCartIcon from "@mui/icons-material/ShoppingCart";
 import LocalShippingIcon from "@mui/icons-material/LocalShipping";
 import { useNavigate } from "react-router-dom";
 import { Product } from "@interfaces/Product";
+import { useEffect, useState } from "react";
+import Customer from "@interfaces/Customer";
+import { jwtDecode } from "jwt-decode";
+import axios from "axios";
 
 interface ProductsGridProps {
   products: Product[];
@@ -25,6 +29,10 @@ interface ProductsGridProps {
 const ProductsGrid: React.FC<ProductsGridProps> = ({ products, loading }) => {
   const navigate = useNavigate();
   const apiBaseUrl = "http://localhost:8080/";
+  const authToken = localStorage.getItem("authToken");
+  const [customer, setCustomer] = useState<Customer | null>(null);
+  const cartApiBaseURL = "http://localhost:8080/ecs-order/api/cart";
+  const [isPopupVisible, setPopupVisible] = useState(false);
 
   if (loading) return null;
 
@@ -35,6 +43,71 @@ const ProductsGrid: React.FC<ProductsGridProps> = ({ products, loading }) => {
           imageId
       : "/assets/images/image-placeholder.jpg";
   }
+
+  useEffect(() => {
+    if (authToken) {
+      const decodedToken = jwtDecode(authToken);
+      const email = decodedToken.sub;
+      const currentTime = Date.now() / 1000;
+      if ((decodedToken.exp ? decodedToken.exp : 0) >= currentTime) {
+        axios
+          .get(
+            `http://localhost:8080/ecs-customer/api/customer/getByEmail/${email}`,
+            {
+              headers: {
+                Authorization: `Bearer ${authToken}`,
+                "Content-Type": "application/json",
+              },
+            }
+          )
+          .then((response) => {
+            setCustomer(response.data);
+          })
+          .catch((error) => {
+            console.error("Error response: ", error);
+          });
+      } else {
+        console.log("Session Expired!");
+      }
+    } else {
+      console.log("AuthToken not found!");
+    }
+  }, []);
+
+  const showPopup = () => {
+    setPopupVisible(true);
+    setTimeout(() => {
+      setPopupVisible(false);
+    }, 2000);
+  };
+
+  const addToCart = (productId: number) => {
+    const cartItems = [
+      { customerId: customer?.customerId, productId: productId, quantity: 1 },
+    ];
+    const cartObject = {
+      customerId: customer?.customerId,
+      cartItems: cartItems,
+    };
+    if (authToken != null && authToken.length > 0) {
+      axios
+        .post(cartApiBaseURL, cartObject, {
+          headers: {
+            Authorization: `Bearer ${authToken}`,
+            "Content-Type": "application/json",
+          },
+        })
+        .then((response) => {
+          showPopup();
+        })
+        .catch((error) => {
+          console.log("Error Response : ", error.response.data);
+        });
+    } else {
+      console.log("Please login first");
+      navigate("/signIn");
+    }
+  };
 
   return (
     <Box>
@@ -65,7 +138,7 @@ const ProductsGrid: React.FC<ProductsGridProps> = ({ products, loading }) => {
                 sx={{
                   width: "240px",
                   height: "240px",
-                  objectFit: "cover",
+                  objectFit: "contain",
                   flexShrink: 0,
                   cursor: "pointer",
                 }}
@@ -294,19 +367,21 @@ const ProductsGrid: React.FC<ProductsGridProps> = ({ products, loading }) => {
 
                 {/* Action Button */}
                 <Button
-                  fullWidth
+                  // fullWidth
                   variant="contained"
                   startIcon={<ShoppingCartIcon sx={{ fontSize: "18px" }} />}
                   sx={{
-                    backgroundColor: "#1976d2",
+                    width: "max-content",
+                    backgroundColor: "#efc847ff",
                     textTransform: "none",
                     fontSize: "14px",
-                    fontWeight: 600,
+                    color: "black",
                     padding: "10px",
                     "&:hover": {
-                      backgroundColor: "#1565c0",
+                      backgroundColor: "#e7b621ff",
                     },
                   }}
+                  onClick={() => addToCart(product.productId!)}
                 >
                   Add to Cart
                 </Button>
@@ -318,6 +393,15 @@ const ProductsGrid: React.FC<ProductsGridProps> = ({ products, loading }) => {
           </Box>
         ))}
       </Box>
+      {isPopupVisible && (
+        <div className="popup-overlay">
+          <div className="popup-box">
+            <p>
+              Item added to cart <span className="color-green">&#x2713;</span>
+            </p>
+          </div>
+        </div>
+      )}
     </Box>
   );
 };

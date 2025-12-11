@@ -47,7 +47,6 @@ const ProductsPage: React.FC = () => {
         })
         .then((response) => {
           setData(response.data);
-          // console.log(response.data);
           setLoading(false);
         })
         .catch((error) => {
@@ -107,7 +106,6 @@ const ProductsPage: React.FC = () => {
   };
 
   const addToCart = (productId: number) => {
-    // console.log("Adding product to cart : ", productId);
     const cartItems = [
       { customerId: customer?.customerId, productId: productId, quantity: 1 },
     ];
@@ -115,7 +113,7 @@ const ProductsPage: React.FC = () => {
       customerId: customer?.customerId,
       cartItems: cartItems,
     };
-    if (authToken != null && productId !== -1) {
+    if (authToken != null && authToken.length > 0) {
       axios
         .post(cartApiBaseURL, cartObject, {
           headers: {
@@ -124,7 +122,6 @@ const ProductsPage: React.FC = () => {
           },
         })
         .then((response) => {
-          // console.log("Added to cart Successfully : ", response.data);
           showPopup();
         })
         .catch((error) => {
@@ -132,6 +129,7 @@ const ProductsPage: React.FC = () => {
         });
     } else {
       console.log("Please login first");
+      navigate("/signIn");
     }
   };
 
@@ -175,9 +173,7 @@ const ProductsPage: React.FC = () => {
                       <strong>${product.productPrice.toFixed(2)}</strong>
                       <button
                         className="btn btn-red"
-                        onClick={() =>
-                          addToCart(product.productId ? product.productId : -1)
-                        }
+                        onClick={() => addToCart(product.productId!)}
                         disabled={product.productQuantity <= 0 ? true : false}
                       >
                         {product.productQuantity <= 0

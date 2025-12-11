@@ -24,7 +24,7 @@ import {
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import ExpandLessIcon from "@mui/icons-material/ExpandLess";
 import { useNavigate } from "react-router-dom";
-import axios from "axios";
+import axios, { all } from "axios";
 import ProductBrand from "@interfaces/ProductBrand";
 import ProductCategory, { SubCategory } from "@interfaces/ProductCategory";
 
@@ -38,8 +38,9 @@ interface FiltersProps {
     colors: string[];
     minRating: number;
     discount: number;
-    sortBy: "relevance" | "lowToHigh" | "highToLow" | "rating";
+    sortBy: "relevance" | "low-to-high" | "high-to-low" | "rating";
   };
+  isEmptySearch: boolean;
   onFilterChange: (filters: FiltersProps["filters"]) => void;
 }
 
@@ -48,6 +49,7 @@ const COLORS = ["Red", "Blue", "Black", "White", "Gray", "Green", "Silver"];
 
 const FiltersSidebar: React.FC<FiltersProps> = ({
   filters,
+  isEmptySearch,
   onFilterChange,
 }) => {
   const [brandSearchOpen, setBrandSearchOpen] = useState(false);
@@ -160,15 +162,9 @@ const FiltersSidebar: React.FC<FiltersProps> = ({
           headers: { "Content-Type": "application/json" },
         }
       );
-      // const categoriesResponse = await axios.get(
-      //   `${apiBaseUrl}/ecs-product/api/productCategory/`,
-      //   {
-      //     headers: { "Content-Type": "application/json" },
-      //   }
-      // );
       setBrands(brandsResponse.data);
+      console.log("brands Response:", brandsResponse.data);
       setSubCategories(subCategoriesResponse.data);
-      // setAllCategories(categoriesResponse.data);
     } catch (error) {}
   };
 
@@ -200,11 +196,27 @@ const FiltersSidebar: React.FC<FiltersProps> = ({
           Sort By
         </Typography>
         <FormControl fullWidth size="small">
-          <Select value={filters.sortBy} onChange={handleSortChange}>
-            <MenuItem value="relevance">Relevance</MenuItem>
-            <MenuItem value="lowToHigh">Price: Low to High</MenuItem>
-            <MenuItem value="highToLow">Price: High to Low</MenuItem>
-            <MenuItem value="rating">Avg Customer Review</MenuItem>
+          <Select
+            value={filters.sortBy}
+            onChange={handleSortChange}
+            sx={{ fontSize: 13 }}
+          >
+            <MenuItem
+              value="relevance"
+              sx={{ fontSize: 13 }}
+              disabled={isEmptySearch}
+            >
+              Relevance
+            </MenuItem>
+            <MenuItem value="low-to-high" sx={{ fontSize: 13 }}>
+              Price: Low to High
+            </MenuItem>
+            <MenuItem value="high-to-low" sx={{ fontSize: 13 }}>
+              Price: High to Low
+            </MenuItem>
+            <MenuItem value="rating" sx={{ fontSize: 13 }}>
+              Avg Customer Review
+            </MenuItem>
           </Select>
         </FormControl>
       </Box>
@@ -218,12 +230,13 @@ const FiltersSidebar: React.FC<FiltersProps> = ({
         </Typography>
         <Slider
           min={0}
-          max={5000}
-          step={1}
+          max={isEmptySearch ? filters.priceRange[1] : 5000}
+          step={2}
           value={filters.priceRange}
           onChange={handlePriceChange}
           valueLabelDisplay="off"
           disableSwap
+          disabled={isEmptySearch}
         />
         <Box
           sx={{
@@ -263,56 +276,68 @@ const FiltersSidebar: React.FC<FiltersProps> = ({
             })}
           </Box>
         )}
-
-        <Collapse>
-          <Box
-            sx={{
-              mb: 1.5,
-              border: "1px solid #ddd",
-              borderRadius: "4px",
-              p: 1.5,
-            }}
-          >
-            <Autocomplete
-              multiple
-              options={brands}
-              getOptionLabel={(option) => option.brandName}
-              value={brands.filter((b) =>
-                selectedBrandsTemp.includes(b.brandId!)
-              )}
-              onChange={(event, value) => {
-                setSelectedBrandsTemp(value.map((v) => v.brandId!));
-              }}
-              renderInput={(params) => (
-                <TextField
-                  {...params}
-                  placeholder="Search brands..."
-                  size="small"
-                />
-              )}
-              noOptionsText="No brands found"
-              renderTags={() => null}
-              ListboxProps={{
-                style: { maxHeight: "200px" },
+        {/* <Box
+          sx={{
+            mb: 1.5,
+            border: "1px solid #ddd",
+            borderRadius: "4px",
+            p: 1.5,
+          }}
+        > */}
+        <Autocomplete
+          multiple
+          options={brands}
+          getOptionLabel={(option) => option.brandName}
+          value={brands.filter((b) => selectedBrandsTemp.includes(b.brandId!))}
+          onChange={(event, value) => {
+            setSelectedBrandsTemp(value.map((v) => v.brandId!));
+          }}
+          renderInput={(params) => (
+            <TextField
+              {...params}
+              placeholder="Search brands..."
+              size="small"
+              sx={{
+                "& .MuiInputBase-input": {
+                  fontSize: 13,
+                },
+                "& .MuiInputLabel-root": {
+                  fontSize: 13,
+                },
               }}
             />
-          </Box>
-          <Button
-            fullWidth
-            variant="contained"
-            onClick={handleApplyBrands}
-            sx={{
-              backgroundColor: "#1976d2",
-              textTransform: "none",
-              fontWeight: 600,
-              "&:hover": {
-                backgroundColor: "#1565c0",
-              },
-            }}
-          >
-            Apply Brands
-          </Button>
-        </Collapse>
+          )}
+          noOptionsText="No brands found"
+          sx={{
+            pb: 2,
+            "& .MuiAutocomplete-input": {
+              fontSize: 13,
+            },
+            "& .MuiChip-label": {
+              fontSize: 13,
+            },
+          }}
+          renderTags={() => null}
+          ListboxProps={{
+            style: { maxHeight: "200px", fontSize: "13px" },
+          }}
+        />
+        {/* </Box> */}
+        <Button
+          fullWidth
+          variant="contained"
+          onClick={handleApplyBrands}
+          sx={{
+            backgroundColor: "#1976d2",
+            textTransform: "none",
+            fontWeight: 600,
+            "&:hover": {
+              backgroundColor: "#1565c0",
+            },
+          }}
+        >
+          Apply Brands
+        </Button>
       </Box>
 
       <Divider sx={{ my: 2 }} />
@@ -324,11 +349,11 @@ const FiltersSidebar: React.FC<FiltersProps> = ({
         </Typography>
         {categories.map((category: ProductCategory) => (
           <Box key={category.categoryId}>
-            <Box sx={{ display: "flex", alignItems: "center", mb: 0.5 }}>
+            <Box sx={{ display: "flex", alignItems: "left", mb: 0 }}>
               <IconButton
                 size="small"
                 onClick={() => toggleCategoryExpand(category.categoryId!)}
-                sx={{ p: 0.5, mr: 0.5 }}
+                sx={{ p: 0, mr: 0 }}
               >
                 {expandedCategories.includes(category.categoryId!) ? (
                   <ExpandLessIcon />
@@ -345,13 +370,19 @@ const FiltersSidebar: React.FC<FiltersProps> = ({
                   />
                 }
                 label={category.categoryName}
-                sx={{ fontSize: "14px", flex: 1, m: 0 }}
+                sx={{
+                  fontSize: "13px !important",
+                  ".css-rizt0-MuiTypography-root": { fontSize: 13 },
+                  flex: 1,
+                  m: 0,
+                }}
+                style={{ fontSize: "13px !important" }}
               />
             </Box>
 
             {/* Subcategories */}
             <Collapse in={expandedCategories.includes(category.categoryId!)}>
-              <Box sx={{ pl: 4, mb: 1 }}>
+              <Box sx={{ pl: 6, mb: 0, pb: 0 }}>
                 {subCategories.map(
                   (subcategory) =>
                     subcategory.productCategory.categoryId ==
@@ -372,7 +403,13 @@ const FiltersSidebar: React.FC<FiltersProps> = ({
                           />
                         }
                         label={subcategory.subCategoryName}
-                        sx={{ fontSize: "13px", display: "block", mb: 0.5 }}
+                        sx={{
+                          fontSize: "12px",
+                          display: "block",
+                          mb: 0,
+                          pb: 0,
+                          ".css-rizt0-MuiTypography-root": { fontSize: 13 },
+                        }}
                       />
                     )
                 )}
@@ -401,7 +438,10 @@ const FiltersSidebar: React.FC<FiltersProps> = ({
                 />
               }
               label={condition}
-              sx={{ fontSize: "14px" }}
+              sx={{
+                fontSize: "13px",
+                ".css-rizt0-MuiTypography-root": { fontSize: 13 },
+              }}
             />
           ))}
         </FormGroup>

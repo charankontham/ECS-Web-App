@@ -17,13 +17,6 @@ import ProductBrand from "@interfaces/ProductBrand";
 import ProductCategory from "@interfaces/ProductCategory";
 import { Product } from "@interfaces/Product";
 
-interface SearchResultsData {
-  products: Product[];
-  brands: ProductBrand[];
-  categories: ProductCategory[];
-  totalProducts: number;
-}
-
 const DUMMY_RELATED_SEARCHES = [
   "Wireless Headphones",
   "Earbuds with Noise Cancellation",
@@ -53,12 +46,17 @@ const SearchResults: React.FC = () => {
     useState<ProductCategory[]>(DUMMY_CATEGORIES);
   const [loading, setLoading] = useState(true);
   const [page, setPage] = useState(1);
-  const [totalPages, setTotalPages] = useState(1);
+  const [totalPages, setTotalPages] = useState<number>(1);
+  const [totalProducts, setTotalProducts] = useState<number>(0);
   const productsPerPage = 10;
   const [searchParams, setSearchParams] = useSearchParams();
   const searchQuery = searchParams.get("query");
+  const priceFilter = searchParams.get("price");
   const [filters, setFilters] = useState({
-    priceRange: [0, 5000] as [number, number],
+    priceRange: [
+      0,
+      priceFilter == null || priceFilter == "" ? 5000 : Number(priceFilter!),
+    ] as [number, number],
     brands: [] as number[],
     categories: [] as number[],
     subCategories: [] as number[],
@@ -66,7 +64,11 @@ const SearchResults: React.FC = () => {
     colors: [] as string[],
     minRating: 0,
     discount: 0,
-    sortBy: "relevance" as "relevance" | "lowToHigh" | "highToLow" | "rating",
+    sortBy: "relevance" as
+      | "relevance"
+      | "low-to-high"
+      | "high-to-low"
+      | "rating",
   });
 
   useEffect(() => {
@@ -75,23 +77,47 @@ const SearchResults: React.FC = () => {
 
   useEffect(() => {
     const timer = setTimeout(() => {
-      console.log("Filters : ", filters);
+      fetchSearchResults();
     }, 700);
     return () => clearTimeout(timer);
   }, [filters]);
 
   const fetchSearchResults = async () => {
     setLoading(true);
+    var params = new URLSearchParams({
+      searchQuery: searchQuery!,
+      currentPage: String(page - 1),
+      pageSize: String(productsPerPage),
+      sortBy: filters.sortBy,
+    });
+
+    const filterMappings: Record<string, any> = {
+      priceRange: filters.priceRange,
+      brands: filters.brands,
+      categories: filters.categories,
+      subCategories: filters.subCategories,
+      condition: filters.condition,
+      colors: filters.colors,
+      minRating: filters.minRating,
+      discount: filters.discount,
+    };
+
+    Object.entries(filterMappings).forEach(([key, value]) => {
+      if (Array.isArray(value) && value.length > 0) {
+        params.append(key, value.join(","));
+      } else if (typeof value === "number" && value > 0) {
+        params.append(key, String(value));
+      }
+    });
+
     try {
       const response = await axios.get(
-        `http://localhost:8080/ecs-product/api/search/globalSearch?searchQuery=${searchQuery}&currentPage=${
-          page - 1
-        }&pageSize=${productsPerPage}&sortBy=relevance`,
+        `http://localhost:8080/ecs-product/api/search/globalSearch?${params.toString()}`,
         { headers: { "Content-Type": "application/json" } }
       );
-      console.log("Search Results Response:", response.data);
       setProducts(response.data.content);
-      setTotalPages(Math.ceil(response.data.totalPages / productsPerPage));
+      setTotalPages(Math.ceil(response.data.totalElements / productsPerPage));
+      setTotalProducts(response.data.totalElements);
     } catch (error) {
       console.error("[v0] Error fetching search results:", error);
     } finally {
@@ -119,11 +145,21 @@ const SearchResults: React.FC = () => {
         {/* Results header with query info */}
         <Box sx={{ mb: 3 }}>
           <h1 className="search-results-title">
-            Search Results for:{" "}
-            <span className="search-query">{searchQuery}</span>
+            {searchQuery != "" ? (
+              <>
+                Search Results for:{" "}
+                <span className="search-query">{searchQuery}</span>
+              </>
+            ) : (
+              <> Items</>
+            )}
           </h1>
           <p className="results-info">
-            Showing {productsPerPage} of {productsPerPage * totalPages} results
+            Showing {(page - 1) * 10 + 1} -{" "}
+            {page * productsPerPage <= totalProducts
+              ? page * productsPerPage
+              : totalProducts}{" "}
+            of {totalProducts} results
           </p>
         </Box>
         <Box sx={{ display: "flex", gap: 3 }}>
@@ -135,6 +171,7 @@ const SearchResults: React.FC = () => {
           >
             <FiltersSidebar
               filters={filters}
+              isEmptySearch={searchQuery === null || searchQuery === ""}
               onFilterChange={handleFilterChange}
             />
           </Box>

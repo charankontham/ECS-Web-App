@@ -3,18 +3,11 @@ import "bootstrap/dist/css/bootstrap.css";
 import "@src/App.css";
 import "../css/HeroBanner.css";
 import {
+  faComputer,
   faFemale,
   faGem,
   faMale,
-  faShoppingBag,
   faTshirt,
-  faTags,
-  faBolt,
-  faGift,
-  faFire,
-  faUtensils,
-  faClockRotateLeft,
-  faCartShopping,
 } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { useNavigate } from "react-router-dom";
@@ -23,13 +16,6 @@ import axios from "axios";
 import { Product, ProductFilters } from "@interfaces/Product";
 import Customer from "@interfaces/Customer";
 import { Order, OrderItemEnriched } from "@interfaces/Order";
-
-interface FeatureCard {
-  id: number;
-  name?: string;
-  image: string;
-  price: string;
-}
 
 const HeroBanner: React.FC = () => {
   const [recentlyPurchased, setRecentlyPurchased] = useState<Product[]>([]);
@@ -41,25 +27,25 @@ const HeroBanner: React.FC = () => {
   const [userLoggedIn, setUserLoggedIn] = useState<boolean>(false);
   const shopByPrices = [
     {
-      id: 1,
+      id: 10,
       name: "Under $10",
       image:
         "http://localhost:8080/ecs-inventory-admin/api/public/images/view/getImageById/690837c6f092e71713581727",
     },
     {
-      id: 2,
+      id: 20,
       name: "Under $20",
       image:
         "http://localhost:8080/ecs-inventory-admin/api/public/images/view/getImageById/690837eaf092e71713581728",
     },
     {
-      id: 3,
+      id: 50,
       name: "Under $50",
       image:
         "http://localhost:8080/ecs-inventory-admin/api/public/images/view/getImageById/690837f6f092e71713581729",
     },
     {
-      id: 4,
+      id: 100,
       name: "Under $100",
       image:
         "http://localhost:8080/ecs-inventory-admin/api/public/images/view/getImageById/6908380ff092e7171358172a",
@@ -184,11 +170,11 @@ const HeroBanner: React.FC = () => {
   }, []);
 
   const featuredCategories = [
-    { name: "Men's", icon: faMale, color: "#007bff" },
-    { name: "Women's", icon: faFemale, color: "#e83e8c" },
-    { name: "Fashion", icon: faTshirt, color: "#17a2b8" },
-    { name: "Jewelry", icon: faGem, color: "#ffc107" },
-    { name: "Accessories", icon: faShoppingBag, color: "#28a745" },
+    { name: "Men", icon: faMale, color: "#007bff" },
+    { name: "Women", icon: faFemale, color: "#e83e8c" },
+    { name: "Kids", icon: faTshirt, color: "#17a2b8" },
+    { name: "Jewellery", icon: faGem, color: "#ffc107" },
+    { name: "Electronics", icon: faComputer, color: "#28a745" },
   ];
 
   function getImageUrl(imageId: string): string {
@@ -197,6 +183,10 @@ const HeroBanner: React.FC = () => {
           `ecs-inventory-admin/api/public/images/view/getImageById/` +
           imageId
       : "/assets/images/image-placeholder.jpg";
+  }
+
+  function handleFeatureCategoryClick(cat: any) {
+    navigate("/search-results?query=" + cat.name);
   }
 
   return (
@@ -211,7 +201,11 @@ const HeroBanner: React.FC = () => {
           <h3>Categories to explore</h3>
           <div className="featured-categories-grid">
             {featuredCategories.map((cat, index) => (
-              <div key={index} className="featured-category-card">
+              <div
+                key={index}
+                className="featured-category-card"
+                onClick={() => handleFeatureCategoryClick(cat)}
+              >
                 <div className="icon-wrapper" style={{ color: cat.color }}>
                   <FontAwesomeIcon icon={cat.icon} size="2x" />
                 </div>
@@ -225,7 +219,13 @@ const HeroBanner: React.FC = () => {
           <h3>Shop items by prices</h3>
           <div className="feature-cards">
             {shopByPrices.map((product) => (
-              <div key={product.id} className="features-product-card">
+              <div
+                key={product.id}
+                className="features-product-card"
+                onClick={() =>
+                  navigate("/search-results?query=&price=" + product.id)
+                }
+              >
                 <a href="#" onClick={(e) => e.preventDefault()}>
                   <div className="features-product-image">
                     <img src={product.image} alt={product.name} />

@@ -18,18 +18,11 @@ import "../../css/SearchBar.css";
 import axios from "axios";
 import Customer from "@interfaces/Customer";
 import { jwtDecode } from "jwt-decode";
-import SearchHistory, { UserSearchDoc } from "@interfaces/SearchHistory";
+import SearchHistory, {
+  TrendingSearch,
+  UserSearchDoc,
+} from "@interfaces/SearchHistory";
 import { useNavigate } from "react-router-dom";
-
-const TRENDING_SEARCHES = [
-  "Electronics",
-  "Smartphones",
-  "Laptops",
-  "Accessories",
-  "Chargers",
-];
-
-const RECENT_SEARCHES = ["headphones", "phone case", "charger"];
 
 interface SearchSuggestion {
   itemId: number;
@@ -50,12 +43,18 @@ const SearchBar: React.FC = () => {
   const [searchHistory, setSearchHistory] = useState<SearchHistory | null>(
     null
   );
+  const [trendingSearches, setTrendingSearches] = useState<TrendingSearch[]>(
+    []
+  );
   const navigate = useNavigate();
 
   useEffect(() => {
     setIsLoading(true);
     if (searchQuery.trim().length === 0) {
       setSuggestions(getRecentSearches);
+      setSuggestions((prev) =>
+        [...prev, ...getMappedTrendings(trendingSearches)].slice(0, 10)
+      );
       setIsOpen(true);
       setIsLoading(false);
       setError(null);
@@ -82,17 +81,17 @@ const SearchBar: React.FC = () => {
         }
       );
       const productSuggestions: SearchSuggestion[] = response.data;
-      const trendingSuggestions: SearchSuggestion[] = TRENDING_SEARCHES.filter(
-        (trend) => trend.toLowerCase().includes(query)
-      )
+      const trendingSuggestions: SearchSuggestion[] = trendingSearches
+        .filter((trend) => trend.searchQuery!.toLowerCase().includes(query))
         .slice(0, 3)
         .map((trend, index) => ({
           itemId: index + 1000,
-          itemName: trend,
+          itemName: trend.searchQuery!,
           itemType: "trending",
           itemCategory: undefined,
-          relevanceScore: 0,
+          relevanceScore: trend.finalScore,
         }));
+      await fetchTrendingSearches();
 
       const allSuggestions = [
         ...productSuggestions,
@@ -118,7 +117,32 @@ const SearchBar: React.FC = () => {
 
   useEffect(() => {
     fetchCustomerAndSearchHistory();
+    fetchTrendingSearches();
   }, []);
+
+  const getMappedTrendings = (trends: TrendingSearch[]): SearchSuggestion[] => {
+    return trends.map((trend, index) => ({
+      itemId: index + 1100,
+      itemName: trend.searchQuery!,
+      itemType: "trending",
+      itemCategory: undefined,
+      relevanceScore: trend.finalScore,
+    }));
+  };
+
+  const fetchTrendingSearches = async () => {
+    var response = await axios.get(
+      `http://localhost:8080/ecs-product/api/search/getTrendingSearch`,
+      {
+        headers: {
+          "Content-Type": "application/json",
+        },
+      }
+    );
+    if (response.status === 200) {
+      setTrendingSearches(response.data);
+    }
+  };
 
   const fetchCustomerAndSearchHistory = async () => {
     try {
@@ -150,15 +174,6 @@ const SearchBar: React.FC = () => {
             setSearchHistory(searchHistoryResponse.data);
         } else {
           console.log("Session Expired!");
-          // const localHistoryRaw = localStorage.getItem("ecs_search_history");
-          // const localHistory: SearchHistory = localHistoryRaw
-          //   ? JSON.parse(localHistoryRaw)
-          //   : {
-          //       id: 1,
-          //       customerId: 0,
-          //       searchHistory: [],
-          //     };
-          // setSearchHistory(localHistory);
         }
       }
     } catch (error) {
@@ -207,19 +222,6 @@ const SearchBar: React.FC = () => {
       } catch (error) {
         console.error("Error: ", error);
       }
-    } else {
-      // var history: { [key: string]: any }[] ;
-      // if(searchHistory!.searchHistory!.length < 1 ){
-      //   history = [
-      //   {itemId: 1,
-      //   itemName: query,
-      //   itemType: "recent",
-      //   relevanceScore: 0}
-      // ];
-      // }else{
-      //   setSearchHistory((prev) => prev, );
-      // }
-      // setSearchHistory(localStorage.getItem("ecs_search_history")!);
     }
   };
 
@@ -236,6 +238,11 @@ const SearchBar: React.FC = () => {
   const handleInputFocus = () => {
     if (searchQuery.trim().length === 0) {
       setSuggestions(getRecentSearches);
+      setSuggestions((prev) =>
+        prev.length == 0
+          ? [...getMappedTrendings(trendingSearches)].slice(0, 10)
+          : [...prev, ...getMappedTrendings(trendingSearches)].slice(0, 10)
+      );
       setIsOpen(true);
     } else {
       fetchSuggestions();
@@ -250,6 +257,9 @@ const SearchBar: React.FC = () => {
 
   const handleSubmit = (event: FormEvent) => {
     event.preventDefault();
+    if (searchQuery.trim().length == 0) {
+      return;
+    }
     addSearchHistory(searchQuery);
     navigate(`/search-results?query=${encodeURIComponent(searchQuery)}`);
   };
@@ -306,6 +316,7 @@ const SearchBar: React.FC = () => {
             "& .MuiOutlinedInput-root": {
               backgroundColor: "white",
             },
+            animation: "unset",
           }}
         />
       </form>

@@ -13,4 +13,14 @@ export interface UserSearchDoc {
   metaData?: { [key: string]: any };
 }
 
+export interface TrendingSearch {
+  searchQuery?: string;
+  frequency: number;
+  uniqueUsersCount: number;
+  lastSearchedAt: Date;
+  hoursSinceLastSearch: number;
+  recencyBoost: number;
+  finalScore: number;
+}
+
 export default SearchHistory;
