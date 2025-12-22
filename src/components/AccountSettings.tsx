@@ -17,18 +17,14 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faSignOut, faTrash } from "@fortawesome/free-solid-svg-icons";
 import MyOrders from "./MyOrders";
 import ProductReviews from "./reviews-and-ratings/ProductReviews";
+import { API_BASE_URL } from "../util/api";
 
 const AccountSettings: React.FC<{ activeSection?: string }> = (
   accountSettings = { activeSection: "Login & Security" }
 ) => {
   const [searchParams] = useSearchParams();
   const orderId = searchParams.get("orderId");
-  // const addressId = searchParams.get("addressId");
-  // const orderFilterByDate = searchParams.get("orderFilterByDate");
-  // const orderFilterByStatus = searchParams.get("orderFilterByStatus");
-  // const orderSearchByName = searchParams.get("orderSearchByName");
   const navigate = useNavigate();
-  const apiBaseUrl = "http://localhost:8080/ecs-customer/api";
   const authToken = localStorage.getItem("authToken");
   const [activeSection, setActiveSection] = useState("Login & Security");
   const [activeSubSetting, setActiveSubSetting] = useState("");
@@ -43,6 +39,8 @@ const AccountSettings: React.FC<{ activeSection?: string }> = (
     { name: "Close Your ECS-Account", id: "close-account" },
     { name: "Logout", id: "logout" },
   ];
+  const customerApiUrl = `${API_BASE_URL}/ecs-customer/api/customer`;
+  const addressApiUrl = `${API_BASE_URL}/ecs-customer/api/address`;
 
   useEffect(() => {
     fetchCustomerAndAddresses().then(() => {
@@ -61,14 +59,12 @@ const AccountSettings: React.FC<{ activeSection?: string }> = (
   };
 
   const updateAddresses = (updatedAddress: Address) => {
-    console.log("Entered into update address");
     const index = addresses.findIndex(
       (x) => x.addressId === updatedAddress.addressId
     );
     if (index > -1) {
       addresses[index] = updatedAddress;
     } else {
-      console.log("pushed to addresses");
       addresses.push(updatedAddress);
     }
   };
@@ -80,7 +76,7 @@ const AccountSettings: React.FC<{ activeSection?: string }> = (
 
   const handleConfirm = () => {
     axios
-      .delete(apiBaseUrl + `/customer/${customer?.customerId}`, {
+      .delete(`${customerApiUrl}/${customer?.customerId}`, {
         headers: {
           Authorization: `Bearer ${authToken}`,
         },
@@ -113,7 +109,7 @@ const AccountSettings: React.FC<{ activeSection?: string }> = (
         if ((decodedToken.exp ? decodedToken.exp : 0) >= currentTime) {
           try {
             const customerResponse = await axios.get(
-              `http://localhost:8080/ecs-customer/api/customer/getByEmail/${email}`,
+              `${customerApiUrl}/getByEmail/${email}`,
               {
                 headers: {
                   Authorization: `Bearer ${authToken}`,
@@ -129,7 +125,7 @@ const AccountSettings: React.FC<{ activeSection?: string }> = (
             }
 
             const addressResponse = await axios.get(
-              `http://localhost:8080/ecs-customer/api/address/getAllAddressByUserId/customer_${customerResponse.data.customerId}`,
+              `${addressApiUrl}/getAllAddressByUserId/customer_${customerResponse.data.customerId}`,
               {
                 headers: {
                   Authorization: `Bearer ${authToken}`,
@@ -137,6 +133,7 @@ const AccountSettings: React.FC<{ activeSection?: string }> = (
                 },
               }
             );
+
             setAddresses(addressResponse.data);
           } catch (error) {
             console.error("Error: ", error);

@@ -1,21 +1,11 @@
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 import "bootstrap/dist/css/bootstrap.css";
 import "@src/App.css";
 import "../css/Header.css";
-import {
-  faGears,
-  faL,
-  faShoppingCart,
-  faSliders,
-  faUser,
-  faWrench,
-} from "@fortawesome/free-solid-svg-icons";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import Customer from "../interfaces/Customer";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
-import { jwtDecode } from "jwt-decode";
-import { Cart } from "../interfaces/Cart";
+import { API_BASE_URL } from "@src/util/api";
 
 interface SubSettingProps {
   setBackToSubSetting: (setBackToSubSetting: boolean) => void;
@@ -34,10 +24,10 @@ const LoginSubSettingModule: React.FC<SubSettingProps> = ({
   const [propValue, setPropValue] = useState("");
   const [error, setError] = useState<any>(null);
   const [successMessage, setSuccess] = useState<any>(null);
-  const apiBaseUrl = "http://localhost:8080/ecs-customer/api/customer";
   const authToken = localStorage.getItem("authToken");
   const updatedCustomer: Customer | null = customer;
   const navigate = useNavigate();
+  const customerApiUrl = `${API_BASE_URL}/ecs-customer/api/customer`;
 
   const validateCustomerData = (event: React.FormEvent) => {
     setLoading(true);
@@ -46,7 +36,6 @@ const LoginSubSettingModule: React.FC<SubSettingProps> = ({
       updatedCustomer != null
         ? (updatedCustomer.email = propValue)
         : console.log(updatedCustomer);
-      //call
     } else if (fieldName === "Phone") {
       if (propValue.length == 10) {
         updatedCustomer != null
@@ -65,7 +54,6 @@ const LoginSubSettingModule: React.FC<SubSettingProps> = ({
       }
     }
 
-    // console.log("Customer data : ", customer);
     apiCallToUpdateData()
       .then((response) => {
         setLoading(false);
@@ -88,14 +76,13 @@ const LoginSubSettingModule: React.FC<SubSettingProps> = ({
 
   const apiCallToUpdateData = async (): Promise<string> => {
     return await axios
-      .put(apiBaseUrl, updatedCustomer, {
+      .put(customerApiUrl, updatedCustomer, {
         headers: {
           Authorization: `Bearer ${authToken}`,
         },
       })
       .then((response) => {
         if (response.status == 200) {
-          // console.log(response.data);
           return "success";
         } else {
           return response.data;

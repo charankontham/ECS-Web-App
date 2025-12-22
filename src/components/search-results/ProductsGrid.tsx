@@ -19,6 +19,7 @@ import { Product } from "@interfaces/Product";
 import { useEffect, useState } from "react";
 import Customer from "@interfaces/Customer";
 import { jwtDecode } from "jwt-decode";
+import { API_BASE_URL } from "../../util/api";
 import axios from "axios";
 
 interface ProductsGridProps {
@@ -28,19 +29,18 @@ interface ProductsGridProps {
 
 const ProductsGrid: React.FC<ProductsGridProps> = ({ products, loading }) => {
   const navigate = useNavigate();
-  const apiBaseUrl = "http://localhost:8080/";
   const authToken = localStorage.getItem("authToken");
   const [customer, setCustomer] = useState<Customer | null>(null);
-  const cartApiBaseURL = "http://localhost:8080/ecs-order/api/cart";
   const [isPopupVisible, setPopupVisible] = useState(false);
+  const customerApiUrl = `${API_BASE_URL}/ecs-customer/api/customer`;
+  const cartApiUrl = `${API_BASE_URL}/ecs-order/api/cart`;
+  const imageApiUrl = `${API_BASE_URL}/ecs-inventory-admin/api/public/images`;
 
   if (loading) return null;
 
   function getImageUrl(imageId: string): string {
     return imageId != null && imageId.trim() !== ""
-      ? apiBaseUrl +
-          `ecs-inventory-admin/api/public/images/view/getImageById/` +
-          imageId
+      ? `${imageApiUrl}/view/getImageById/${imageId}`
       : "/assets/images/image-placeholder.jpg";
   }
 
@@ -51,15 +51,12 @@ const ProductsGrid: React.FC<ProductsGridProps> = ({ products, loading }) => {
       const currentTime = Date.now() / 1000;
       if ((decodedToken.exp ? decodedToken.exp : 0) >= currentTime) {
         axios
-          .get(
-            `http://localhost:8080/ecs-customer/api/customer/getByEmail/${email}`,
-            {
-              headers: {
-                Authorization: `Bearer ${authToken}`,
-                "Content-Type": "application/json",
-              },
-            }
-          )
+          .get(`${customerApiUrl}/getByEmail/${email}`, {
+            headers: {
+              Authorization: `Bearer ${authToken}`,
+              "Content-Type": "application/json",
+            },
+          })
           .then((response) => {
             setCustomer(response.data);
           })
@@ -91,7 +88,7 @@ const ProductsGrid: React.FC<ProductsGridProps> = ({ products, loading }) => {
     };
     if (authToken != null && authToken.length > 0) {
       axios
-        .post(cartApiBaseURL, cartObject, {
+        .post(cartApiUrl, cartObject, {
           headers: {
             Authorization: `Bearer ${authToken}`,
             "Content-Type": "application/json",

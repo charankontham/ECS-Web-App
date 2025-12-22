@@ -7,23 +7,15 @@ import Customer from "../interfaces/Customer";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faSignIn } from "@fortawesome/free-solid-svg-icons";
 import Header from "./home-common/Header";
+import { API_BASE_URL } from "../util/api";
 
 const SignInPage: React.FC = () => {
   const navigate = useNavigate();
-
-  const passwordValidation = (value: string): boolean => {
-    if (!value || value.trim() === "" || value === "null") {
-      return false;
-    }
-    const regex =
-      /^(?=.*[0-9])(?=.*[a-z])(?=.*[A-Z])(?=.*[@#$%^&-+=()])(?=\S+$).{8, 20}$/;
-    return regex.test(value);
-  };
-
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<any | null>(null);
+  const customerApiUrl = `${API_BASE_URL}/ecs-customer/api/customer`;
 
   const validateCredentials = (event: React.FormEvent) => {
     setLoading(true);
@@ -36,15 +28,11 @@ const SignInPage: React.FC = () => {
       };
       try {
         axios
-          .post(
-            "http://localhost:8080/ecs-customer/api/customer/login",
-            customer,
-            {
-              headers: {
-                "Content-Type": "application/json",
-              },
-            }
-          )
+          .post(`${customerApiUrl}/login`, customer, {
+            headers: {
+              "Content-Type": "application/json",
+            },
+          })
           .then((response) => {
             setLoading(false);
             console.log("response : ", response);
@@ -68,6 +56,15 @@ const SignInPage: React.FC = () => {
       setLoading(false);
       setError("Enter email and password!");
     }
+  };
+
+  const passwordValidation = (value: string): boolean => {
+    if (!value || value.trim() === "" || value === "null") {
+      return false;
+    }
+    const regex =
+      /^(?=.*[0-9])(?=.*[a-z])(?=.*[A-Z])(?=.*[@#$%^&-+=()])(?=\S+$).{8, 20}$/;
+    return regex.test(value);
   };
 
   return (

@@ -16,6 +16,7 @@ import { useParams, useSearchParams } from "react-router-dom";
 import ProductBrand from "@interfaces/ProductBrand";
 import ProductCategory from "@interfaces/ProductCategory";
 import { Product } from "@interfaces/Product";
+import { API_BASE_URL } from "../util/api";
 
 const DUMMY_RELATED_SEARCHES = [
   "Wireless Headphones",
@@ -70,6 +71,7 @@ const SearchResults: React.FC = () => {
       | "high-to-low"
       | "rating",
   });
+  const searchApiUrl = `${API_BASE_URL}/ecs-product/api/search`;
 
   useEffect(() => {
     fetchSearchResults();
@@ -112,7 +114,7 @@ const SearchResults: React.FC = () => {
 
     try {
       const response = await axios.get(
-        `http://localhost:8080/ecs-product/api/search/globalSearch?${params.toString()}`,
+        `${searchApiUrl}/globalSearch?${params.toString()}`,
         { headers: { "Content-Type": "application/json" } }
       );
       setProducts(response.data.content);

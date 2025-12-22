@@ -33,6 +33,7 @@ import { OrderTrackingStatusEnum } from "@src/util/util";
 import ReturnOrder from "./ReturnOrder";
 import OrderItemBody from "./order-item-body/order-item-body";
 import { ScaleLoader } from "react-spinners";
+import { API_BASE_URL } from "../util/api";
 
 const MyOrders: React.FC<{
   orderId?: string;
@@ -79,16 +80,7 @@ const MyOrders: React.FC<{
       value: "Returned",
     },
   ];
-  const paymentStatuses = [
-    { id: 1, value: "PaymentCompleted" },
-    { id: 2, value: "PaymentPending" },
-    { id: 3, value: "PaymentFailed" },
-    { id: 4, value: "PaymentRefunded" },
-    { id: 5, value: "PaymentCancelled" },
-  ];
   const authToken = localStorage.getItem("authToken");
-  const orderApiBaseUrl = "http://localhost:8080/ecs-order/api";
-  const logisticsApiBaseUrl = "http://localhost:8080/ecs-logistics/api";
   const [myOrders, setMyOrders] = useState<Order[]>([]);
   const [returnedOrders, setReturnedOrders] = useState<OrderReturn[]>([]);
   const [ordersTracking, setOrdersTracking] = useState<OrderTrackingObject[]>(
@@ -119,6 +111,10 @@ const MyOrders: React.FC<{
   const navigate = useNavigate();
   const last10Years: number[] = [];
   const [visibleTracker, setVisibleTracker] = useState<string | null>(null);
+  const customerApiUrl = `${API_BASE_URL}/ecs-customer/api/customer`;
+  const orderApiUrl = `${API_BASE_URL}/ecs-order/api/order`;
+  const orderReturnsApiUrl = `${API_BASE_URL}/ecs-logistics/api/orderReturns`;
+  const orderTrackingApiUrl = `${API_BASE_URL}/ecs-logistics/api/orderTracking`;
 
   const toggleTracker = async (id: string) => {
     setVisibleTracker((prev) => (prev === id ? null : id));
@@ -323,7 +319,7 @@ const MyOrders: React.FC<{
   const downloadFile = async (invoiceId: number, tooltipId: string) => {
     try {
       const response = await axios.get(
-        orderApiBaseUrl + `/order/downloadOrderInvoice/${invoiceId}`,
+        `${orderApiUrl}/downloadOrderInvoice/${invoiceId}`,
         {
           headers: {
             Authorization: `Bearer ${authToken}`,
@@ -393,7 +389,7 @@ const MyOrders: React.FC<{
         const currentTime = Date.now() / 1000;
         if ((decodedToken.exp ? decodedToken.exp : 0) >= currentTime) {
           const customerResponse = await axios.get(
-            `http://localhost:8080/ecs-customer/api/customer/getByEmail/${email}`,
+            `${customerApiUrl}/getByEmail/${email}`,
             {
               headers: {
                 Authorization: `Bearer ${authToken}`,
@@ -408,8 +404,7 @@ const MyOrders: React.FC<{
           }
           setCustomer(customerResponse.data);
           var myOrdersResponse = await axios.get(
-            orderApiBaseUrl +
-              `/order/getOrdersByCustomerId/${customerResponse.data.customerId}`,
+            `${orderApiUrl}/getOrdersByCustomerId/${customerResponse.data.customerId}`,
             {
               headers: {
                 Authorization: `Bearer ${authToken}`,
@@ -419,7 +414,7 @@ const MyOrders: React.FC<{
           );
 
           const returnOrdersResponse = await axios.get(
-            `http://localhost:8080/ecs-logistics/api/orderReturns/getAllOrderReturnsByCustomerId/${customerResponse.data.customerId}`,
+            `${orderReturnsApiUrl}/getAllOrderReturnsByCustomerId/${customerResponse.data.customerId}`,
             {
               headers: {
                 Authorization: `Bearer ${authToken}`,
@@ -492,8 +487,7 @@ const MyOrders: React.FC<{
       return;
     }
     var myOrdersTrackingResponse = await axios.get(
-      logisticsApiBaseUrl +
-        `/orderTracking/getByOrderIdAndProductId/${orderId}/${productId}`,
+      `${orderTrackingApiUrl}/getByOrderIdAndProductId/${orderId}/${productId}`,
       {
         headers: {
           Authorization: `Bearer ${authToken}`,

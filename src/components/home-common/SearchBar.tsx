@@ -23,6 +23,7 @@ import SearchHistory, {
   UserSearchDoc,
 } from "@interfaces/SearchHistory";
 import { useNavigate } from "react-router-dom";
+import { API_BASE_URL } from "../../util/api";
 
 interface SearchSuggestion {
   itemId: number;
@@ -47,6 +48,9 @@ const SearchBar: React.FC = () => {
     []
   );
   const navigate = useNavigate();
+  const searchApiUrl = API_BASE_URL + "/ecs-product/api/search";
+  const customerApiUrl = API_BASE_URL + "/ecs-customer/api/customer";
+  const searchHistoryApiUrl = API_BASE_URL + "/ecs-customer/api/searchHistory";
 
   useEffect(() => {
     setIsLoading(true);
@@ -71,9 +75,7 @@ const SearchBar: React.FC = () => {
     try {
       const query = searchQuery.toLowerCase();
       const response = await axios.get(
-        `http://localhost:8080/ecs-product/api/search/${encodeURIComponent(
-          query
-        )}`,
+        `${searchApiUrl}/${encodeURIComponent(query)}`,
         {
           headers: {
             "Content-Type": "application/json",
@@ -131,14 +133,11 @@ const SearchBar: React.FC = () => {
   };
 
   const fetchTrendingSearches = async () => {
-    var response = await axios.get(
-      `http://localhost:8080/ecs-product/api/search/getTrendingSearch`,
-      {
-        headers: {
-          "Content-Type": "application/json",
-        },
-      }
-    );
+    var response = await axios.get(`${searchApiUrl}/getTrendingSearch`, {
+      headers: {
+        "Content-Type": "application/json",
+      },
+    });
     if (response.status === 200) {
       setTrendingSearches(response.data);
     }
@@ -152,7 +151,7 @@ const SearchBar: React.FC = () => {
         const currentTime = Date.now() / 1000;
         if ((decodedToken.exp ? decodedToken.exp : 0) >= currentTime) {
           const customerResponse = await axios.get(
-            `http://localhost:8080/ecs-customer/api/customer/getByEmail/${email}`,
+            `${customerApiUrl}/getByEmail/${email}`,
             {
               headers: {
                 Authorization: `Bearer ${authToken}`,
@@ -162,7 +161,7 @@ const SearchBar: React.FC = () => {
           );
           setCustomer(customerResponse.data);
           const searchHistoryResponse = await axios.get(
-            `http://localhost:8080/ecs-customer/api/searchHistory/getSearchHistoryById/${customerResponse.data.customerId}`,
+            `${searchHistoryApiUrl}/getSearchHistoryById/${customerResponse.data.customerId}`,
             {
               headers: {
                 Authorization: `Bearer ${authToken}`,
@@ -196,9 +195,8 @@ const SearchBar: React.FC = () => {
               expireAt: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000),
               metaData: { search_frequency: 1 },
             };
-
             const searchHistoryResponse = await axios.put(
-              `http://localhost:8080/ecs-customer/api/searchHistory/addUserSearch`,
+              `${searchHistoryApiUrl}/addUserSearch`,
               userSearchDoc,
               {
                 headers: {

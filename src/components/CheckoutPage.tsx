@@ -12,9 +12,9 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faPencil } from "@fortawesome/free-solid-svg-icons";
 import { OrderItem, OrderRequest } from "../interfaces/Order";
 import { paymentMethods, paymentStatus } from "@src/util/util";
+import { API_BASE_URL } from "../util/api";
 
 const CheckoutPage = () => {
-  const rawOrderItems = localStorage.getItem("itemsForCheckout");
   const authToken = localStorage.getItem("authToken");
   const [customer, setCustomer] = useState<Customer>();
   const [addresses, setAddresses] = useState<Address[]>([]);
@@ -37,20 +37,21 @@ const CheckoutPage = () => {
     country: "",
   };
   const [addressFormData, setAddressFormData] = useState<Address>(emptyAddress);
-  const apiBaseUrl = "http://localhost:8080";
   const navigate = useNavigate();
+  const customerApiUrl = `${API_BASE_URL}/ecs-customer/api/customer`;
+  const addressApiUrl = `${API_BASE_URL}/ecs-customer/api/address`;
+  const orderApiUrl = `${API_BASE_URL}/ecs-order/api/order`;
 
   const fetchCustomerAndAddresses = async () => {
     try {
       if (authToken) {
         const decodedToken = jwtDecode(authToken);
-        // console.log(decodedToken);
         const email = decodedToken.sub;
         const currentTime = Date.now() / 1000;
         if ((decodedToken.exp ? decodedToken.exp : 0) >= currentTime) {
           try {
             const customerResponse = await axios.get(
-              `http://localhost:8080/ecs-customer/api/customer/getByEmail/${email}`,
+              `${customerApiUrl}/getByEmail/${email}`,
               {
                 headers: {
                   Authorization: `Bearer ${authToken}`,
@@ -60,7 +61,7 @@ const CheckoutPage = () => {
             );
             setCustomer(customerResponse.data);
             const addressResponse = await axios.get(
-              `http://localhost:8080/ecs-customer/api/address/getAllAddressByUserId/customer_${customerResponse.data.customerId}`,
+              `${addressApiUrl}/getAllAddressByUserId/customer_${customerResponse.data.customerId}`,
               {
                 headers: {
                   Authorization: `Bearer ${authToken}`,
@@ -68,7 +69,6 @@ const CheckoutPage = () => {
                 },
               }
             );
-            // console.log("Server res: ", addressResponse.data);
             setAddresses(addressResponse.data);
           } catch (error) {
             console.error("Error: ", error);
@@ -99,7 +99,7 @@ const CheckoutPage = () => {
     if (validation() && authToken) {
       if (addressFormData != null && addressFormData.addressId == null) {
         axios
-          .post(apiBaseUrl + "/ecs-customer/api/address", addressFormData, {
+          .post(addressApiUrl, addressFormData, {
             headers: { Authorization: `Bearer ${authToken}` },
           })
           .then((response) => {
@@ -121,7 +121,7 @@ const CheckoutPage = () => {
           });
       } else if (addressFormData != null && addressFormData.addressId != null) {
         axios
-          .put(apiBaseUrl + "/ecs-customer/api/address", addressFormData, {
+          .put(addressApiUrl, addressFormData, {
             headers: { Authorization: `Bearer ${authToken}` },
           })
           .then((response) => {
@@ -173,7 +173,7 @@ const CheckoutPage = () => {
       };
       axios
         .post(
-          apiBaseUrl + "/ecs-order/api/order",
+          orderApiUrl,
           { orderDetails: orderRequest, orderItems: orderItems },
           {
             headers: { Authorization: `Bearer ${authToken}` },
@@ -181,7 +181,6 @@ const CheckoutPage = () => {
         )
         .then((response) => {
           if (response.status == 201) {
-            // console.log("Success placing order");
             localStorage.removeItem("itemsForCheckout");
             navigate("/order-placed-success");
           } else {
@@ -201,7 +200,6 @@ const CheckoutPage = () => {
 
   const selectDeliveryAddress = () => {
     setShowAddresses(false);
-    console.log("Selected delivery address: ", selectedAddress);
   };
 
   useEffect(() => {

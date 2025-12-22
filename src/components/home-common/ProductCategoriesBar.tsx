@@ -2,9 +2,9 @@ import React, { useEffect, useState } from "react";
 import "../../css/ProductCategoryBar.css";
 import "@src/App.css";
 import "bootstrap/dist/css/bootstrap.css";
-import { API_BASE_URL } from "../../util/api";
 import axios from "axios";
 import ProductCategory from "../../interfaces/ProductCategory";
+import { API_BASE_URL } from "../../util/api";
 
 interface ChildProps {
   setProductCategoryId: (id: number) => void; // Function type for callback
@@ -14,11 +14,12 @@ const ProductCategoryBar: React.FC<ChildProps> = ({ setProductCategoryId }) => {
   const [productCategories, setProductCategories] = useState<
     ProductCategory[] | null
   >(null);
+  const categoryApiUrl = `${API_BASE_URL}/ecs-product/api/productCategory`;
 
   useEffect(() => {
     try {
       axios
-        .get(`http://localhost:8080/ecs-product/api/productCategory/`, {
+        .get(`${categoryApiUrl}/`, {
           headers: {
             "Content-Type": "application/json",
           },

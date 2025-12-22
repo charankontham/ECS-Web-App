@@ -10,6 +10,7 @@ import { jwtDecode } from "jwt-decode";
 import Header from "./home-common/Header";
 import ProductCategoryBar from "./home-common/ProductCategoriesBar";
 import Footer from "./Footer";
+import { API_BASE_URL } from "../util/api";
 
 const ProductsPage: React.FC = () => {
   const { type, value } = useParams<{ type: string; value?: string }>();
@@ -17,12 +18,14 @@ const ProductsPage: React.FC = () => {
   const [data, setData] = useState<Product[] | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<any>(null);
-  const productApiBaseURL = "http://localhost:8080/ecs-product/api/product";
-  const cartApiBaseURL = "http://localhost:8080/ecs-order/api/cart";
   const [api, setApi] = useState<string>("");
   const [customer, setCustomer] = useState<Customer | null>(null);
   const [isPopupVisible, setPopupVisible] = useState(false);
   const authToken = localStorage.getItem("authToken");
+  const customerApiUrl = `${API_BASE_URL}/ecs-customer/api/customer`;
+  const productApiUrl = `${API_BASE_URL}/ecs-product/api/product`;
+  const cartApiURL = `${API_BASE_URL}/ecs-order/api/cart`;
+  const imageApiUrl = `${API_BASE_URL}/ecs-inventory-admin/api/public/images`;
 
   useEffect(() => {
     if (type === "popular") {
@@ -40,7 +43,7 @@ const ProductsPage: React.FC = () => {
     if (api && !error) {
       setLoading(true);
       axios
-        .get(productApiBaseURL + api, {
+        .get(`${productApiUrl}${api}`, {
           headers: {
             "Content-Type": "application/json",
           },
@@ -63,15 +66,12 @@ const ProductsPage: React.FC = () => {
       const currentTime = Date.now() / 1000;
       if ((decodedToken.exp ? decodedToken.exp : 0) >= currentTime) {
         axios
-          .get(
-            `http://localhost:8080/ecs-customer/api/customer/getByEmail/${email}`,
-            {
-              headers: {
-                Authorization: `Bearer ${authToken}`,
-                "Content-Type": "application/json",
-              },
-            }
-          )
+          .get(`${customerApiUrl}/getByEmail/${email}`, {
+            headers: {
+              Authorization: `Bearer ${authToken}`,
+              "Content-Type": "application/json",
+            },
+          })
           .then((response) => {
             setCustomer(response.data);
           })
@@ -101,10 +101,6 @@ const ProductsPage: React.FC = () => {
     }, 2000);
   };
 
-  const navigateToProductDetails = (productId: number) => {
-    navigate("/product/" + productId);
-  };
-
   const addToCart = (productId: number) => {
     const cartItems = [
       { customerId: customer?.customerId, productId: productId, quantity: 1 },
@@ -115,13 +111,13 @@ const ProductsPage: React.FC = () => {
     };
     if (authToken != null && authToken.length > 0) {
       axios
-        .post(cartApiBaseURL, cartObject, {
+        .post(cartApiURL, cartObject, {
           headers: {
             Authorization: `Bearer ${authToken}`,
             "Content-Type": "application/json",
           },
         })
-        .then((response) => {
+        .then(() => {
           showPopup();
         })
         .catch((error) => {
@@ -161,7 +157,7 @@ const ProductsPage: React.FC = () => {
                               product.productImage == "" ||
                               product.productImage == null
                                 ? `/assets/images/image-placeholder.jpg`
-                                : `http://localhost:8080/ecs-inventory-admin/api/public/images/view/getImageById/${product.productImage}`
+                                : `${imageApiUrl}/view/getImageById/${product.productImage}`
                             }
                             alt={product.productName}
                           />

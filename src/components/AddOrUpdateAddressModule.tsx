@@ -5,6 +5,7 @@ import "../css/AddressForm.css";
 import Address from "../interfaces/Address";
 import axios from "axios";
 import Customer from "../interfaces/Customer";
+import { API_BASE_URL } from "../util/api";
 
 interface AddressFormProps {
   address: Address | null;
@@ -19,7 +20,6 @@ const AddressForm: React.FC<AddressFormProps> = ({
   setBackToSubSetting,
   updateAddresses,
 }) => {
-  const apiBaseUrl = "http://localhost:8080/ecs-customer/api";
   const authToken = localStorage.getItem("authToken");
   const [error, setError] = useState<any>(null);
   const [formData, setFormData] = useState<Address>(
@@ -37,6 +37,8 @@ const AddressForm: React.FC<AddressFormProps> = ({
           country: "",
         }
   );
+  const customerApiUrl = `${API_BASE_URL}/ecs-customer/api/customer`;
+  const addressApiUrl = `${API_BASE_URL}/ecs-customer/api/address`;
 
   useEffect(() => {
     if (address !== null) {
@@ -66,7 +68,7 @@ const AddressForm: React.FC<AddressFormProps> = ({
     if (validation() && authToken) {
       if (address === null) {
         axios
-          .post(apiBaseUrl + "/address", formData, {
+          .post(addressApiUrl, formData, {
             headers: { Authorization: `Bearer ${authToken}` },
           })
           .then((response) => {
@@ -83,7 +85,7 @@ const AddressForm: React.FC<AddressFormProps> = ({
           });
       } else {
         axios
-          .put(apiBaseUrl + "/address", formData, {
+          .put(addressApiUrl, formData, {
             headers: { Authorization: `Bearer ${authToken}` },
           })
           .then((response) => {

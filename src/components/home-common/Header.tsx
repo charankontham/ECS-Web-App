@@ -5,11 +5,7 @@ import "../../css/Header.css";
 import {
   faGears,
   faShoppingCart,
-  faSign,
   faSignIn,
-  faSliders,
-  faUser,
-  faWrench,
 } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import Customer from "../../interfaces/Customer";
@@ -35,7 +31,7 @@ import {
 import NotificationsIcon from "@mui/icons-material/Notifications";
 import { Notification } from "@interfaces/Notification";
 import CloseIcon from "@mui/icons-material/Close";
-import { API_BASE_URL } from "../../util/api";
+import { API_BASE_URL } from "@src/util/api";
 
 const Header: React.FC = () => {
   const [customer, setCustomer] = useState<Customer | null>(null);
@@ -48,8 +44,10 @@ const Header: React.FC = () => {
   const unreadCount = notifications.filter((n) => !n.isRead).length;
   const notificationOpen = Boolean(notificationAnchor);
   const [sessionTime, setSessionTime] = useState<number>(0);
-  const myPort = 8080;
   const appDomain = window.location.protocol + "//" + window.location.hostname;
+  const notificationApiUrl = `${API_BASE_URL}/ecs-notification/api/userNotifications`;
+  const customerApiUrl = `${API_BASE_URL}/ecs-customer/api/customer`;
+  const cartApiUrl = `${API_BASE_URL}/ecs-order/api/cart`;
 
   const handleNotificationClick = (
     event: React.MouseEvent<HTMLButtonElement>
@@ -68,19 +66,16 @@ const Header: React.FC = () => {
     event.stopPropagation();
     if (sessionTime >= Date.now() / 1000) {
       axios
-        .delete(
-          "http://localhost:8080/ecs-notification/api/userNotifications/removeNotificationMessage",
-          {
-            params: {
-              userId: customer ? customer.customerId : undefined,
-              messageId: notificationId,
-            },
-            headers: {
-              Authorization: `Bearer ${authToken}`,
-              "Content-Type": "application/json",
-            },
-          }
-        )
+        .delete(`${notificationApiUrl}/removeNotificationMessage`, {
+          params: {
+            userId: customer ? customer.customerId : undefined,
+            messageId: notificationId,
+          },
+          headers: {
+            Authorization: `Bearer ${authToken}`,
+            "Content-Type": "application/json",
+          },
+        })
         .then((response) => {
           if (response.status === 204) {
             setNotifications((prev) =>
@@ -103,7 +98,7 @@ const Header: React.FC = () => {
     if (sessionTime >= Date.now() / 1000) {
       axios
         .delete(
-          `http://localhost:8080/ecs-notification/api/userNotifications/clearAllMessagesByUserId/${
+          `${notificationApiUrl}/clearAllMessagesByUserId/${
             customer!.customerId
           }`,
           {
@@ -132,20 +127,16 @@ const Header: React.FC = () => {
   const handleNotificationItemClick = (notificationId: number) => {
     if (sessionTime >= Date.now() / 1000) {
       axios
-        .patch(
-          "http://localhost:8080/ecs-notification/api/userNotifications/updateNotificationReadStatus",
-          null,
-          {
-            params: {
-              userId: customer ? customer.customerId : undefined,
-              messageId: notificationId,
-            },
-            headers: {
-              Authorization: `Bearer ${authToken}`,
-              "Content-Type": "application/json",
-            },
-          }
-        )
+        .patch(`${notificationApiUrl}/updateNotificationReadStatus`, null, {
+          params: {
+            userId: customer ? customer.customerId : undefined,
+            messageId: notificationId,
+          },
+          headers: {
+            Authorization: `Bearer ${authToken}`,
+            "Content-Type": "application/json",
+          },
+        })
         .then((response) => {
           if (response.status === 200 && response.data === true) {
             setNotifications((prev) =>
@@ -175,7 +166,7 @@ const Header: React.FC = () => {
         if ((decodedToken.exp ? decodedToken.exp : 0) >= currentTime) {
           try {
             const customerResponse = await axios.get(
-              `${appDomain}:${myPort}/ecs-customer/api/customer/getByEmail/${email}`,
+              `${customerApiUrl}/getByEmail/${email}`,
               {
                 headers: {
                   Authorization: `Bearer ${authToken}`,
@@ -184,9 +175,8 @@ const Header: React.FC = () => {
               }
             );
             setCustomer(customerResponse.data);
-
             const cartResponse = await axios.get(
-              `http://localhost:8080/ecs-order/api/cart/getCartByCustomerId/${customerResponse.data.customerId}`,
+              `${cartApiUrl}/getCartByCustomerId/${customerResponse.data.customerId}`,
               {
                 headers: {
                   Authorization: `Bearer ${authToken}`,
@@ -196,7 +186,7 @@ const Header: React.FC = () => {
             );
             setCart(cartResponse.data);
             const notificationResponse = await axios.get(
-              `http://localhost:8080/ecs-notification/api/userNotifications/getByUserId/${customerResponse.data.customerId}`,
+              `${notificationApiUrl}/getByUserId/${customerResponse.data.customerId}`,
               {
                 headers: {
                   Authorization: `Bearer ${authToken}`,
@@ -230,9 +220,9 @@ const Header: React.FC = () => {
   useEffect(() => {
     fetchCustomerCartAndNotifications();
     if (sessionTime < Date.now() / 1000) return;
-    const cartSocket = new SockJS("http://localhost:8093/ws");
+    const cartSocket = new SockJS(`${appDomain}:8093/ws`);
     const notificationSocket = new SockJS(
-      `http://localhost:8096/ws-notifications?token=${authToken}`
+      `${appDomain}:8096/ws-notifications?token=${authToken}`
     );
     const cartStompClient = new Client({
       webSocketFactory: () => cartSocket,
@@ -242,7 +232,6 @@ const Header: React.FC = () => {
       onConnect: () => {
         cartStompClient.subscribe("/topic/messages", (message: any) => {
           const updatedCart = JSON.parse(message.body);
-          // console.log("Cart from web socket : ", updatedCart);
           setCart(updatedCart);
         });
       },

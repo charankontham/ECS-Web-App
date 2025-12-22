@@ -27,6 +27,7 @@ import { useNavigate } from "react-router-dom";
 import axios, { all } from "axios";
 import ProductBrand from "@interfaces/ProductBrand";
 import ProductCategory, { SubCategory } from "@interfaces/ProductCategory";
+import { API_BASE_URL } from "../../util/api";
 
 interface FiltersProps {
   filters: {
@@ -60,8 +61,8 @@ const FiltersSidebar: React.FC<FiltersProps> = ({
   const [brands, setBrands] = useState<ProductBrand[]>([]);
   const [subCategories, setSubCategories] = useState<SubCategory[]>([]);
   const [categories, setCategories] = useState<ProductCategory[]>([]);
-  const navigate = useNavigate();
-  const apiBaseUrl = "http://localhost:8080";
+  const brandApiUrl = `${API_BASE_URL}/ecs-product/api/productBrand`;
+  const subCategoryApiUrl = `${API_BASE_URL}/ecs-product/api/subCategory`;
 
   const handlePriceChange = (
     event: Event | SyntheticEvent,
@@ -150,14 +151,11 @@ const FiltersSidebar: React.FC<FiltersProps> = ({
 
   const loadFilterOptions = async () => {
     try {
-      const brandsResponse = await axios.get(
-        `${apiBaseUrl}/ecs-product/api/productBrand/`,
-        {
-          headers: { "Content-Type": "application/json" },
-        }
-      );
+      const brandsResponse = await axios.get(`${brandApiUrl}/`, {
+        headers: { "Content-Type": "application/json" },
+      });
       const subCategoriesResponse = await axios.get(
-        `${apiBaseUrl}/ecs-product/api/subCategory/getEnrichedSubCategories`,
+        `${subCategoryApiUrl}/getEnrichedSubCategories`,
         {
           headers: { "Content-Type": "application/json" },
         }

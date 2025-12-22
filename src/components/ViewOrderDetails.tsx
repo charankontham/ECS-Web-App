@@ -34,6 +34,7 @@ import Address from "../interfaces/Address";
 import { Product } from "../interfaces/Product";
 import * as bootstrap from "bootstrap";
 import { paymentMethods } from "@src/util/util";
+import { API_BASE_URL } from "../util/api";
 
 interface ViewOrderDetailsProps {
   order: Order;
@@ -45,12 +46,13 @@ const ViewOrderDetails: React.FC<ViewOrderDetailsProps> = ({
   goBack,
 }) => {
   const authToken = localStorage.getItem("authToken");
-  const apiBaseUrl = "http://localhost:8080/ecs-order/api";
+  const orderApiUrl = `${API_BASE_URL}/ecs-order/api/order`;
+  const imageApiUrl = `${API_BASE_URL}/ecs-inventory-admin/api/public/images`;
 
   const downloadFile = async (orderId: number, tooltipId: string) => {
     try {
       const response = await axios.get(
-        apiBaseUrl + `/order/downloadOrderInvoice/${orderId}`,
+        `${orderApiUrl}/downloadOrderInvoice/${orderId}`,
         {
           headers: {
             Authorization: `Bearer ${authToken}`,
@@ -177,7 +179,7 @@ const ViewOrderDetails: React.FC<ViewOrderDetailsProps> = ({
           <div className="order-item" key={index}>
             <div>
               <img
-                src={`http://localhost:8080/ecs-inventory-admin/api/public/images/view/getImageById/${orderItem.product.productImage}`}
+                src={`${imageApiUrl}/view/getImageById/${orderItem.product.productImage}`}
                 alt={orderItem.product.productName}
                 className="order-item-image"
               />

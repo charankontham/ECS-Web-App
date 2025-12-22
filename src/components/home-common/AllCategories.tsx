@@ -12,10 +12,13 @@ const AllCategories: React.FC = () => {
     ProductCategory[] | null
   >(null);
   const navigate = useNavigate();
+  const categoryApiUrl = `${API_BASE_URL}/ecs-product/api/productCategory`;
+  const imageApiUrl = `${API_BASE_URL}/ecs-inventory-admin/api/public/images/view/getImageById`;
+
   useEffect(() => {
     try {
       axios
-        .get(`${API_BASE_URL}/ecs-product/api/productCategory/`, {
+        .get(`${categoryApiUrl}/`, {
           headers: {
             "Content-Type": "application/json",
           },
@@ -44,7 +47,7 @@ const AllCategories: React.FC = () => {
                   }
                 >
                   <img
-                    src={`http://localhost:8080/ecs-inventory-admin/api/public/images/view/getImageById/${category.categoryImage}`}
+                    src={`${imageApiUrl}/${category.categoryImage}`}
                     alt={category.categoryName}
                     className="card-img-top category-image"
                   />

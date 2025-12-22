@@ -2,14 +2,11 @@ import React, { useEffect, useRef, useState } from "react";
 import "../css/ProductImages.css";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
-  faAngleDown,
-  faAngleLeft,
-  faAngleRight,
-  faAngleUp,
   faArrowUpFromBracket,
   faChevronLeft,
   faChevronRight,
 } from "@fortawesome/free-solid-svg-icons";
+import { API_BASE_URL } from "@src/util/api";
 
 interface ProductImagesProps {
   images: string[];
@@ -24,11 +21,12 @@ const ProductImagesBlock: React.FC<ProductImagesProps> = ({ images }) => {
   const [zoomPosition, setZoomPosition] = useState({ x: 0, y: 0 });
   const [isZoomed, setIsZoomed] = useState(false);
   const imageContainerRef = useRef<HTMLDivElement>(null);
+  const imageApiUrl = `${API_BASE_URL}/ecs-inventory-admin/api/public/images`;
+
   useEffect(() => {
     setSelectedImage({ image: images[0], index: 0 });
   }, [images]);
 
-  // Handle mouse move event to calculate zoom position
   const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
     if (!imageContainerRef.current) return;
 
@@ -65,7 +63,7 @@ const ProductImagesBlock: React.FC<ProductImagesProps> = ({ images }) => {
           <img
             src={
               selectedImage.image
-                ? `http://localhost:8080/ecs-inventory-admin/api/public/images/view/getImageById/${selectedImage.image}`
+                ? `${imageApiUrl}/view/getImageById/${selectedImage.image}`
                 : "/assets/images/image-placeholder.jpg"
             }
             alt="Selected Product"
@@ -95,7 +93,7 @@ const ProductImagesBlock: React.FC<ProductImagesProps> = ({ images }) => {
               src={
                 image == "" || image == null
                   ? "/assets/images/image-placeholder.jpg"
-                  : `http://localhost:8080/ecs-inventory-admin/api/public/images/view/getImageById/${image}`
+                  : `${imageApiUrl}/view/getImageById/${image}`
               }
               alt={`Thumbnail ${index + 1}`}
               className={`thumbnail ${

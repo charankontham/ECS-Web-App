@@ -104,7 +104,7 @@ const OrderTracking: React.FC<{
                 <div className="tracking-details">
                   <p className="tracking-status">{stage.value}</p>
                   <p className="tracking-date">
-                    {orderTrackingObj?.actualDeliveryTime?.toLocaleString() ??
+                    {orderTrackingObj?.actualDeliveryDate?.toLocaleString() ??
                       "01/01/1999"}
                   </p>
                 </div>

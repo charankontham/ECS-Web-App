@@ -16,6 +16,7 @@ import axios from "axios";
 import { Product, ProductFilters } from "@interfaces/Product";
 import Customer from "@interfaces/Customer";
 import { Order, OrderItemEnriched } from "@interfaces/Order";
+import { API_BASE_URL } from "../util/api";
 
 const HeroBanner: React.FC = () => {
   const [recentlyPurchased, setRecentlyPurchased] = useState<Product[]>([]);
@@ -23,32 +24,32 @@ const HeroBanner: React.FC = () => {
   const [priceDropDeals, setPriceDropDeals] = useState<Product[]>([]);
   const navigate = useNavigate();
   const authToken = localStorage.getItem("authToken");
-  const apiBaseUrl = "http://localhost:8080/";
   const [userLoggedIn, setUserLoggedIn] = useState<boolean>(false);
+  const customerApiUrl = `${API_BASE_URL}/ecs-customer/api/customer`;
+  const productApiUrl = `${API_BASE_URL}/ecs-product/api/product`;
+  const orderApiUrl = `${API_BASE_URL}/ecs-order/api/order`;
+  const imageApiUrl = `${API_BASE_URL}/ecs-inventory-admin/api/public/images`;
+
   const shopByPrices = [
     {
       id: 10,
       name: "Under $10",
-      image:
-        "http://localhost:8080/ecs-inventory-admin/api/public/images/view/getImageById/690837c6f092e71713581727",
+      image: `${imageApiUrl}/view/getImageById/690837c6f092e71713581727`,
     },
     {
       id: 20,
       name: "Under $20",
-      image:
-        "http://localhost:8080/ecs-inventory-admin/api/public/images/view/getImageById/690837eaf092e71713581728",
+      image: `${imageApiUrl}/view/getImageById/690837eaf092e71713581728`,
     },
     {
       id: 50,
       name: "Under $50",
-      image:
-        "http://localhost:8080/ecs-inventory-admin/api/public/images/view/getImageById/690837f6f092e71713581729",
+      image: `${imageApiUrl}/view/getImageById/690837f6f092e71713581729`,
     },
     {
       id: 100,
       name: "Under $100",
-      image:
-        "http://localhost:8080/ecs-inventory-admin/api/public/images/view/getImageById/6908380ff092e7171358172a",
+      image: `${imageApiUrl}/view/getImageById/6908380ff092e7171358172a`,
     },
   ];
 
@@ -60,7 +61,7 @@ const HeroBanner: React.FC = () => {
         const currentTime = Date.now() / 1000;
         if ((decodedToken.exp ? decodedToken.exp : 0) >= currentTime) {
           const customerResponse = await axios.get(
-            apiBaseUrl + `ecs-customer/api/customer/getByEmail/${email}`,
+            `${customerApiUrl}/getByEmail/${email}`,
             {
               headers: {
                 Authorization: `Bearer ${authToken}`,
@@ -93,7 +94,7 @@ const HeroBanner: React.FC = () => {
   async function fetchRecentlyPurchasedItems(userId: number) {
     try {
       var recentlyPurchasedItems = await axios.get(
-        apiBaseUrl + `ecs-order/api/order/getAllByPagination`,
+        `${orderApiUrl}/getAllByPagination`,
         {
           params: { customerId: userId, offset: 4, currentPage: 0 },
           headers: {
@@ -123,7 +124,7 @@ const HeroBanner: React.FC = () => {
         currentPage: 0,
       };
       var priceDropProducts = await axios.get(
-        apiBaseUrl + `ecs-product/api/product/getProductsByPagination`,
+        `${productApiUrl}/getProductsByPagination`,
         {
           params: priceDropFilters,
         }
@@ -137,7 +138,7 @@ const HeroBanner: React.FC = () => {
         categoryId: 19,
       };
       var techDealsResponse = await axios.get(
-        apiBaseUrl + `ecs-product/api/product/getProductsByPagination`,
+        `${productApiUrl}/getProductsByPagination`,
         {
           params: techDealFilters,
         }
@@ -179,9 +180,7 @@ const HeroBanner: React.FC = () => {
 
   function getImageUrl(imageId: string): string {
     return imageId != null && imageId.trim() !== ""
-      ? apiBaseUrl +
-          `ecs-inventory-admin/api/public/images/view/getImageById/` +
-          imageId
+      ? `${imageApiUrl}/view/getImageById/${imageId}`
       : "/assets/images/image-placeholder.jpg";
   }
 

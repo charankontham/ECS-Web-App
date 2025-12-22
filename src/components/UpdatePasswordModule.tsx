@@ -4,8 +4,7 @@ import "@src/App.css";
 import Customer from "../interfaces/Customer";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
-import { jwtDecode } from "jwt-decode";
-import { Cart } from "../interfaces/Cart";
+import { API_BASE_URL } from "../util/api";
 
 interface PasswordProps {
   setBackToSubSetting: (setBackToSubSetting: boolean) => void;

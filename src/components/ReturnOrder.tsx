@@ -31,6 +31,7 @@ import {
   OrderTrackingEnriched,
 } from "@interfaces/Order";
 import Address from "@interfaces/Address";
+import { API_BASE_URL } from "../util/api";
 
 interface ReturnOrderProps {
   order: Order;
@@ -39,8 +40,6 @@ interface ReturnOrderProps {
 
 const ReturnOrder: React.FC<ReturnOrderProps> = ({ order, goBack }) => {
   const authToken = localStorage.getItem("authToken");
-  const customerApiBaseUrl = "http://localhost:8080/ecs-customer/api";
-  const logisticsApiBaseUrl = "http://localhost:8080/ecs-logistics/api";
   const navigate = useNavigate();
   const [selectedOrderItem, setSelectedOrderItem] = useState<number>(0);
   const [selectedCategory, setSelectedCategory] = useState<string>("");
@@ -57,6 +56,9 @@ const ReturnOrder: React.FC<ReturnOrderProps> = ({ order, goBack }) => {
   const [orderTackings, setOrderTrackings] = useState<OrderTrackingEnriched[]>(
     []
   );
+  const addressApiUrl = `${API_BASE_URL}/ecs-customer/api/address`;
+  const orderReturnsApiUrl = `${API_BASE_URL}/ecs-logistics/api/orderReturns`;
+  const orderTrackingApiUrl = `${API_BASE_URL}/ecs-logistics/api/orderTracking`;
 
   const handleReasonChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
     const input = e.target.value;
@@ -95,16 +97,12 @@ const ReturnOrder: React.FC<ReturnOrderProps> = ({ order, goBack }) => {
 
     try {
       const authToken = localStorage.getItem("authToken");
-      const response = await axios.post(
-        `${logisticsApiBaseUrl}/orderReturns`,
-        orderReturn,
-        {
-          headers: {
-            Authorization: `Bearer ${authToken}`,
-            "Content-Type": "application/json",
-          },
-        }
-      );
+      const response = await axios.post(orderReturnsApiUrl, orderReturn, {
+        headers: {
+          Authorization: `Bearer ${authToken}`,
+          "Content-Type": "application/json",
+        },
+      });
 
       if (response.status === 200 || response.status === 201) {
         setSuccessMessage(
@@ -127,12 +125,10 @@ const ReturnOrder: React.FC<ReturnOrderProps> = ({ order, goBack }) => {
     try {
       if (authToken) {
         const decodedToken = jwtDecode(authToken);
-        const email = decodedToken.sub;
         const currentTime = Date.now() / 1000;
         if ((decodedToken.exp ? decodedToken.exp : 0) >= currentTime) {
           var addressResponse = await axios.get(
-            customerApiBaseUrl +
-              `/address/getAllAddressByUserId/customer_${order.customer.customerId}`,
+            `${addressApiUrl}/getAllAddressByUserId/customer_${order.customer.customerId}`,
             {
               headers: {
                 Authorization: `Bearer ${authToken}`,
@@ -155,17 +151,15 @@ const ReturnOrder: React.FC<ReturnOrderProps> = ({ order, goBack }) => {
     }
   };
 
-  const fetchOrderTracking = async (productId?: number) => {
+  const fetchOrderTracking = async () => {
     try {
       if (authToken) {
         const decodedToken = jwtDecode(authToken);
-        const email = decodedToken.sub;
         const currentTime = Date.now() / 1000;
         if ((decodedToken.exp ? decodedToken.exp : 0) >= currentTime) {
           order.orderItems.forEach(async (oi) => {
             const response = await axios.get(
-              logisticsApiBaseUrl +
-                `/orderTracking/getByOrderIdAndProductId/${order.orderId}/${oi.product.productId}`,
+              `${orderTrackingApiUrl}/getByOrderIdAndProductId/${order.orderId}/${oi.product.productId}`,
               {
                 headers: {
                   Authorization: `Bearer ${authToken}`,
@@ -252,7 +246,7 @@ const ReturnOrder: React.FC<ReturnOrderProps> = ({ order, goBack }) => {
               >
                 <option value="0">-- Select Order Item --</option>
                 {order.orderItems.map(
-                  (orderItem, index) =>
+                  (orderItem) =>
                     orderItem.orderItemStatus ==
                       OrderTrackingStatusEnum.Delivered && (
                       <option
@@ -384,7 +378,7 @@ const ReturnOrder: React.FC<ReturnOrderProps> = ({ order, goBack }) => {
                   onChange={(e) => setPickupAddress(Number(e.target.value))}
                 >
                   <option value="0">-- Select the Pickup Address --</option>
-                  {addressList.map((address, index) => (
+                  {addressList.map((address) => (
                     <option key={address.addressId} value={address.addressId!}>
                       {address.name} | {address.street}, {address.city},{" "}
                       {address.contact}

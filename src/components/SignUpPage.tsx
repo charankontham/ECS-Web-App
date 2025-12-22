@@ -7,6 +7,7 @@ import Customer from "../interfaces/Customer";
 import { faEye, faEyeSlash, faL } from "@fortawesome/free-solid-svg-icons";
 import { useNavigate } from "react-router-dom";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { API_BASE_URL } from "../util/api";
 
 const SignUpPage: React.FC = () => {
   const [formData, setFormData] = useState({
@@ -20,8 +21,8 @@ const SignUpPage: React.FC = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [showPassword, setShowPassword] = useState(false);
-  const apiBaseURL = "http://localhost:8080/ecs-customer/api/customer";
   const navigate = useNavigate();
+  const customerApiUrl = `${API_BASE_URL}/ecs-customer/api/customer`;
 
   const passwordValidation = (value: string): boolean => {
     if (!value || value.trim() === "" || value === "null") {
@@ -69,7 +70,7 @@ const SignUpPage: React.FC = () => {
       const customerData: Customer = formData;
       customerData.role = "user";
       axios
-        .post(apiBaseURL + "/registration", customerData)
+        .post(`${customerApiUrl}/registration`, customerData)
         .then((response) => {
           if (response.status === 400) {
             setLoading(false);

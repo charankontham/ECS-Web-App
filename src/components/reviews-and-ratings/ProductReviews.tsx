@@ -12,6 +12,7 @@ import { ProductReview } from "../../interfaces/ProductReview";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faLeftLong, faStar } from "@fortawesome/free-solid-svg-icons";
 import StarRatingRealtime from "./StarRatingRealtime";
+import { API_BASE_URL } from "../../util/api";
 
 interface Product {
   productId: number;
@@ -30,7 +31,6 @@ const ProductReviews: React.FC = () => {
     productReview: "",
   });
   const [loading, setLoading] = useState(false);
-  const apiBaseURL = "http://localhost:8080";
   const [myOrderedProducts, setMyOrderedProducts] = useState<Product[]>([]);
   const [myReviews, setMyReviews] = useState<ProductReview[]>([]);
   const [ratingSubmitted, setRatingSubmitted] = useState<boolean>(false);
@@ -38,6 +38,10 @@ const ProductReviews: React.FC = () => {
   const [error, setError] = useState<boolean>(false);
   const authToken = localStorage.getItem("authToken");
   const navigate = useNavigate();
+  const customerApiUrl = API_BASE_URL + "/ecs-customer/api/customer";
+  const reviewsApiUrl = API_BASE_URL + "/ecs-reviews/api/productReview";
+  const orderApiUrl = API_BASE_URL + "/ecs-order/api/order";
+  const imageApiUrl = API_BASE_URL + "/ecs-inventory-admin/api/public/images";
 
   useEffect(() => {
     setLoading(true);
@@ -75,7 +79,7 @@ const ProductReviews: React.FC = () => {
         if ((decodedToken.exp ? decodedToken.exp : 0) >= currentTime) {
           try {
             const customerResponse = await axios.get(
-              apiBaseURL + `/ecs-customer/api/customer/getByEmail/${email}`,
+              `${customerApiUrl}/getByEmail/${email}`,
               {
                 headers: {
                   Authorization: `Bearer ${authToken}`,
@@ -89,15 +93,12 @@ const ProductReviews: React.FC = () => {
               customerId: customerResponse.data.customerId,
               customerName: customerResponse.data.customerName,
             }));
-
             if (customerResponse.status !== 200) {
               console.log(customerResponse.data);
               navigate("/signIn");
             }
-
             const myOrderItemsResponse = await axios.get(
-              apiBaseURL +
-                `/ecs-order/api/order/getOrderItemsByCustomerId/${customerResponse.data.customerId}`,
+              `${orderApiUrl}/getOrderItemsByCustomerId/${customerResponse.data.customerId}`,
               {
                 headers: {
                   Authorization: `Bearer ${authToken}`,
@@ -107,8 +108,7 @@ const ProductReviews: React.FC = () => {
             );
             setMyOrderedProducts(myOrderItemsResponse.data);
             const myReviewsResponse = await axios.get(
-              apiBaseURL +
-                `/ecs-reviews/api/productReview/getReviewsByCustomerId/${customerResponse.data.customerId}`,
+              `${reviewsApiUrl}/getReviewsByCustomerId/${customerResponse.data.customerId}`,
               {
                 headers: {
                   Authorization: `Bearer ${authToken}`,
@@ -246,7 +246,7 @@ const ProductReviews: React.FC = () => {
 
   const postReview = (myReview: ProductReview, ratingOnly?: boolean) => {
     axios
-      .post(apiBaseURL + `/ecs-reviews/api/productReview`, myReview, {
+      .post(reviewsApiUrl, myReview, {
         headers: {
           Authorization: `Bearer ${authToken}`,
           "Content-Type": "application/json",
@@ -278,7 +278,7 @@ const ProductReviews: React.FC = () => {
 
   const updateReview = (myReview: ProductReview, ratingOnly?: boolean) => {
     axios
-      .put(apiBaseURL + `/ecs-reviews/api/productReview`, myReview, {
+      .put(reviewsApiUrl, myReview, {
         headers: {
           Authorization: `Bearer ${authToken}`,
           "Content-Type": "application/json",
@@ -316,7 +316,7 @@ const ProductReviews: React.FC = () => {
 
   const deleteReview = (reviewId: number) => {
     axios
-      .delete(apiBaseURL + `/ecs-reviews/api/productReview/` + reviewId, {
+      .delete(`${reviewsApiUrl}/${reviewId}`, {
         headers: {
           Authorization: `Bearer ${authToken}`,
           "Content-Type": "application/json",
@@ -352,7 +352,7 @@ const ProductReviews: React.FC = () => {
               <div key={product.productId}>
                 <div className="review-product-link" key={product.productId}>
                   <img
-                    src={`http://localhost:8080/ecs-inventory-admin/api/public/images/view/getImageById/${product.productImage}`}
+                    src={`${imageApiUrl}/view/getImageById/${product.productImage}`}
                     alt={product.productName}
                   />
                   <div className="product-review-list-view">
@@ -393,7 +393,7 @@ const ProductReviews: React.FC = () => {
           <br />
           <div className="product-heading">
             <img
-              src={`http://localhost:8080/ecs-inventory-admin/api/public/images/view/getImageById/${selectedProduct.productImage}`}
+              src={`${imageApiUrl}/view/getImageById/${selectedProduct.productImage}`}
               alt={selectedProduct.productName}
             ></img>
             <p>{selectedProduct.productName}</p>

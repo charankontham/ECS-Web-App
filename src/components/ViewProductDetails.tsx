@@ -20,32 +20,12 @@ import { ProductReview } from "../interfaces/ProductReview";
 import { RatingAndReviews } from "./reviews-and-ratings/RatingAndReviews";
 import StarRating from "./reviews-and-ratings/StarRating";
 import Footer from "./Footer";
-
-// interface Product {
-//   brand: string;
-//   name: string;
-//   price: number;
-//   images: string[];
-//   description: string;
-//   specifications: Record<string, string>;
-//   rating: number;
-//   reviews: Review[];
-//   similarProducts: ProductSummary[];
-// }
-
-interface ProductSummary {
-  id: string;
-  name: string;
-  image: string;
-  price: number;
-}
+import { API_BASE_URL } from "../util/api";
 
 const ViewProductDetails: React.FC = () => {
   const { productId } = useParams<{ productId: string }>();
   const [productDetails, setProductDetails] = useState<Product | null>(null);
-  const apiBaseURL = "http://localhost:8080";
   const [customer, setCustomer] = useState<Customer | null>(null);
-  const cartApiBaseURL = "http://localhost:8080/ecs-order/api/cart";
   const [selectedProductQuantity, setSelectedProductQuantity] =
     useState<number>(1);
   const quantities = [1, 2, 3, 4, 5];
@@ -61,6 +41,12 @@ const ViewProductDetails: React.FC = () => {
     color: "N/A",
   });
   const authToken = localStorage.getItem("authToken");
+  const customerApiUrl = `${API_BASE_URL}/ecs-customer/api/customer`;
+  const productApiUrl = `${API_BASE_URL}/ecs-product/api/product`;
+  const cartApiURL = `${API_BASE_URL}/ecs-order/api/cart`;
+  const orderApiUrl = `${API_BASE_URL}/ecs-order/api/order`;
+  const imageApiUrl = `${API_BASE_URL}/ecs-inventory-admin/api/public/images`;
+  const reviewsApiUrl = `${API_BASE_URL}/ecs-reviews/api/productReview`;
 
   useEffect(() => {
     fetchCustomerOrdersAndReviews();
@@ -69,7 +55,7 @@ const ViewProductDetails: React.FC = () => {
   useEffect(() => {
     try {
       axios
-        .get(apiBaseURL + "/ecs-product/api/product/" + productId)
+        .get(`${productApiUrl}/${productId}`)
         .then((response) => {
           setProductDetails(response.data);
           setSpecs((specs) => ({
@@ -115,7 +101,7 @@ const ViewProductDetails: React.FC = () => {
       const currentTime = Date.now() / 1000;
       if ((decodedToken.exp ? decodedToken.exp : 0) >= currentTime) {
         const customerResponse = await axios.get(
-          apiBaseURL + `/ecs-customer/api/customer/getByEmail/${email}`,
+          `${customerApiUrl}/getByEmail/${email}`,
           {
             headers: {
               Authorization: `Bearer ${authToken}`,
@@ -136,14 +122,13 @@ const ViewProductDetails: React.FC = () => {
         localStorage.setItem("authToken", "");
       }
     }
+
     const productReviewsResponse = await axios.get(
-      apiBaseURL +
-        `/ecs-reviews/api/productReview/getReviewsByProductId/${productId}`
+      `${reviewsApiUrl}/getReviewsByProductId/${productId}`
     );
     setProductReviews(productReviewsResponse.data);
     const similarProductsResponse = await axios.get(
-      apiBaseURL +
-        `/ecs-product/api/product/getSimilarProductsById/${productId}`
+      `${productApiUrl}/getSimilarProductsById/${productId}`
     );
     setSimilarProducts(similarProductsResponse.data);
   };
@@ -176,7 +161,6 @@ const ViewProductDetails: React.FC = () => {
   };
 
   const addToCart = (productId: number) => {
-    // console.log("Adding product to cart : ", productId);
     if (customer != null && productId !== -1) {
       const cartItems = [
         {
@@ -185,20 +169,18 @@ const ViewProductDetails: React.FC = () => {
           quantity: selectedProductQuantity,
         },
       ];
-      // console.log("quantity : ", selectedProductQuantity);
       const cartObject = {
         customerId: customer?.customerId,
         cartItems: cartItems,
       };
       axios
-        .post(cartApiBaseURL, cartObject, {
+        .post(cartApiURL, cartObject, {
           headers: {
             Authorization: `Bearer ${authToken}`,
             "Content-Type": "application/json",
           },
         })
-        .then((response) => {
-          // console.log("Added to cart successfully : ", response.data);
+        .then(() => {
           showPopup();
         })
         .catch((error) => {
@@ -223,7 +205,6 @@ const ViewProductDetails: React.FC = () => {
       );
       let subTotal = productDetails.productPrice * selectedProductQuantity;
       localStorage.setItem("subTotal", subTotal.toString());
-      // console.log("Navigated to Checkout Page!");
       navigate("/checkout");
     } else {
       console.log("Please login first");
@@ -234,12 +215,10 @@ const ViewProductDetails: React.FC = () => {
   const getmyOrders = async (customerId: number): Promise<Order[]> => {
     if (authToken) {
       const decodedToken = jwtDecode(authToken);
-      const email = decodedToken.sub;
       const currentTime = Date.now() / 1000;
       if ((decodedToken.exp ? decodedToken.exp : 0) >= currentTime) {
         const myOrdersResponse = await axios.get(
-          apiBaseURL +
-            `/ecs-order/api/order/getOrdersByCustomerId/${customerId}`,
+          `${orderApiUrl}/getOrdersByCustomerId/${customerId}`,
           {
             headers: {
               Authorization: `Bearer ${authToken}`,
@@ -445,7 +424,7 @@ const ViewProductDetails: React.FC = () => {
                       similarProduct.productImage == "" ||
                       similarProduct.productImage == null
                         ? "/assets/images/image-placeholder.jpg"
-                        : `http://localhost:8080/ecs-inventory-admin/api/public/images/view/getImageById/${similarProduct.productImage}`
+                        : `${imageApiUrl}/view/getImageById/${similarProduct.productImage}`
                     }
                     alt={similarProduct.productName}
                   />

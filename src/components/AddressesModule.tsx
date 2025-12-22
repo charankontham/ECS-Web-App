@@ -12,6 +12,7 @@ import {
   faPlus,
   faTrash,
 } from "@fortawesome/free-solid-svg-icons";
+import { API_BASE_URL } from "../util/api";
 
 interface AddressProps {
   setActiveSubSetting: (value: string) => void;
@@ -22,12 +23,13 @@ const AddressesModule: React.FC<AddressProps> = ({
   setActiveSubSetting,
   addressList,
 }) => {
-  const apiBaseUrl = "http://localhost:8080/ecs-customer/api";
   const authToken = localStorage.getItem("authToken");
   const navigate = useNavigate();
   const [addresses, setAddresses] = useState<Address[]>(addressList);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
+  const customerApiUrl = `${API_BASE_URL}/ecs-customer/api/customer`;
+  const addressApiUrl = `${API_BASE_URL}/ecs-customer/api/address`;
 
   const deleteAddress = (addressId: number) => {
     if (addressId === -1) {
@@ -37,7 +39,7 @@ const AddressesModule: React.FC<AddressProps> = ({
       const currentTime = Date.now() / 1000;
       if ((decodedToken.exp ? decodedToken.exp : 0) >= currentTime) {
         axios
-          .delete(apiBaseUrl + `/address/${addressId}`, {
+          .delete(`${addressApiUrl}/${addressId}`, {
             headers: {
               Authorization: `Bearer ${authToken}`,
             },

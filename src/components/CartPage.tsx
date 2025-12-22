@@ -15,6 +15,7 @@ import { jwtDecode } from "jwt-decode";
 import axios from "axios";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faTrashCan } from "@fortawesome/free-solid-svg-icons";
+import { API_BASE_URL } from "../util/api";
 
 const CartPage: React.FC = () => {
   const [customer, setCustomer] = useState<Customer | null>(null);
@@ -24,13 +25,14 @@ const CartPage: React.FC = () => {
     useState<number>(cart?.cartItems.length || 0);
   const authToken = localStorage.getItem("authToken");
   const navigate = useNavigate();
-  const apiBaseUrl = "http://localhost:8080";
-
   const total = cart?.cartItems.reduce(
     (acc, item) =>
       acc + item.productDetails.productPrice * (item.orderQuantity || 1),
     0
   );
+  const cartApiUrl = `${API_BASE_URL}/ecs-order/api/cart`;
+  const customerApiUrl = `${API_BASE_URL}/ecs-customer/api/customer`;
+  const imageApiUrl = `${API_BASE_URL}/ecs-inventory-admin/api/public/images`;
 
   const calculateSubtotal = () => {
     return cart?.cartItems
@@ -79,7 +81,7 @@ const CartPage: React.FC = () => {
       };
 
       axios
-        .put(apiBaseUrl + "/ecs-order/api/cart", cartObject, {
+        .put(cartApiUrl, cartObject, {
           headers: {
             Authorization: `Bearer ${authToken}`,
             "Content-Type": "application/json",
@@ -119,7 +121,7 @@ const CartPage: React.FC = () => {
         if ((decodedToken.exp ? decodedToken.exp : 0) >= currentTime) {
           try {
             const customerResponse = await axios.get(
-              `http://localhost:8080/ecs-customer/api/customer/getByEmail/${email}`,
+              `${customerApiUrl}/getByEmail/${email}`,
               {
                 headers: {
                   Authorization: `Bearer ${authToken}`,
@@ -129,7 +131,7 @@ const CartPage: React.FC = () => {
             );
             setCustomer(customerResponse.data);
             const cartResponse = await axios.get(
-              `http://localhost:8080/ecs-order/api/cart/getCartByCustomerId/${customerResponse.data.customerId}`,
+              `${cartApiUrl}/getCartByCustomerId/${customerResponse.data.customerId}`,
               {
                 headers: {
                   Authorization: `Bearer ${authToken}`,
@@ -137,7 +139,6 @@ const CartPage: React.FC = () => {
                 },
               }
             );
-            // console.log("Server res: ", cartResponse.data);
             cartResponse.data.cartItems.forEach((cartItem: CartItem) => {
               cartItem.isChecked = true;
             });
@@ -179,19 +180,16 @@ const CartPage: React.FC = () => {
   const deleteCartItem = (cartItemId: number | null) => {
     if (authToken) {
       const decodedToken = jwtDecode(authToken);
-      // console.log(decodedToken);
-      const email = decodedToken.sub;
       const currentTime = Date.now() / 1000;
       if ((decodedToken.exp ? decodedToken.exp : 0) >= currentTime) {
         axios
-          .delete("http://localhost:8080/ecs-order/api/cart/" + cartItemId, {
+          .delete(`${cartApiUrl}/${cartItemId}`, {
             headers: {
               Authorization: `Bearer ${authToken}`,
               "Content-Type": "application/json",
             },
           })
           .then((response) => {
-            // console.log("Response : ", response);
             if (
               response.status == 200 &&
               response.data == "CartItem deleted successfully!"
@@ -228,7 +226,6 @@ const CartPage: React.FC = () => {
       );
       let subTotal = calculateSubtotal();
       localStorage.setItem("subTotal", subTotal ? subTotal : "0");
-      // console.log("Navigated to Checkout Page!");
       navigate("/checkout");
     } else {
       alert("Select at least one item to proceed!");
@@ -237,7 +234,6 @@ const CartPage: React.FC = () => {
 
   useEffect(() => {
     setSelectedCartItemsLength(getSelectedCartItems().length);
-    // console.log(selectedCartItemsLength);
   }, [cart]);
 
   useEffect(() => {
@@ -270,7 +266,7 @@ const CartPage: React.FC = () => {
                     ></input>
                   </div>
                   <img
-                    src={`http://localhost:8080/ecs-inventory-admin/api/public/images/view/getImageById/${item.productDetails.productImage}`}
+                    src={`${imageApiUrl}/view/getImageById/${item.productDetails.productImage}`}
                     alt={item.productDetails.productName}
                     className="item-image"
                   />

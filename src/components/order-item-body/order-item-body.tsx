@@ -13,6 +13,7 @@ import {
 import { useEffect } from "react";
 import $ from "jquery";
 import { OrderTrackingEnriched } from "@interfaces/Order";
+import { API_BASE_URL } from "../../util/api";
 
 interface OrderItemBodyProps {
   index: number;
@@ -45,6 +46,7 @@ const OrderItemBody: React.FC<OrderItemBodyProps> = ({
 }) => {
   const navigate = useNavigate();
   const orderTypeId: number = Number(toggleTrackerParameter.split("_")[2]);
+  const imageApiUrl = `${API_BASE_URL}/ecs-inventory-admin/api/public/images`;
   return (
     <div key={index}>
       <span
@@ -65,12 +67,11 @@ const OrderItemBody: React.FC<OrderItemBodyProps> = ({
             ]}
       </span>
       <div className="order-item-body" key={index}>
-        {/* <div className="order-item-columns"> */}
         <Col md={3}>
           <div className="image-and-quantity-column">
             <div className="order-item-img-column">
               <img
-                src={`http://localhost:8080/ecs-inventory-admin/api/public/images/view/getImageById/${productImage}`}
+                src={`${imageApiUrl}/view/getImageById/${productImage}`}
                 alt={productName}
               />
             </div>
