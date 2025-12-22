@@ -2,9 +2,7 @@ import React, { useEffect, useState } from "react";
 import "../../css/ProductCategoryBar.css";
 import "@src/App.css";
 import "bootstrap/dist/css/bootstrap.css";
-import { faUser } from "@fortawesome/free-solid-svg-icons";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { useNavigate } from "react-router-dom";
+import { API_BASE_URL } from "../../util/api";
 import axios from "axios";
 import ProductCategory from "../../interfaces/ProductCategory";
 

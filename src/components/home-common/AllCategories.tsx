@@ -5,37 +5,17 @@ import "../../css/AllCatgories.css";
 import ProductCategory from "../../interfaces/ProductCategory";
 import { useNavigate } from "react-router-dom";
 import Footer from "@components/Footer";
+import { API_BASE_URL } from "../../util/api";
 
 const AllCategories: React.FC = () => {
   const [productCategories, setProductCategories] = useState<
     ProductCategory[] | null
   >(null);
   const navigate = useNavigate();
-
-  // const getImageUrl = (imageId: string): string => {
-  //   try {
-  //     const response = axios.get(
-  //       `http://localhost:8080/ecs-inventory-admin/api/public/images/getByImageId/${imageId}`,
-  //       {
-  //         headers: {
-  //           "Content-Type": "application/json",
-  //         },
-  //       }
-  //     );
-
-  //     const imageUrl = `data:${response.data.contentType};base64,${response.data.image}`;
-  //     console.log("Image URL:", imageUrl);
-  //     return imageUrl;
-  //   } catch (error) {
-  //     console.error("Error fetching image:", error);
-  //     return "error"; // Or fallback image URL
-  //   }
-  // };
-
   useEffect(() => {
     try {
       axios
-        .get(`http://localhost:8080/ecs-product/api/productCategory/`, {
+        .get(`${API_BASE_URL}/ecs-product/api/productCategory/`, {
           headers: {
             "Content-Type": "application/json",
           },

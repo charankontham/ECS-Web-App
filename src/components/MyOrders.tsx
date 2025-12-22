@@ -148,11 +148,9 @@ const MyOrders: React.FC<{
 
   const applyFilters = () => {
     const dateRangeFilteredOrders = filterOrdersByDateRange(myOrders);
-    console.log("Date Range Filtered Orders: ", dateRangeFilteredOrders);
     const statusFilteredOrders = filterOrdersByOrderStatus(
       dateRangeFilteredOrders
     );
-    console.log("Status Filtered Orders: ", statusFilteredOrders);
     setCurrentOrders(statusFilteredOrders);
   };
 
@@ -179,7 +177,6 @@ const MyOrders: React.FC<{
       case "1-year":
         startDate = new Date();
         endDate = new Date();
-        console.log("End Date : ", endDate);
         startDate.setFullYear(currentDate.getFullYear() - 1);
         break;
 
@@ -192,7 +189,6 @@ const MyOrders: React.FC<{
           throw new Error(`Invalid date range: ${dateRange}`);
         }
     }
-    console.log("End Date : ", endDate);
     return orders.filter(
       (order) => order.orderDate >= startDate && order.orderDate <= endDate
     );
@@ -437,7 +433,6 @@ const MyOrders: React.FC<{
             order.orderDate = standardOrderDate;
           });
           setReturnedOrders(returnOrdersResponse.data);
-          console.log("Returns : ", returnOrdersResponse.data);
           if (orderId) {
             const orders = myOrdersResponse.data.filter(
               (order: Order) =>
@@ -469,7 +464,6 @@ const MyOrders: React.FC<{
   const defaultCurrentOrders = (orders: Order[]) => {
     let startDate: Date = new Date();
     startDate.setMonth(startDate.getMonth() - 12);
-    console.log("printing myorders: ", orders);
     const filteredOrders = orders.filter((order) => {
       return order.orderDate >= startDate;
     });

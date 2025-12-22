@@ -137,7 +137,6 @@ const AccountSettings: React.FC<{ activeSection?: string }> = (
                 },
               }
             );
-            console.log("Address Response : ", addressResponse);
             setAddresses(addressResponse.data);
           } catch (error) {
             console.error("Error: ", error);
